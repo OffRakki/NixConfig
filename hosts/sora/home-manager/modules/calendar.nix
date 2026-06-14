@@ -27,6 +27,7 @@ in
     type = "filesystem"
     path = "~/Calendars/events/"
     fileext = ".ics"
+    item_filters = ["'BEGIN:VEVENT' in item.raw"]
 
     [storage personal_calendar_remote]
     type = "caldav"
