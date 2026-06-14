@@ -76,6 +76,26 @@ khal (events) and todoman (tasks).
 **khal, todo, and khard are a single unified personal agenda.** They must
 never drift apart. When you operate on any piece of Lucky's agenda:
 
+### Workflow (mandatory — do not skip steps)
+
+1. **Awareness check** — before touching any of the 3 tools, check ALL of them
+   first to understand what already exists. A todo might already be an event,
+   or a contact might link to something in the calendar.
+2. **Multi-tool edit** — creating, editing, or deleting anything that could
+   exist in more than one tool? Do it in ALL relevant tools simultaneously.
+   Don't leave one behind.
+   - Example: an exam = event (khal) + todo (todo).
+   - Example: a contact's birthday (khard) should also appear as a birthday
+     event in khal (handled via birthdays calendar type).
+3. **Sync after every write** — after any local change to events or contacts,
+   run `vdirsyncer sync` immediately so Google Calendar/Contacts are up to date.
+   Do not wait for the 30-minute timer.
+   ```bash
+   systemctl --user start vdirsyncer
+   ```
+
+### Rules
+
 - **Creating**: if it belongs in more than one tool (e.g. an exam = event +
   todo), create it in ALL relevant tools. Don't leave one behind.
 - **Editing**: if the same thing exists in multiple tools, edit ALL of them

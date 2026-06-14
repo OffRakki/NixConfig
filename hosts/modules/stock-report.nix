@@ -321,7 +321,7 @@
   '';
 in {
   systemd.services.stock-report = {
-    enable = true;
+    enable = false;
     description = "Daily Brazilian Stock Report";
     after = ["network-online.target"];
     wants = ["network-online.target"];
@@ -333,7 +333,7 @@ in {
   };
 
   systemd.timers.stock-report = {
-    enable = true;
+    enable = false;
     description = "Daily timer for stock report at 9AM";
     timerConfig = {
       OnCalendar = "*-*-* 09:00:00";
