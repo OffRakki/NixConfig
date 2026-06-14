@@ -92,7 +92,7 @@
     Channel ${a.name}
     Far :${a.name}-remote:
     Near :${a.name}-local:
-    Patterns INBOX "[Gmail]/Sent Mail" "[Gmail]/Drafts" "[Gmail]/Trash" "[Gmail]/Spam"
+    Patterns * ! "[Gmail]/All Mail"
     Create Both
     Sync All
     Expunge Both
@@ -105,7 +105,7 @@ in {
     "Mail"
   ];
 
-  home.packages = with pkgs; [aerc isync cyrus-sasl-xoauth2];
+  home.packages = with pkgs; [aerc isync cyrus-sasl-xoauth2 w3m];
 
   home.sessionVariables.SASL_PATH = "${sasl2Plugins}";
 
@@ -171,6 +171,8 @@ AERCCONF
     sidebar-width = 20
     sort = -r date
     next-message-on-delete = true
+    styleset-dirs = ${config.xdg.configHome}/aerc/stylesets/
+    styleset-name = dark
 
     [compose]
     editor = hx
@@ -178,6 +180,42 @@ AERCCONF
 
     [viewer]
     pager-msgs = 10
+    header-layout=From,To,Cc,Subject,Date
+
+    [filters]
+    text/html = ${pkgs.w3m}/bin/w3m -I UTF-8 -T text/html -cols 80 -o display_image=false -dump
+    text/calendar = ${pkgs.w3m}/bin/w3m -I UTF-8 -T text/html -cols 80 -o display_image=false -dump
+  '';
+
+  xdg.configFile."aerc/stylesets/dark".text = ''
+    *.default = true
+    *.normal = fg:#c6c6c6 bg:#1c1c1c
+    *.selected = fg:#ffffff bg:#383838
+    *.error = fg:#e06c75
+    *.warning = fg:#e5c07b
+    *.success = fg:#98c379
+
+    title.reverse = true
+
+    msglist_unread.bold = true
+    msglist_flagged.fg = #e06c75
+    msglist_deleted.fg = #5c6370
+    msglist_marked.fg = #98c379
+    msglist_result.fg = #61afef
+
+    dirlist_default.fg = #abb2bf
+    dirlist_unread.bold = true
+
+    completion_pill.bg = #383838
+    completion_selected.bg = #264f78
+
+    statusline_default.reverse = true
+
+    tab.reverse = true
+    tab.selected.fg = #61afef
+    tab.selected.bold = true
+
+    border.reverse = true
   '';
 
   xdg.configFile."aerc/binds.conf".text = ''
