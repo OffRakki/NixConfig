@@ -175,7 +175,6 @@
     kondo
     mise
     espanso
-    neomutt
     rmpc
     mpd
     hyprpicker
