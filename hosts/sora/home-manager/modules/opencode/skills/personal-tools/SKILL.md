@@ -41,19 +41,23 @@ One file per item in a directory. Lucky's directories:
 
 ```
 ~/Calendars/
-├── events/           # Main calendar (Google Calendar, map color: light blue)
+├── events/           # Calendar events (Google Calendar, map color: light blue)
 │   ├── event1.ics
 │   └── event2.ics
 ├── feriados/         # Brazilian holidays (map color: dark green)
 │   └── holiday.ics
+├── todos/            # Tasks (local only, not synced to Google)
+│   ├── task1.ics
+│   └── task2.ics
 ~/Contacts/           # Google Contacts, also used as khal birthdays source
 ├── john.vcf
 └── jane.vcf
 ```
 
 The `color` file (hex `#RRGGBB`) and `displayname` file can be placed in each
-vdir for per-list metadata. Directories under `~/Calendars/` are shared between
-khal (events) and todoman (tasks).
+vdir for per-list metadata. Events and todos live in separate directories
+(`events/` and `todos/`) to avoid vdirsyncer trying to sync tasks to Google
+Calendar (which rejects VTODO with 403).
 
 ## How Lucky expects them to be used
 
@@ -66,7 +70,8 @@ khal (events) and todoman (tasks).
 - When Lucky asks about contacts, you should construct and run the appropriate
   `khard` command — his addressbook is `contacts` at `~/Contacts/`.
 - When Lucky asks about tasks, you should construct and run the appropriate
-  `todo` command — his default list is `events`.
+  `todo` command — his default list is `todos` (separate from calendar events
+  in `~/Calendars/todos/`).
 - **Important**: Always use Lucky's actual paths and names (`~/Calendars/events/`,
   `~/Calendars/feriados/`, `~/Contacts/`), not generic examples.
 - Lucky's email is offrakki@gmail.com, Google account is fernandomarques1505@gmail.com.
@@ -866,9 +871,9 @@ Lucky's todoman is configured via the Nix `programs.todoman` module in
 ```nix
 programs.todoman = {
   enable = true;
-  glob = "*";   # match all dirs under accounts.calendar.basePath (~/Calendars/)
   extraConfig = ''
-    default_list = "events"     # common list with khal's events calendar
+    path = "~/Calendars/todos/"
+    default_list = "todos"      # separate from khal's events/ to avoid vdirsyncer conflicts
     date_format = "%d/%m/%Y"
     time_format = "%H:%M"
     humanize = True
@@ -879,10 +884,10 @@ programs.todoman = {
 
 Equivalent manual `~/.config/todoman/config.py`:
 ```python
-path = "~/Calendars/*"          # shared directory tree with khal
+path = "~/Calendars/todos/"      # separate dir from khal's events/
 date_format = "%d/%m/%Y"
 time_format = "%H:%M"
-default_list = "events"
+default_list = "todos"
 default_due = 0
 humanize = True
 startable = False
@@ -891,11 +896,12 @@ startable = False
 ### Per-list metadata
 
 Like khal, todoman supports `color` and `displayname` files in each vdir:
-- `~/Calendars/events/color` → `#87CEEB` (light blue, matching khal)
-- `~/Calendars/events/displayname` → optional human-readable override
+- `~/Calendars/todos/color` → `#87CEEB` (light blue)
+- `~/Calendars/todos/displayname` → human-readable name
 
-Note: todoman reads from the same `~/Calendars/` tree as khal — tasks are `.ics`
-files stored alongside calendar events in the same vdirs.
+Tasks are kept separate from calendar events (`~/Calendars/todos/` vs
+`~/Calendars/events/`) so vdirsyncer doesn't try to upload VTODO items to
+Google Calendar (which rejects them with 403).
 
 ### Environment variables
 
@@ -946,11 +952,11 @@ unset). Fields may be added in future releases but never removed.
 # List all tasks sorted by due date (soonest first)
 todo list --sort -due
 
-# Add a task to events list due tomorrow
-todo new -l events -d tomorrow Buy milk
+# Add a task due tomorrow (default_list = todos)
+todo new -d tomorrow Buy milk
 
 # Add a high priority task
-todo new -l events -p 1 -d 15/06/2026 Submit report
+todo new -p 1 -d 15/06/2026 Submit report
 
 # Mark task as done
 todo done 3
@@ -1006,21 +1012,24 @@ via `cat /run/secrets/caldavPass` in the vdirsyncer config.
 - **Feriados**: Brazilian holidays (read-only, public Google Calendar)
 - **Conflict resolution**: For contacts, `a wins` (remote overrides local)
 - **No task sync**: Google doesn't expose VTODO via CalDAV, so todoman is
-  local-only. Tasks in `~/Calendars/events/` coexist with calendar events.
+  local-only. Tasks live in `~/Calendars/todos/`, separate from calendar events
+  in `~/Calendars/events/`, to prevent vdirsyncer from trying to upload them.
 
 ## Shared patterns
 
 1. **Date formats**: khal uses `strftime` patterns. todoman uses similar formats
    but configures them in `date_format`/`time_format` keys. khard uses system locale.
 2. **Vdir discovery**: both khal (`type = discover`) and todoman (`path` with
-   glob) support glob patterns to auto-discover vdirs.
+   glob) support glob patterns to auto-discover vdirs. Lucky's todoman uses an
+   explicit path (`~/Calendars/todos/`) rather than a glob.
 3. **Color files**: all three respect `color` files in vdir directories.
 4. **Displayname files**: khal and todoman support `displayname` files.
 5. **Multiple calendars/lists**: all three can work with multiple vdirs,
    filtering by name or addressbook.
-6. **Shared tree**: khal and todoman both read from `~/Calendars/` — the same
-   `.ics` files can be events (for khal) and tasks (for todoman). They coexist
-   fine because each tool only looks at its own type.
+6. **Separated trees**: khal reads from `~/Calendars/events/` and todoman reads
+   from `~/Calendars/todos/`. They were originally mixed in `events/` but were
+   separated because vdirsyncer tries to upload all `.ics` files to Google
+   Calendar, which rejects VTODO items with 403.
 7. **Persist**: `~/Calendars/`, `~/Contacts/`, and `~/.local/share/vdirsyncer`
    are persisted (not ephemeral) via home-manager impermanence.
 
