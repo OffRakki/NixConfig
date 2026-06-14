@@ -24,6 +24,7 @@
     ./kitty.nix
     ./qutebrowser.nix
     ./opencode
+    ./aerc.nix
     ./hytale.nix
     ./quickshell/quickshell.nix
     ./river.nix

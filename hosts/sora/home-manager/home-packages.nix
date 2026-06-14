@@ -31,6 +31,7 @@
     nil
 
     # CLI utils
+    aerc
     wine64
     satty
     flatpak
