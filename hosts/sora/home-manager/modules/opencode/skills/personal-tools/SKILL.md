@@ -66,7 +66,7 @@ Calendar (which rejects VTODO with 403).
   queries.
 - When Lucky asks "what's on my calendar today" or similar, you should
   construct and run the appropriate `khal` command — his calendar names are
-  `events`, `feriados`, and `birthdays`.
+  `events` and `feriados`.
 - When Lucky asks about contacts, you should construct and run the appropriate
   `khard` command — his addressbook is `contacts` at `~/Contacts/`.
 - When Lucky asks about tasks, you should construct and run the appropriate
@@ -151,12 +151,6 @@ INI format. Lucky's actual config:
 path = ~/Calendars/events/
 color = light blue
 priority = 10
-
-[[birthdays]]
-path = ~/Contacts/
-type = birthdays
-color = dark magenta
-priority = 15
 
 [[feriados]]
 path = ~/Calendars/feriados/
@@ -1049,5 +1043,4 @@ via `cat /run/secrets/caldavPass` in the vdirsyncer config.
 | Any tool: slow startup | Large cache/sync needed | Check `~/.cache/<tool>/` db size |
 | vdirsyncer: auth error | Password wrong or expired | Check `/run/secrets/caldavPass` |
 | todoman: `todo` not found | Not installed from nixpkgs | `programs.todoman.enable = true` installs it |
-| khal: no birthdays showing | khard source search not enabled | Ensure khal has `[[birthdays]] type = birthdays` pointing at `~/Contacts/` |
 | khal: manual .ics edits not reflected | khal cache is stale | Delete `~/.cache/khal/khal.db` to force a full rebuild |

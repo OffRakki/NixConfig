@@ -69,12 +69,6 @@ in
     color = light blue
     priority = 10
 
-    [[birthdays]]
-    path = ~/Contacts/
-    type = birthdays
-    color = dark magenta
-    priority = 15
-
     [[feriados]]
     path = ~/Calendars/feriados/
     color = dark green
