@@ -1124,5 +1124,20 @@ text/calendar = w3m -I UTF-8 -T text/html -cols 80 -o display_image=false -dump
 ## Dark styleset
 
 aerc supports `styleset-name` in `[ui]` config pointing to a file in
-`styleset-dirs`. File format is INI with `*.default`, `*.normal`, `*.selected`,
-etc. as keys and `fg:#hex`, `bg:#hex` as values.
+`styleset-dirs`. Format is `<object>.<attr> = <value>` or
+`<object>.selected.<attr> = <value>` for focused states. Object names come
+from the StyleNames map (`default`, `error`, `warning`, `success`, `title`,
+`msglist_unread`, `tab`, `border`, etc.) — use `*` for "all objects":
+
+```ini
+*.selected.fg = #ffffff
+*.selected.bg = #383838
+*.selected.bold = true
+*error.fg = #e06c75
+*warning.fg = #e5c07b
+*success.fg = #98c379
+```
+
+Valid attrs: `fg`, `bg`, `bold`, `blink`, `underline`, `reverse`, `italic`,
+`dim`, `default`, `normal`. Each line sets ONE attr at a time (no
+`fg=#xxx bg=#yyy` on one line).

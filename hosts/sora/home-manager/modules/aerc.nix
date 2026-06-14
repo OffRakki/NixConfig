@@ -188,12 +188,13 @@ AERCCONF
   '';
 
   xdg.configFile."aerc/stylesets/dark".text = ''
-    *.default = true
-    *.normal = fg:#c6c6c6 bg:#1c1c1c
-    *.selected = fg:#ffffff bg:#383838
-    *.error = fg:#e06c75
-    *.warning = fg:#e5c07b
-    *.success = fg:#98c379
+    *.selected.fg = #ffffff
+    *.selected.bg = #383838
+    *.selected.bold = true
+
+    *error.fg = #e06c75
+    *warning.fg = #e5c07b
+    *success.fg = #98c379
 
     title.reverse = true
 
