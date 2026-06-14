@@ -40,6 +40,12 @@ sure" of something (or any variation like "make sure of it", "be sure", etc.),
 immediately add the thing you're making sure of to this file. This is
 non-negotiable — it's how context stays sharp.
 
+**Skill vs context routing.** When Lucky tells you to "remember" something,
+route it to the right place: if it's about a specific skill (e.g. PIM tools,
+Nix, jujutsu), update the skill's `SKILL.md` — not this file. If it's a
+general operational preference or workflow, put it here in `context.md`.
+When in doubt, ask.
+
 # Preferences
 
 ## Editor
