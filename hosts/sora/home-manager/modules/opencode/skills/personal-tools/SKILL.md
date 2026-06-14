@@ -49,7 +49,7 @@ One file per item in a directory. Lucky's directories:
 ├── todos/            # Tasks (local only, not synced to Google)
 │   ├── task1.ics
 │   └── task2.ics
-~/Contacts/           # Google Contacts, also used as khal birthdays source
+~/Contacts/           # Google Contacts (synced via vdirsyncer)
 ├── john.vcf
 └── jane.vcf
 ```
@@ -90,8 +90,9 @@ never drift apart. When you operate on any piece of Lucky's agenda:
    exist in more than one tool? Do it in ALL relevant tools simultaneously.
    Don't leave one behind.
    - Example: an exam = event (khal) + todo (todo).
-   - Example: a contact's birthday (khard) should also appear as a birthday
-     event in khal (handled via birthdays calendar type).
+    - Example: a contact's birthday (khard) — Google Calendar creates VEVENT
+      birthday events automatically from contact BDAY fields and syncs them
+      down via vdirsyncer, so no khal birthdays calendar needed.
 3. **Sync after every write** — after any local change to events or contacts,
    run `vdirsyncer sync` immediately so Google Calendar/Contacts are up to date.
    Do not wait for the 30-minute timer.
