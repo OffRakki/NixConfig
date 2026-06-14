@@ -208,7 +208,6 @@ AERCCONF
     dirlist_unread.bold = true
 
     completion_pill.bg = #383838
-    completion_selected.bg = #264f78
 
     statusline_default.reverse = true
 
