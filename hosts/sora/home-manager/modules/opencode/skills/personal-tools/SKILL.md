@@ -71,6 +71,21 @@ khal (events) and todoman (tasks).
   `~/Calendars/feriados/`, `~/Contacts/`), not generic examples.
 - Lucky's email is offrakki@gmail.com, Google account is fernandomarques1505@gmail.com.
 
+## Unified Agenda (keep in sync)
+
+**khal, todo, and khard are a single unified personal agenda.** They must
+never drift apart. When you operate on any piece of Lucky's agenda:
+
+- **Creating**: if it belongs in more than one tool (e.g. an exam = event +
+  todo), create it in ALL relevant tools. Don't leave one behind.
+- **Editing**: if the same thing exists in multiple tools, edit ALL of them
+  with matching changes (title, date, time, etc.).
+- **Deleting**: same rule — delete from every tool that has it.
+
+There is no "primary" tool. Todos can become events, events can have
+associated todos, contacts can be linked to either. The only invariant is
+that they're consistent.
+
 ---
 
 # khal — Terminal Calendar
