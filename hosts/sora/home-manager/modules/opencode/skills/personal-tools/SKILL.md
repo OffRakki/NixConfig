@@ -1045,3 +1045,84 @@ via `cat /run/secrets/caldavPass` in the vdirsyncer config.
 | vdirsyncer: auth error | Password wrong or expired | Check `/run/secrets/caldavPass` |
 | todoman: `todo` not found | Not installed from nixpkgs | `programs.todoman.enable = true` installs it |
 | khal: manual .ics edits not reflected | khal cache is stale | Delete `~/.cache/khal/khal.db` to force a full rebuild |
+
+---
+
+# aerc — Terminal Email Client
+
+Lucky uses aerc with 3 Gmail accounts (Main, Personal, Work), reading from
+local Maildir via mbsync and sending via Gmail SMTP with OAuth2.
+
+## Architecture
+
+```
+Gmail IMAP  <--mbsync + OAuth2-->  local Maildir (~/Mail/)  <--aerc (maildir://)
+Gmail SMTP  <--aerc (smtps+xoauth2://) + OAuth2-->
+```
+
+## Setup quirks (Nix-managed)
+
+### cyrus_sasl outputs
+
+`${pkgs.cyrus_sasl}` defaults to the `bin` output — which has **no** `lib/sasl2/`
+plugins. Use `${pkgs.cyrus_sasl.out}` to get the plugins (anonymous, crammd5,
+digestmd5, gssapi, login, plain).
+
+### SASL_PATH for XOAUTH2
+
+mbsync needs `SASL_PATH` pointing to a merged directory containing both
+`cyrus_sasl.out/lib/sasl2/` and `cyrus-sasl-xoauth2/lib/sasl2/`. Use
+`symlinkJoin`:
+
+```nix
+sasl2Plugins = pkgs.symlinkJoin {
+  name = "sasl2";
+  paths = [
+    "${pkgs.cyrus_sasl.out}/lib/sasl2"
+    "${pkgs.cyrus-sasl-xoauth2}/lib/sasl2"
+  ];
+};
+```
+
+Set it in both `home.sessionVariables.SASL_PATH` AND the systemd service
+`Environment` for the mbsync timer.
+
+### aerc binds.conf replaces defaults
+
+**All-or-nothing per context**: defining any keys in a `[messages]` section
+wipes ALL default bindings for that context. You must include the full default
+binds.conf and override only the keys you want.
+
+Same applies to every context: `[view]`, `[compose]`, `[compose::editor]`,
+`[compose::review]`, `[terminal]`, and global (no-section) bindings. Any
+missing context = zero bindings.
+
+Full default binds.conf source: https://raw.githubusercontent.com/rjarry/aerc/master/config/binds.conf
+
+### mbsync + Gmail labels
+
+Use `Patterns * ! "[Gmail]/All Mail"` to auto-discover all Gmail labels
+(excluding the dupe-heavy archive folder). No need to list labels individually.
+
+## mbsync OAuth2 flow
+
+1. Token files (JSON with `refresh_token`, `client_id`, `client_secret`) stored
+   at `~/.config/aerc/tokens/<email>`
+2. `PassCmd` in mbsyncrc calls a Python script that exchanges the refresh token
+   for an access token via Google's OAuth2 endpoint
+3. Google OAuth app in Testing mode — email addresses added as test users
+
+## HTML email rendering
+
+Add `w3m` to packages and configure in `[filters]`:
+```ini
+[filters]
+text/html = w3m -I UTF-8 -T text/html -cols 80 -o display_image=false -dump
+text/calendar = w3m -I UTF-8 -T text/html -cols 80 -o display_image=false -dump
+```
+
+## Dark styleset
+
+aerc supports `styleset-name` in `[ui]` config pointing to a file in
+`styleset-dirs`. File format is INI with `*.default`, `*.normal`, `*.selected`,
+etc. as keys and `fg:#hex`, `bg:#hex` as values.
