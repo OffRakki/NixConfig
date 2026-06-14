@@ -27,7 +27,6 @@ in
     type = "filesystem"
     path = "~/Calendars/events/"
     fileext = ".ics"
-    item_filters = ["'BEGIN:VEVENT' in item.raw"]
 
     [storage personal_calendar_remote]
     type = "caldav"
@@ -104,9 +103,9 @@ in
 
   programs.todoman = {
     enable = true;
-    glob = "*";
     extraConfig = ''
-      default_list = "events"
+      path = "~/Calendars/todos/"
+      default_list = "todos"
       date_format = "%d/%m/%Y"
       time_format = "%H:%M"
       humanize = True
