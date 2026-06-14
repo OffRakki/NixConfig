@@ -73,7 +73,7 @@
       theme = {
         mode = "dark";
         source = "community";
-        builtin = "kanagawa_dragon";
+        builtin = "kanagawa-dragon";
         templates = {
           enable_builtin_templates = false;
           builtin_ids = [];
