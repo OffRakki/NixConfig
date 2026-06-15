@@ -308,8 +308,10 @@ AERCCONF
     G = :select -1<Enter>
 
     J = :next-folder<Enter>
+    <C-j> = :next-folder<Enter>
     <C-Down> = :next-folder<Enter>
     K = :prev-folder<Enter>
+    <C-k> = :prev-folder<Enter>
     <C-Up> = :prev-folder<Enter>
     H = :collapse-folder<Enter>
     <C-Left> = :collapse-folder<Enter>
