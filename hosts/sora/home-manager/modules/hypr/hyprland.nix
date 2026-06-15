@@ -64,7 +64,7 @@ in {
             left_handed = false,
             follow_mouse = 2,
             mouse_refocus = false,
-            float_switch_override_focus = true,
+            float_switch_override_focus = false,
             tablet = {
               transform = 0,
               left_handed = 0,
@@ -78,13 +78,13 @@ in {
             mouse_move_enables_dpms = true,
             enable_swallow = true,
             focus_on_activate = false,
-            initial_workspace_tracking = 2,
+            initial_workspace_tracking = 1,
             middle_click_paste = false,
           },
 
           binds = {
             workspace_back_and_forth = true,
-            allow_workspace_cycles = true,
+            allow_workspace_cycles = false,
             pass_mouse_when_bound = false
           },
 
