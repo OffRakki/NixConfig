@@ -92,10 +92,12 @@
     Channel ${a.name}
     Far :${a.name}-remote:
     Near :${a.name}-local:
-    Patterns * ! "[Gmail]/All Mail"
+    Patterns * ! "[[]Gmail]/All Mail"
+    ExpireUnread no
     Create Both
     Sync All
-    Expunge Both
+    Expunge None
+    MaxMessages 50
   '';
 
   mbsyncConf = lib.concatStringsSep "\n\n" (map mkMbsyncAccount accounts);
@@ -154,8 +156,8 @@ in {
         WantedBy = ["timers.target"];
       };
       Timer = {
-        OnBootSec = "5m";
-        OnUnitActiveSec = "15m";
+        OnBootSec = "2m";
+        OnUnitActiveSec = "5m";
         Persistent = true;
       };
     };
