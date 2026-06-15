@@ -55,6 +55,7 @@ in {
       nix = ./skills/nix;
       nix-refactor = ./skills/nix-refactor;
       personal-tools = ./skills/personal-tools;
+      seo = ./skills/seo;
     };
     tui = {
       theme = "kanagawa";

@@ -105,7 +105,7 @@ in {
     "Mail"
   ];
 
-  home.packages = with pkgs; [aerc isync cyrus-sasl-xoauth2 w3m];
+  home.packages = with pkgs; [aerc isync cyrus-sasl-xoauth2 w3m urlscan];
 
   home.sessionVariables.SASL_PATH = "${sasl2Plugins}";
 
@@ -329,6 +329,7 @@ AERCCONF
 
     <C-y> = :copy-link <space>
     <C-l> = :open-link <space>
+    u = :pipe -m urlscan<Enter>
 
     f = :forward<Enter>
     rr = :reply -a<Enter>
