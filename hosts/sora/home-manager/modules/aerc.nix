@@ -189,34 +189,41 @@ AERCCONF
   '';
 
   xdg.configFile."aerc/stylesets/dark".text = ''
+    *.selected.bg = #2d5c8a
     *.selected.fg = #ffffff
-    *.selected.bg = #383838
     *.selected.bold = true
 
-    *error.fg = #e06c75
-    *warning.fg = #e5c07b
-    *success.fg = #98c379
+    *error.fg = #f44747
+    *warning.fg = #cca700
+    *success.fg = #6a9955
 
-    title.reverse = true
+    title.fg = #ffffff
+    title.bold = true
+    header.fg = #4fc1ff
+    header.bold = true
 
+    msglist_unread.fg = #ffffff
     msglist_unread.bold = true
-    msglist_flagged.fg = #e06c75
-    msglist_deleted.fg = #5c6370
-    msglist_marked.fg = #98c379
-    msglist_result.fg = #61afef
+    msglist_flagged.fg = #ffcc00
+    msglist_flagged.bold = true
+    msglist_deleted.fg = #808080
+    msglist_marked.fg = #6a9955
+    msglist_marked.bold = true
+    msglist_result.fg = #4fc1ff
 
-    dirlist_default.fg = #abb2bf
     dirlist_unread.bold = true
 
-    completion_pill.bg = #383838
+    completion_pill.bg = #2d5c8a
+    completion_pill.fg = #ffffff
+    completion_default.fg = #d4d4d4
 
-    statusline_default.reverse = true
+    statusline_default.bg = #2d5c8a
+    statusline_default.fg = #ffffff
 
-    tab.reverse = true
-    tab.selected.fg = #61afef
+    tab.selected.fg = #4fc1ff
     tab.selected.bold = true
 
-    border.reverse = true
+    border.fg = #555555
   '';
 
   xdg.configFile."aerc/binds.conf".text = ''
