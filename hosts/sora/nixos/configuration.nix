@@ -114,10 +114,10 @@
     };
   };
 
-  sops.templates."opencode.env" = {
+  sops.templates."opencode-openai-key" = {
     owner = "rakki";
     content = ''
-      OPENAI_API_KEY=${config.sops.placeholder.openaiApiKey}
+      ${config.sops.placeholder.openaiApiKey}
     '';
   };
 
