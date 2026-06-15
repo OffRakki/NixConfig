@@ -14,7 +14,7 @@
       shell = {
         ui_scale = 1;
         corner_radius_scale = 0.75;
-        font_family = "sans-serif";
+        font_family = "JetBrainsMono Nerd Font Mono";
         font_weight = "bold";
         time_format = "{:%H:%M}";
         date_format = "%A, %x";
@@ -73,7 +73,7 @@
       theme = {
         mode = "dark";
         source = "community";
-        builtin = "kanagawa-dragon";
+        builtin = "kanagawa_paper";
         templates = {
           enable_builtin_templates = false;
           builtin_ids = [];
