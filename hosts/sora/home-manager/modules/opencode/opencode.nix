@@ -61,6 +61,7 @@ in {
     };
     agents = {
       image-analyzer = ./agents/image-analyzer/image-analyzer.md;
+      audio-analyzer = ./agents/audio-analyzer/audio-analyzer.md;
     };
     tui = {
       theme = "kanagawa";
