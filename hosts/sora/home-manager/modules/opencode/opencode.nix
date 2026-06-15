@@ -52,6 +52,7 @@ in {
     enable = true;
     context = ./context.md;
     skills = {
+      invest = ./skills/invest;
       jujutsu = ./skills/jujutsu;
       nix = ./skills/nix;
       nix-refactor = ./skills/nix-refactor;
