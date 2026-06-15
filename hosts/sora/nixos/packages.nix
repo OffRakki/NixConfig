@@ -10,6 +10,8 @@
     nix-output-monitor
     nvd
 
+    whisper-cpp
+
     # Secrets
     sops
     age
