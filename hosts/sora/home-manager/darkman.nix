@@ -1,0 +1,44 @@
+{ config, pkgs, ... }:
+let
+  inherit (pkgs) dconf gnused systemd hyprland;
+
+  darkGtk = "catppuccin-mocha-lavender-standard+normal";
+  lightGtk = "catppuccin-latte-lavender-standard+normal";
+  darkIcon = "Gruvbox-Plus-Dark";
+  lightIcon = "Gruvbox-Plus-Light";
+  darkCursor = "catppuccin-mocha-peach-cursors";
+  lightCursor = "catppuccin-latte-lavender-cursors";
+  cursorSize = "24";
+
+  xsettingsd = "${config.xdg.configHome}/xsettingsd/xsettingsd.conf";
+
+  common = scheme: gtk: icon: cursor: ''
+    ${dconf}/bin/dconf write /org/gnome/desktop/interface/color-scheme "'${scheme}'"
+    ${dconf}/bin/dconf write /org/gnome/desktop/interface/gtk-theme "'${gtk}'"
+    ${dconf}/bin/dconf write /org/gnome/desktop/interface/icon-theme "'${icon}'"
+    ${dconf}/bin/dconf write /org/gnome/desktop/interface/cursor-theme "'${cursor}'"
+
+    ${gnused}/bin/sed -i "s/Net\/ThemeName.*/Net\/ThemeName \"${gtk}\"/" "${xsettingsd}"
+    ${gnused}/bin/sed -i "s/Net\/IconThemeName.*/Net\/IconThemeName \"${icon}\"/" "${xsettingsd}"
+    ${gnused}/bin/sed -i "s/Gtk\/CursorThemeName.*/Gtk\/CursorThemeName \"${cursor}\"/" "${xsettingsd}"
+    ${systemd}/bin/systemctl --user restart xsettingsd
+
+    ${systemd}/bin/systemctl --user set-environment GTK_THEME="${gtk}"
+    ${systemd}/bin/systemctl --user set-environment HYPRCURSOR_THEME="${cursor}"
+
+    ${hyprland}/bin/hyprctl setcursor "${cursor}" "${cursorSize}" 2>/dev/null || true
+  '';
+in {
+  services.darkman = {
+    enable = true;
+    settings = {
+      usegeoclue = true;
+    };
+    lightModeScripts = {
+      light = common "prefer-light" lightGtk lightIcon lightCursor;
+    };
+    darkModeScripts = {
+      dark = common "prefer-dark" darkGtk darkIcon darkCursor;
+    };
+  };
+}

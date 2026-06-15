@@ -382,6 +382,8 @@
 
     blueman.enable = true;
 
+    geoclue2.enable = true;
+
     fwupd.enable = true;
 
     upower.enable = true;

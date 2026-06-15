@@ -12,7 +12,7 @@
       pkgs.marksman
     ];
     settings = {
-      theme = "kanagawa";
+      theme = "kaolin-valley-dark";
       editor = {
         cursorline = true;
         soft-wrap.enable = true;
@@ -74,7 +74,7 @@
     };
     themes = {
       catppuccin_mocha = {
-        "inherits" = "kanagawa";
+        "inherits" = "kaolin-valley-dark";
         "ui.background" = {};
       };
     };
