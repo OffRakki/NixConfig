@@ -1,5 +1,6 @@
 {pkgs, ...}: {
   home.packages = with pkgs; [
+    gnome-sound-recorder
     quickshell
     kdePackages.qttools
     lm_sensors
