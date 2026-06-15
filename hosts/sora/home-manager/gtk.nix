@@ -24,7 +24,7 @@
       };
     };
     font = {
-      name = "FiraSans";
+      name = "JetBrainsMono Nerd Font Mono";
       size = 12;
     };
     gtk3 = {

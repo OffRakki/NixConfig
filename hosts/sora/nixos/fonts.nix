@@ -29,9 +29,9 @@
     fontconfig = {
       enable = true;
       defaultFonts = {
-        serif = ["Noto Serif"];
-        sansSerif = ["Noto Sans"];
-        monospace = ["JetBrainsMono"];
+        serif = ["JetBrainsMono Nerd Font Mono"];
+        sansSerif = ["JetBrainsMono Nerd Font Mono"];
+        monospace = ["JetBrainsMono Nerd Font Mono"];
       };
     };
   };
