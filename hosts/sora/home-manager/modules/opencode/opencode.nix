@@ -1,9 +1,12 @@
 {
   config,
   pkgs,
+  osConfig,
   ...
 }: let
+  sopsEnv = osConfig.sops.templates."opencode.env".path;
   attachScript = pkgs.writeShellScript "opencode-attach" ''
+    . ${sopsEnv}
     OPENCODE_SERVER_PASSWORD=$(cat /run/secrets/opencodeServerPassword) \
       OPENCODE_SERVER_USERNAME=rakki \
       exec ${pkgs.opencode}/bin/opencode attach http://localhost:4096
@@ -38,6 +41,7 @@ in {
     Service = {
       Type = "simple";
       Environment = "OPENCODE_SERVER_USERNAME=rakki";
+      EnvironmentFile = sopsEnv;
       ExecStart = "${pkgs.bash}/bin/bash -c 'OPENCODE_SERVER_PASSWORD=$(cat /run/secrets/opencodeServerPassword) exec ${pkgs.opencode}/bin/opencode serve --hostname 0.0.0.0 --port 4096'";
       Restart = "on-failure";
       RestartSec = "5";
@@ -92,7 +96,7 @@ in {
           name = "OpenAI";
           npm = "@ai-sdk/openai";
           options = {
-            apiKey = "{file:/run/secrets/openaiApiKey}";
+            apiKey = "{env:OPENAI_API_KEY}";
           };
           models = {
             "gpt-4o-mini" = {

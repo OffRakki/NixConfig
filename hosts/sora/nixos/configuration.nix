@@ -114,6 +114,13 @@
     };
   };
 
+  sops.templates."opencode.env" = {
+    owner = "rakki";
+    content = ''
+      OPENAI_API_KEY=${config.sops.placeholder.openaiApiKey}
+    '';
+  };
+
   sops.templates."rclone-onedrive.conf" = {
     owner = "rakki";
     content = ''
