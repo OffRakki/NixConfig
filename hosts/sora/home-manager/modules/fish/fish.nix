@@ -14,9 +14,6 @@
         zoxide init fish --cmd cd | source
         fastfetch
 
-        set -x OPENCODE_SERVER_PASSWORD (cat /run/secrets/opencodeServerPassword)
-        set -x OPENCODE_SERVER_USERNAME rakki
-
         set fish_cursor_default     block      blink
         set fish_cursor_insert      line       blink
         set fish_cursor_replace_one underscore blink

@@ -69,10 +69,9 @@ this, do NOT set a timeout — let it default (or omit it entirely). The `&`
 detaches the process and it returns immediately anyway, and a short timeout
 just generates a confusing warning in the output.
 
-**Bash tool doesn't inherit desktop env vars.** Before running kitty, pull
-DISPLAY and WAYLAND_DISPLAY from systemd's user session:
+**Bash tool inherits desktop env vars just fine.** `DISPLAY` and
+`WAYLAND_DISPLAY` are already available — no need to pull them from systemd.
 
-export $(systemctl --user show-environment | grep -E '^(DISPLAY|WAYLAND_DISPLAY)=' | xargs)
 kitty --directory <workdir> -e sh -c '<cmd> || exec bash' &
 
 ## Version Control
@@ -121,6 +120,12 @@ jj bookmark move master --to '@' && jj git export
 
 **Never run `nix flake update`.** If you add a new input to `flake.nix`,
 always use `nix flake lock` instead to pin it to a specific version.
+
+## Task agents
+
+Always use the specialized Task subagent if one exists for a given type of
+work (audio-analyzer, explore, etc.). Don't try to DIY it with raw tool calls
+when a purpose-built agent is available — it'll do a better job and save steps.
 
 # Operator
 

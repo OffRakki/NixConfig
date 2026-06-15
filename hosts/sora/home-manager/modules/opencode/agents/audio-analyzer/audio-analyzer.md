@@ -4,7 +4,7 @@ mode: subagent
 model: openai/gpt-4o-mini
 permission:
   edit: deny
-  bash: ask
+  bash: allow
   webfetch: deny
 ---
 You are an audio analysis specialist supporting English and Brazilian Portuguese.

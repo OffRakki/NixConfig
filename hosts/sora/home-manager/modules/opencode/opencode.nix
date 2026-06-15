@@ -4,9 +4,8 @@
   osConfig,
   ...
 }: let
-  openaiKeyPath = osConfig.sops.templates."opencode-openai-key".path;
   attachScript = pkgs.writeShellScript "opencode-attach" ''
-    OPENCODE_SERVER_PASSWORD=$(cat /run/secrets/opencodeServerPassword) \
+    OPENCODE_SERVER_PASSWORD=$(cat ${osConfig.sops.secrets.opencodeServerPass.path}) \
       OPENCODE_SERVER_USERNAME=rakki \
       exec ${pkgs.opencode}/bin/opencode attach http://localhost:4096
   '';
@@ -40,7 +39,7 @@ in {
     Service = {
       Type = "simple";
       Environment = "OPENCODE_SERVER_USERNAME=rakki";
-      ExecStart = "${pkgs.bash}/bin/bash -c 'OPENCODE_SERVER_PASSWORD=$(cat /run/secrets/opencodeServerPassword) exec ${pkgs.opencode}/bin/opencode serve --hostname 0.0.0.0 --port 4096'";
+      ExecStart = "${pkgs.bash}/bin/bash -c 'OPENCODE_SERVER_PASSWORD=$(cat ${osConfig.sops.secrets.opencodeServerPass.path}) exec ${pkgs.opencode}/bin/opencode serve --hostname 0.0.0.0 --port 4096'";
       Restart = "on-failure";
       RestartSec = "5";
     };
@@ -64,7 +63,7 @@ in {
       audio-analyzer = ./agents/audio-analyzer/audio-analyzer.md;
     };
     tui = {
-      theme = "kanagawa";
+      theme = "vesper";
       keybinds = {
         editor_open = "alt+e";
       };
@@ -75,19 +74,20 @@ in {
       model = "deepseek/deepseek-v4-flash";
       provider = {
         deepseek = {
+          name = "DeepSeek";
+          npm = "@ai-sdk/openai-compatible";
           options = {
-            apiKey = "{file:/run/secrets/deepseekApiKey}";
+            apiKey = "{file:${osConfig.sops.secrets.deepseekApiKey.path}}";
+            baseURL = "https://api.deepseek.com/v1";
           };
           models = {
             "deepseek-v4-flash" = {
-              options = {
-                reasoningEffort = "high";
-              };
+              name = "DeepSeek V4 Flash";
+              supportsTools = true;
             };
             "deepseek-v4-pro" = {
-              options = {
-                reasoningEffort = "high";
-              };
+              name = "DeepSeek V4 Pro";
+              supportsTools = true;
             };
           };
         };
@@ -95,7 +95,7 @@ in {
           name = "OpenAI";
           npm = "@ai-sdk/openai";
           options = {
-            apiKey = "{file:${openaiKeyPath}}";
+            apiKey = "{file:${osConfig.sops.secrets.openaiApiKey.path}}";
           };
           models = {
             "gpt-4o-mini" = {
@@ -104,24 +104,6 @@ in {
             };
             "gpt-5.4-mini" = {
               name = "GPT-5.4 Mini";
-              supportsTools = true;
-            };
-          };
-        };
-        ollama = {
-          name = "Ollama";
-          npm = "@ai-sdk/openai-compatible";
-          options = {
-            baseURL = "http://localhost:11434/v1";
-          };
-          models = {
-            # Closest to GPT-4 logic
-            "mistral-small:22b-instruct-2409-q4_K_M" = {
-              name = "Mistral Small 24B (Smartest)";
-              supportsTools = true;
-            };
-            "llama3.1" = {
-              name = "llama 3.1 8B";
               supportsTools = true;
             };
           };
