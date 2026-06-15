@@ -57,6 +57,9 @@ in {
       personal-tools = ./skills/personal-tools;
       seo = ./skills/seo;
     };
+    agents = {
+      image-analyzer = ./agents/image-analyzer;
+    };
     tui = {
       theme = "kanagawa";
       keybinds = {
@@ -82,6 +85,23 @@ in {
               options = {
                 reasoningEffort = "high";
               };
+            };
+          };
+        };
+        openai = {
+          name = "OpenAI";
+          npm = "@ai-sdk/openai";
+          options = {
+            apiKey = "{file:/run/secrets/openaiApiKey}";
+          };
+          models = {
+            "gpt-4o-mini" = {
+              name = "GPT-4o Mini";
+              supportsTools = true;
+            };
+            "gpt-5.4-mini" = {
+              name = "GPT-5.4 Mini";
+              supportsTools = true;
             };
           };
         };

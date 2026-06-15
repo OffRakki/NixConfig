@@ -105,7 +105,7 @@ in {
     "Mail"
   ];
 
-  home.packages = with pkgs; [aerc isync cyrus-sasl-xoauth2 w3m urlscan];
+  home.packages = with pkgs; [aerc isync cyrus-sasl-xoauth2 w3m urlscan imv];
 
   home.sessionVariables.SASL_PATH = "${sasl2Plugins}";
 
@@ -126,12 +126,12 @@ in {
   };
 
   home.activation.setupMailDirs = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    mkdir -p "${config.home.homeDirectory}/Mail"
-    ${lib.concatStringsSep "\n" (map (a: "mkdir -p ${maildir a.email}") accounts)}
-    mkdir -p "${config.xdg.configHome}/aerc"
-    (umask 077; cat > "${config.xdg.configHome}/aerc/accounts.conf") << 'AERCCONF'
-${accountsConf}
-AERCCONF
+        mkdir -p "${config.home.homeDirectory}/Mail"
+        ${lib.concatStringsSep "\n" (map (a: "mkdir -p ${maildir a.email}") accounts)}
+        mkdir -p "${config.xdg.configHome}/aerc"
+        (umask 077; cat > "${config.xdg.configHome}/aerc/accounts.conf") << 'AERCCONF'
+    ${accountsConf}
+    AERCCONF
   '';
 
   home.file.".mbsyncrc".text = mbsyncConf;
@@ -186,6 +186,10 @@ AERCCONF
     text/plain = colorize
     text/html = ${pkgs.w3m}/bin/w3m -I UTF-8 -T text/html -cols 80 -o display_image=false -dump
     text/calendar = ${pkgs.w3m}/bin/w3m -I UTF-8 -T text/html -cols 80 -o display_image=false -dump
+
+    [openers]
+    image/* = ${pkgs.imv}/bin/imv %s
+    application/* = xdg-open %s
   '';
 
   xdg.configFile."aerc/stylesets/dark".text = ''
@@ -229,48 +233,48 @@ AERCCONF
   xdg.configFile."urlscan/config.json".text = builtins.toJSON {
     palettes = {
       dark = [
-        [ "header" "white" "dark blue" "standout" "#ffffff" "#2d5c8a" ]
-        [ "footer" "white" "dark blue" "standout" "#ffffff" "#2d5c8a" ]
-        [ "search" "white" "dark green" "standout" "#ffffff" "#6a9955" ]
-        [ "msgtext" "" "" "" "#d4d4d4" "#1c1c1c" ]
-        [ "msgtext:ellipses" "light gray" "black" "" "#aaaaaa" "#1c1c1c" ]
-        [ "urlref:number:braces" "light gray" "black" "" "#aaaaaa" "#1c1c1c" ]
-        [ "urlref:number" "yellow" "black" "standout" "#ffcc00" "#1c1c1c" ]
-        [ "urlref:url" "white" "black" "standout" "#4fc1ff" "#1c1c1c" ]
-        [ "url:sel" "white" "dark blue" "bold" "#ffffff" "#2d5c8a" ]
+        ["header" "white" "dark blue" "standout" "#ffffff" "#2d5c8a"]
+        ["footer" "white" "dark blue" "standout" "#ffffff" "#2d5c8a"]
+        ["search" "white" "dark green" "standout" "#ffffff" "#6a9955"]
+        ["msgtext" "" "" "" "#d4d4d4" "#1c1c1c"]
+        ["msgtext:ellipses" "light gray" "black" "" "#aaaaaa" "#1c1c1c"]
+        ["urlref:number:braces" "light gray" "black" "" "#aaaaaa" "#1c1c1c"]
+        ["urlref:number" "yellow" "black" "standout" "#ffcc00" "#1c1c1c"]
+        ["urlref:url" "white" "black" "standout" "#4fc1ff" "#1c1c1c"]
+        ["url:sel" "white" "dark blue" "bold" "#ffffff" "#2d5c8a"]
       ];
       default = [
-        [ "header" "white" "dark blue" "standout" "#ffffff" "#0000aa" ]
-        [ "footer" "white" "dark red" "standout" "#ffffff" "#aa0000" ]
-        [ "search" "white" "dark green" "standout" "#ffffff" "#00aa00" ]
-        [ "msgtext" "" "" "" "" "" ]
-        [ "msgtext:ellipses" "light gray" "black" "" "#aaaaaa" "#000000" ]
-        [ "urlref:number:braces" "light gray" "black" "" "#aaaaaa" "#000000" ]
-        [ "urlref:number" "yellow" "black" "standout" "#ffff00" "#000000" ]
-        [ "urlref:url" "white" "black" "standout" "#ffffff" "#000000" ]
-        [ "url:sel" "white" "dark blue" "bold" "#ffffff" "#0000aa" ]
+        ["header" "white" "dark blue" "standout" "#ffffff" "#0000aa"]
+        ["footer" "white" "dark red" "standout" "#ffffff" "#aa0000"]
+        ["search" "white" "dark green" "standout" "#ffffff" "#00aa00"]
+        ["msgtext" "" "" "" "" ""]
+        ["msgtext:ellipses" "light gray" "black" "" "#aaaaaa" "#000000"]
+        ["urlref:number:braces" "light gray" "black" "" "#aaaaaa" "#000000"]
+        ["urlref:number" "yellow" "black" "standout" "#ffff00" "#000000"]
+        ["urlref:url" "white" "black" "standout" "#ffffff" "#000000"]
+        ["url:sel" "white" "dark blue" "bold" "#ffffff" "#0000aa"]
       ];
       bw = [
-        [ "header" "black" "light gray" "standout" "#000000" "#aaaaaa" ]
-        [ "footer" "black" "light gray" "standout" "#000000" "#aaaaaa" ]
-        [ "search" "black" "light gray" "standout" "#000000" "#aaaaaa" ]
-        [ "msgtext" "" "" "" "" "" ]
-        [ "msgtext:ellipses" "white" "black" "" "#ffffff" "#000000" ]
-        [ "urlref:number:braces" "white" "black" "" "#ffffff" "#000000" ]
-        [ "urlref:number" "white" "black" "standout" "#ffffff" "#000000" ]
-        [ "urlref:url" "white" "black" "standout" "#ffffff" "#000000" ]
-        [ "url:sel" "black" "light gray" "bold" "#000000" "#aaaaaa" ]
+        ["header" "black" "light gray" "standout" "#000000" "#aaaaaa"]
+        ["footer" "black" "light gray" "standout" "#000000" "#aaaaaa"]
+        ["search" "black" "light gray" "standout" "#000000" "#aaaaaa"]
+        ["msgtext" "" "" "" "" ""]
+        ["msgtext:ellipses" "white" "black" "" "#ffffff" "#000000"]
+        ["urlref:number:braces" "white" "black" "" "#ffffff" "#000000"]
+        ["urlref:number" "white" "black" "standout" "#ffffff" "#000000"]
+        ["urlref:url" "white" "black" "standout" "#ffffff" "#000000"]
+        ["url:sel" "black" "light gray" "bold" "#000000" "#aaaaaa"]
       ];
       catppuccin = [
-        [ "header" "white" "dark blue" "standout" "#CDD6F4" "#89B4FA" ]
-        [ "footer" "white" "dark red" "standout" "#CDD6F4" "#F38BA8" ]
-        [ "search" "white" "dark green" "standout" "#CDD6F4" "#A6E3A1" ]
-        [ "msgtext" "" "" "" "#CDD6F4" "#1E1E2E" ]
-        [ "msgtext:ellipses" "light gray" "black" "" "#B4BEFE" "#1E1E2E" ]
-        [ "urlref:number:braces" "light gray" "black" "" "#B4BEFE" "#1E1E2E" ]
-        [ "urlref:number" "yellow" "black" "standout" "#F9E2AF" "#1E1E2E" ]
-        [ "urlref:url" "white" "black" "standout" "#CBA6F7" "#1E1E2E" ]
-        [ "url:sel" "white" "dark blue" "bold" "#F5E0DC" "#313244" ]
+        ["header" "white" "dark blue" "standout" "#CDD6F4" "#89B4FA"]
+        ["footer" "white" "dark red" "standout" "#CDD6F4" "#F38BA8"]
+        ["search" "white" "dark green" "standout" "#CDD6F4" "#A6E3A1"]
+        ["msgtext" "" "" "" "#CDD6F4" "#1E1E2E"]
+        ["msgtext:ellipses" "light gray" "black" "" "#B4BEFE" "#1E1E2E"]
+        ["urlref:number:braces" "light gray" "black" "" "#B4BEFE" "#1E1E2E"]
+        ["urlref:number" "yellow" "black" "standout" "#F9E2AF" "#1E1E2E"]
+        ["urlref:url" "white" "black" "standout" "#CBA6F7" "#1E1E2E"]
+        ["url:sel" "white" "dark blue" "bold" "#F5E0DC" "#313244"]
       ];
     };
   };

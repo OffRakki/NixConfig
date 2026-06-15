@@ -101,6 +101,10 @@
       owner = "rakki";
     };
 
+    secrets.openaiApiKey = {
+      owner = "rakki";
+    };
+
     secrets.opencodeServerPassword = {
       owner = "rakki";
     };
