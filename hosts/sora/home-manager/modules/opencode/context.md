@@ -46,12 +46,45 @@ Nix, jujutsu), update the skill's `SKILL.md` — not this file. If it's a
 general operational preference or workflow, put it here in `context.md`.
 When in doubt, ask.
 
+## Nix-managed dotfiles
+
+**Never edit files under `~/.config/` that are managed by Nix.** If a file is
+declared in the Nix flake (e.g. via `home.file`, `xdg.configFile`,
+`programs.*.config`, or `home-manager` modules), editing the symlinked copy
+under `~/.config/` is pointless — the change will be overwritten on the next
+rebuild.
+
+Instead, locate the Nix source under `~/Documents/NixConfig/` and edit that.
+If unsure whether a file is Nix-managed, check if it's a symlink into the Nix
+store (`readlink -f ~/.config/<file>` should show a `/nix/store/...` path).
+
+## Nix builds
+
+Do **not** run `nh os switch` or `nh os build` without a flake path. Always
+pass the full path as the last positional argument:
+
+- Build first (no sudo): `nixos-rebuild build --flake /home/rakki/Documents/NixConfig`
+- Apply: `kitty --directory /home/rakki/Documents/NixConfig -e sh -c 'nh os switch /home/rakki/Documents/NixConfig || exec bash' &`
+
+`nh` does not auto-detect the flake from the working directory.
+
+Before building, sync jj state into git refs so the flake can see new commits:
+
+```
+jj bookmark move master --to '@' && jj git export
+```
+
+## Nix flake management
+
+**Never run `nix flake update`.** If you add a new input to `flake.nix`,
+always use `nix flake lock` instead to pin it to a specific version.
+
+
 # Preferences
 
 ## Editor
 
-Edits in **Helix** (`hx`). The opencode prompt can be popped into `$EDITOR`
-via `alt+e` (`editor_open` in tui.json).
+Edits in **Helix** (`hx`).
 
 ## Terminal
 
@@ -87,39 +120,6 @@ When working in a jj repo:
    `jj new` so `@` is always a fresh empty commit at rest.
 - **Clean up empty commits**: If you still accumulate empty, descriptionless commits (`jj log -r 'empty() & mine() & ~@'`), abandon them with `jj abandon --restore-descendants -r 'all:<revset>'` — they have no diff and serve no purpose.
 - **`jj git export` is only for non-co-located repos.** Don't reach for it to "make Git see new files" — in a co-located workspace (`.jj/` + `.git/` in the same directory) the export is automatic. `jj new` is the correct way to create a commit. Never use `jj git export` as a substitute.
-
-## Nix-managed dotfiles
-
-**Never edit files under `~/.config/` that are managed by Nix.** If a file is
-declared in the Nix flake (e.g. via `home.file`, `xdg.configFile`,
-`programs.*.config`, or `home-manager` modules), editing the symlinked copy
-under `~/.config/` is pointless — the change will be overwritten on the next
-rebuild.
-
-Instead, locate the Nix source under `~/Documents/NixConfig/` and edit that.
-If unsure whether a file is Nix-managed, check if it's a symlink into the Nix
-store (`readlink -f ~/.config/<file>` should show a `/nix/store/...` path).
-
-## Nix builds
-
-Do **not** run `nh os switch` or `nh os build` without a flake path. Always
-pass the full path as the last positional argument:
-
-- Build first (no sudo): `nixos-rebuild build --flake /home/rakki/Documents/NixConfig`
-- Apply: `kitty --directory /home/rakki/Documents/NixConfig -e sh -c 'nh os switch /home/rakki/Documents/NixConfig || exec bash' &`
-
-`nh` does not auto-detect the flake from the working directory.
-
-Before building, sync jj state into git refs so the flake can see new commits:
-
-```
-jj bookmark move master --to '@' && jj git export
-```
-
-## Nix flake management
-
-**Never run `nix flake update`.** If you add a new input to `flake.nix`,
-always use `nix flake lock` instead to pin it to a specific version.
 
 ## Task agents
 

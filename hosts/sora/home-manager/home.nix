@@ -11,6 +11,7 @@
     ./modules
     ./home-packages.nix
     ./gtk.nix
+    ./darkman.nix
     ./qt.nix
     ./xdg-portals.nix
     ./persistence.nix
@@ -39,7 +40,7 @@
 
   dconf.settings = {
     "org/gnome/desktop/interface" = {
-      color-scheme = "prefer-dark";
+      color-scheme = "default";
     };
   };
 
