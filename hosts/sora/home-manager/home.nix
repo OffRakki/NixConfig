@@ -1,6 +1,7 @@
 {
   inputs,
   lib,
+  osConfig,
   ...
 }: {
   imports = [
@@ -23,7 +24,8 @@
     homeDirectory = "/home/rakki";
     sessionVariables = {
       NH_FLAKE = "$HOME/Documents/NixConfig";
-
+      OPENCODE_SERVER_PASSWORD = "$(cat ${osConfig.sops.secrets.opencodeServerPass.path})";
+      OPENCODE_SERVER_USERNAME = "rakki";
     };
     persistence."/persist".directories = [
       "Documents"

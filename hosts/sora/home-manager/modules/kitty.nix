@@ -4,7 +4,7 @@
   ...
 }: {
   programs.kitty = {
-    themeFile = "kanagawabones";
+    themeFile = "vague";
     enable = true;
     shellIntegration.enableFishIntegration = true;
     enableGitIntegration = true;

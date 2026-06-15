@@ -107,10 +107,24 @@ never drift apart. When you operate on any piece of Lucky's agenda:
 - **Editing**: if the same thing exists in multiple tools, edit ALL of them
   with matching changes (title, date, time, etc.).
 - **Deleting**: same rule — delete from every tool that has it.
+- **Completing**: marking a todo as done means removing the paired calendar
+  event too. A done todo with a lingering event is drift — nuke the event.
 
 There is no "primary" tool. Todos can become events, events can have
 associated todos, contacts can be linked to either. The only invariant is
 that they're consistent.
+
+### Deleting a khal event non-interactively
+
+khal has no non-interactive delete, so do it by hand:
+
+```bash
+grep -rl "Event Title" ~/Calendars/events/
+rm ~/Calendars/events/<uid>.ics
+rm -f ~/.cache/khal/khal.db
+```
+
+The cache clear is required — khal won't notice the missing file otherwise.
 
 ---
 

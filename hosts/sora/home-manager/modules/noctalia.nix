@@ -305,6 +305,9 @@
           tooltip_format = "{:%A, %B %d, %Y}";
           scale = 1;
         };
+        tray = {
+          drawer = true;
+        };
       };
     };
   };

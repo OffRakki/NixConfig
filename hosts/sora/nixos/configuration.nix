@@ -105,20 +105,13 @@
       owner = "rakki";
     };
 
-    secrets.opencodeServerPassword = {
+    secrets.opencodeServerPass = {
       owner = "rakki";
     };
 
     secrets.caldavPass = {
       owner = "rakki";
     };
-  };
-
-  sops.templates."opencode-openai-key" = {
-    owner = "rakki";
-    content = ''
-      ${config.sops.placeholder.openaiApiKey}
-    '';
   };
 
   sops.templates."rclone-onedrive.conf" = {
