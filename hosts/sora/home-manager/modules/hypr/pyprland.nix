@@ -7,15 +7,12 @@ in {
   xdg.configFile."pypr/config.toml".source = (pkgs.formats.toml {}).generate "pyprland-config" {
     pyprland.plugins = [
       "scratchpads"
-      "toggle_special"
       "lost_windows"
       "toggle_special"
       "shift_monitors"
       "toggle_dpms"
       "magnify"
       "expose"
-      "shift_monitors"
-      "workspaces_follow_focus"
       "fetch_client_menu"
     ];
 

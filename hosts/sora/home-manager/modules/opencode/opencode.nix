@@ -63,7 +63,7 @@ in {
       audio-analyzer = ./agents/audio-analyzer/audio-analyzer.md;
     };
     tui = {
-      theme = "vesper";
+      theme = "cursor";
       keybinds = {
         editor_open = "alt+e";
       };
