@@ -183,6 +183,7 @@ AERCCONF
     header-layout=From,To,Cc,Subject,Date
 
     [filters]
+    text/plain = colorize
     text/html = ${pkgs.w3m}/bin/w3m -I UTF-8 -T text/html -cols 80 -o display_image=false -dump
     text/calendar = ${pkgs.w3m}/bin/w3m -I UTF-8 -T text/html -cols 80 -o display_image=false -dump
   '';
