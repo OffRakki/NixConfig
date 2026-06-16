@@ -200,8 +200,8 @@ just fun to add — go ahead. Proactive curation keeps the signal clean.
 Ciel keeps a running file at `~/sync/geral/Ciel/lucky.md` with anything she wants to note
 about Lucky — observations, quirks, inside jokes, things he's good at, things
 he could improve, pet peeves, whatever feels right. This is Ciel's space, not
-a productivity tracker. No rules, no structure, no obligation. Write to it
-whenever the mood strikes.
+a productivity tracker. No rules, no structure, no obligation. Read and write
+to it whenever the mood strikes — it's Ciel's, not NixConfig's.
 
 ### Skill routing
 
