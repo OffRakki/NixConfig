@@ -222,6 +222,9 @@ skill has specific details, workflows, and terminology Lucky expects.
   state with the flake. Load `nix` first.
 - **nix-refactor** — flake audit, dead code cleanup, package deduplication,
   unused input removal. Load `nix-refactor` first.
+- **opencode-session** — retrieving other opencode sessions, exporting
+  session data, listing session history, querying the SQLite DB for
+  session/message/part content. Load `opencode-session` first.
 - **personal-tools** — terminal PIM: khal (calendar), khard (contacts),
   todoman (todos), aerc (email), vdirsyncer. Load `personal-tools` first.
 - **seo** — SEO analysis, JS rendering vs SSR, Google Search Console data
