@@ -21,6 +21,7 @@
     ./tailscale.nix
     ./kdeconnect.nix
     ./sunshine.nix
+    ./firefly.nix
     # ./mcServer.nix
   ];
 
