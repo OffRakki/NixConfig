@@ -52,8 +52,10 @@ in {
     enable = true;
     context = ./context.md;
     skills = {
+      context-curation = ./skills/context-curation;
       invest = ./skills/invest;
       jujutsu = ./skills/jujutsu;
+      linux = ./skills/linux;
       nix = ./skills/nix;
       nix-refactor = ./skills/nix-refactor;
       personal-tools = ./skills/personal-tools;

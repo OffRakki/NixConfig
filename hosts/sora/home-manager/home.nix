@@ -38,12 +38,6 @@
     ];
   };
 
-  dconf.settings = {
-    "org/gnome/desktop/interface" = {
-      color-scheme = "default";
-    };
-  };
-
   xdg = {
     mimeApps = {
       enable = true;

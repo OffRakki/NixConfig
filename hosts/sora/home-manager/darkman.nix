@@ -12,7 +12,7 @@ let
 
   xsettingsd = "${config.xdg.configHome}/xsettingsd/xsettingsd.conf";
 
-  common = scheme: gtk: icon: cursor: ''
+  common = scheme: gtk: icon: cursor: preferDark: ''
     ${dconf}/bin/dconf write /org/gnome/desktop/interface/color-scheme "'${scheme}'"
     ${dconf}/bin/dconf write /org/gnome/desktop/interface/gtk-theme "'${gtk}'"
     ${dconf}/bin/dconf write /org/gnome/desktop/interface/icon-theme "'${icon}'"
@@ -21,6 +21,7 @@ let
     ${gnused}/bin/sed -i "s/Net\/ThemeName.*/Net\/ThemeName \"${gtk}\"/" "${xsettingsd}"
     ${gnused}/bin/sed -i "s/Net\/IconThemeName.*/Net\/IconThemeName \"${icon}\"/" "${xsettingsd}"
     ${gnused}/bin/sed -i "s/Gtk\/CursorThemeName.*/Gtk\/CursorThemeName \"${cursor}\"/" "${xsettingsd}"
+    ${gnused}/bin/sed -i "s/Gtk\/PreferDarkTheme.*/Gtk\/PreferDarkTheme ${preferDark}/" "${xsettingsd}"
     ${systemd}/bin/systemctl --user restart xsettingsd
 
     ${systemd}/bin/systemctl --user set-environment GTK_THEME="${gtk}"
@@ -35,10 +36,10 @@ in {
       usegeoclue = true;
     };
     lightModeScripts = {
-      light = common "prefer-light" lightGtk lightIcon lightCursor;
+      light = common "prefer-light" lightGtk lightIcon lightCursor "0";
     };
     darkModeScripts = {
-      dark = common "prefer-dark" darkGtk darkIcon darkCursor;
+      dark = common "prefer-dark" darkGtk darkIcon darkCursor "1";
     };
   };
 }
