@@ -85,6 +85,7 @@
         jjsq = "jj squash -r";
         jjgp = "jj git push";
         jjl = "jj -r 'all()'";
+        jjdn = "jj describe && jj new";
 
         # nix
         ncg = "nix-collect-garbage";

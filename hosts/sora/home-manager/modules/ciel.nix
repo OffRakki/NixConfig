@@ -19,7 +19,7 @@ in {
   };
 
   systemd.user.timers.ciel-heartbeat = {
-    Unit.Description = "Ciel's periodic sentry";
+    Unit.Description = "Ciel's periodic heartbeat";
     Timer = {
       OnCalendar = "*:0/2";
       Persistent = true;
