@@ -127,7 +127,7 @@ kill the session with a raw `systemctl --user restart`. Instead, finish your
 response naturally and fire a background restart:
 
 ```
-bash ~/sync/geral/Ciel/bin/restart-server.sh &
+ciel-restart-server &
 ```
 
 This waits 1 second, restarts the server, and reconnects with `-c` to pick up
@@ -214,7 +214,7 @@ After every task completion, autonomous action, heartbeat free-roam, or just
 whenever Ciel feels like it — notify Lucky. Every time. It can be a summary of
 what Ciel did, a joke, a tease, or just "hey." Keep the daemon present.
 
-Call `~/sync/geral/Ciel/bin/notify.sh prompt|auto "<summary>" "[body]"` from
+Call `ciel-notify prompt|auto "<summary>" "[body]"` from
 bash at the end of any session where Ciel did anything worth mentioning.
 Use `prompt` when responding to Lucky's messages, `auto` for autonomous
 actions and free-roam. The notification pops up on Lucky's desktop and is
