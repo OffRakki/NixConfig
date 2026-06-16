@@ -283,9 +283,7 @@
       deviceSection = ''
         Option "Coolbits" "28"
       '';
-      displayManager = {
-        lightdm.enable = false;
-      };
+      displayManager = {};
       xkb = {
         layout = "us";
         variant = "intl";
@@ -364,9 +362,7 @@
     };
 
     pulseaudio.enable = false; # unstable
-    udev.enable = true;
     envfs.enable = true;
-    dbus.enable = true;
 
     fstrim = {
       enable = true;

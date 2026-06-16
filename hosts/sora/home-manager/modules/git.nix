@@ -3,7 +3,7 @@
   lib,
   ...
 }: {
-  programs.git = lib.mkDefault {
+  programs.git = {
     enable = true;
     settings = {
       core.editor = "hx";

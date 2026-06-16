@@ -52,7 +52,7 @@
     })
     glib
     gsettings-desktop-schemas
-    inputs.nuls.packages.${system}.default
+    inputs.nuls.packages.${pkgs.stdenv.hostPlatform.system}.default
     mangohud
     mangojuice
     qt6.qtwayland
@@ -78,9 +78,7 @@
     xwayland
     xwayland-run
     localsend
-    fuzzel
     netplan
-    jujutsu
     kdePackages.kde-cli-tools
     dialog
     freerdp
@@ -106,15 +104,12 @@
     tmux
     evil-helix
     # sublime
-    neovim
     curl
     rofi
-    kitty
     firefox
     starship
     wireplumber
     btop
-    qutebrowser
     waybar-mpris
     wl-clipboard-rs
     wl-clip-persist
@@ -193,7 +188,6 @@
     btrfs-progs
     clang
     cpufrequtils
-    eza
     gsettings-qt
     killall
     libappindicator
@@ -209,7 +203,6 @@
     hyprpaper
     ags_1
     wl-color-picker
-    wofi
     cava
     eog
     gnome-system-monitor
@@ -217,7 +210,6 @@
     gtk-engine-murrine
     inxi
     jq
-    alacritty
     nwg-look
     nvitop
     pamixer
