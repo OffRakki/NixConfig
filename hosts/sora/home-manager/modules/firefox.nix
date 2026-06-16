@@ -5,6 +5,10 @@
       #sidebar-panel-header {display: none;}
       #sidebar-header {display: none;}
     '';
+    "mozilla/firefox/Rakki/user.js".text = ''
+      pref("widget.content.allow-gtk-dark-theme", true);
+      pref("layout.css.prefers-color-scheme.content", 2);
+    '';
     "mozilla/firefox/profiles.ini".text = ''
       [Profile0]
       Name=Rakki

@@ -1,4 +1,4 @@
-{pkgs, ...}: {
+{ config, lib, pkgs, ... }: {
   home.sessionVariables = {
     ADW_DEBUG_COLOR_SCHEME = "default";
     GTK_THEME = "catppuccin-mocha-lavender-standard+normal";
@@ -55,11 +55,38 @@
     name = "catppuccin-mocha-peach-cursors";
     size = 24;
   };
-  services.xsettingsd = {
-    enable = true;
-    settings = {
-      "Net/ThemeName" = "catppuccin-mocha-lavender-standard+normal";
-      "Net/IconThemeName" = "Gruvbox-Plus-Dark";
+  home.activation = {
+    xsettingsdConfig = lib.hm.dag.entryAfter ["writeBoundary"] ''
+      if [ ! -f "${config.xdg.configHome}/xsettingsd/xsettingsd.conf" ]; then
+        mkdir -p "${config.xdg.configHome}/xsettingsd"
+        cat > "${config.xdg.configHome}/xsettingsd/xsettingsd.conf" << 'XSETTINGSEOF'
+Net/ThemeName "catppuccin-mocha-lavender-standard+normal"
+Net/IconThemeName "Gruvbox-Plus-Dark"
+Gtk/CursorThemeName "catppuccin-mocha-peach-cursors"
+Gtk/PreferDarkTheme 1
+Net/EnableEventSounds 1
+EnableInputFeedbackSounds 0
+Xft/Antialias 1
+Xft/Hinting 1
+Xft/HintStyle "hintslight"
+Xft/RGBA "rgb"
+XSETTINGSEOF
+      fi
+    '';
+  };
+
+  systemd.user.services.xsettingsd = {
+    Unit = {
+      Description = "xsettingsd";
+      After = [ "graphical-session-pre.target" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Service = {
+      ExecStart = "${pkgs.xsettingsd}/bin/xsettingsd -c ${config.xdg.configHome}/xsettingsd/xsettingsd.conf";
+      Restart = "on-abort";
+    };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
     };
   };
 }
