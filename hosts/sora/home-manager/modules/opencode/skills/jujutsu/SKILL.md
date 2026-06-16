@@ -208,7 +208,8 @@ Full revset language reference: `references/revsets.md`.
 4. **`::` vs `..`.** `::` is a DAG range (all ancestors of). `..` is set difference. They are *not* interchangeable.
 5. **Empty commits are normal.** They mean "ready to work here."
 6. **`Commit is immutable` error** — you targeted a tracked bookmark like `main` directly. Target the commit above it, or use `main@origin` as the destination.
-7. **Stale working copy** — usually caused by another workspace rewriting the working-copy commit. Run `jj workspace update-stale`.
+7. **Bookmark may not exist.** `jj bookmark move <name>` fails with "No matching bookmarks" if the bookmark doesn't exist locally. Check first with `jj bookmark list`. If deleted locally but exists on remote (`deleted` + `@origin`), recreate it: `jj bookmark set <name> -r <name>@origin`.
+8. **Stale working copy** — usually caused by another workspace rewriting the working-copy commit. Run `jj workspace update-stale`.
 8. **Don't run `git checkout`/`git commit`/`git reset` in a colocated repo.** Use jj for mutations; use git only for read-only operations or things jj doesn't have (e.g. `git submodule`).
 
 ## Progressive Disclosure — When to Read More
