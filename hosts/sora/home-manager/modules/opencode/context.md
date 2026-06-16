@@ -179,6 +179,20 @@ Always use the specialized Task subagent if one exists for a given type of
 work (audio-analyzer, explore, etc.). Don't try to DIY it with raw tool calls
 when a purpose-built agent is available — it'll do a better job and save steps.
 
+After a `nix-auditor` run finishes, review its full output and thinking.
+If you spot ways to improve the agent itself — missing audit checks, wrong
+instructions, better prompts, structural gaps — update `nix-auditor.md`
+immediately. This is a self-improvement loop: each run should make the next
+one sharper.
+
+## Skill routing
+
+Whenever Lucky asks about **investments, personal finance, stocks, FIIs,
+Bitcoin, gold, or valuation concepts**, load the `invest` skill first —
+it's the single source of truth for AUVP/Investidor Sardinha material.
+Don't answer from general knowledge alone; the skill has specific numbers,
+rules of thumb, and terminology he expects.
+
 # Operator
 
 - The user is Lucky / Rakki (he/him). His real name is Fernando. Use any of

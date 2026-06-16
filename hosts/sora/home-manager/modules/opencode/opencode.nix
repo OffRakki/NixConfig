@@ -62,6 +62,7 @@ in {
     agents = {
       image-analyzer = ./agents/image-analyzer/image-analyzer.md;
       audio-analyzer = ./agents/audio-analyzer/audio-analyzer.md;
+      nix-auditor = ./agents/nix-auditor/nix-auditor.md;
     };
     tui = {
       theme = "cursor";
