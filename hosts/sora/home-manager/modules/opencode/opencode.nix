@@ -65,6 +65,7 @@ in {
       personal-tools = ./skills/personal-tools;
       seo = ./skills/seo;
       screenshot = ./skills/screenshot;
+      firefly = ./skills/firefly;
     };
     agents = {
       image-analyzer = ./agents/image-analyzer/image-analyzer.md;
@@ -130,5 +131,21 @@ in {
     };
   };
 
-  home.packages = [ciel-notify ciel-restart-server];
+  home.packages = [
+    ciel-notify
+    ciel-restart-server
+    (pkgs.writeShellScriptBin "firefly-expenses" ''
+      export FIREFLY_TOKEN_PATH=${osConfig.sops.secrets.fireflyPat.path}
+      exec python3 ${./skills/firefly/scripts/expenses.py} "$@"
+    '')
+    (pkgs.writeShellScriptBin "firefly-api" ''
+      export FIREFLY_TOKEN_PATH=${osConfig.sops.secrets.fireflyPat.path}
+      exec python3 ${./skills/firefly/scripts/firefly_client.py} "$@"
+    '')
+    (pkgs.writeShellScriptBin "firefly-mp" ''
+      export MP_ACCESS_TOKEN_PATH=${osConfig.sops.secrets.mercadoPagoToken.path}
+      exec python3 ${./skills/firefly/scripts/mercado_pago.py} "$@"
+    '')
+
+  ];
 }

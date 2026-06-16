@@ -32,6 +32,18 @@
     group = "nginx";
   };
 
+  sops.secrets.fireflyPat = {
+    owner = "rakki";
+  };
+
+  sops.secrets.mercadoPagoToken = {
+    owner = "rakki";
+  };
+
+  # /var/lib owned by rakki (from /persist) blocks systemd-tmpfiles from
+  # creating nested subdirs for any service under /var/lib. Fix it upstream.
+  systemd.tmpfiles.rules = ["z /var/lib 0755 root root - -"];
+
   system.activationScripts.firefly-iii-dirs = {
     supportsDryActivation = true;
     text = ''
