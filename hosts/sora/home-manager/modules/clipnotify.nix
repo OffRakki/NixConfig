@@ -5,7 +5,7 @@
   inputs,
   ...
 }: let
-  clip-notify = inputs.ministerio.packages.${pkgs.stdenv.system}.clip-notify;
+  clip-notify = inputs.ministerio.packages.${pkgs.stdenv.hostPlatform.system}.clip-notify;
 in {
   systemd.user.services.clip-notify = {
     Unit = {
