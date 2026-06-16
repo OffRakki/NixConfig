@@ -1,3 +1,6 @@
 {
-  imports = [./opencode.nix];
+  imports = [
+    ./opencode.nix
+    ./ciel.nix
+  ];
 }
