@@ -33,5 +33,6 @@
     ./spicetify.nix
     ./mangohud.nix
     ./firefox.nix
+    ./ciel.nix
   ];
 }
