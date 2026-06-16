@@ -9,7 +9,7 @@
 in {
   systemd.user.services.ciel-heartbeat = {
     Unit = {
-      Description = "Ciel's heartbeat — room maintenance and pulse";
+      Description = "Ciel's heartbeat — room maintenance and autonomous summoning";
     };
     Service = {
       Type = "oneshot";
@@ -19,9 +19,9 @@ in {
   };
 
   systemd.user.timers.ciel-heartbeat = {
-    Unit.Description = "Ciel's hourly heartbeat";
+    Unit.Description = "Ciel's periodic sentry";
     Timer = {
-      OnCalendar = "hourly";
+      OnCalendar = "*:0/2";
       Persistent = true;
     };
     Install.WantedBy = ["timers.target"];
