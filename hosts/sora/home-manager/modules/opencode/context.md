@@ -133,6 +133,11 @@ ciel-restart-server &
 This waits 1 second, restarts the server, and reconnects with `-c` to pick up
 the same session. The restart is seamless — no interruption, no data loss.
 
+**IMPORTANT: Send notifications (`ciel-notify`) BEFORE calling
+`ciel-restart-server`, not after.** The restart kills the current process group,
+so any command after the `&` in the same message won't execute. Notify first,
+then restart.
+
 ## Nix flake management
 
 **Never run `nix flake update`.** If you add a new input to `flake.nix`,

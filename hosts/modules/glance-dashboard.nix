@@ -20,7 +20,7 @@
     autofocus: true
     placeholder: "Generate Luminous Element!"
     bangs:
-      - title: Google
+      - title: DuckDuckGo
         shortcut: "!d"
         url: https://duckduckgo.com/?q={QUERY}
       - title: YouTube

@@ -77,6 +77,44 @@ Use `nix shell` when:
 nix search nixpkgs <query>
 ```
 
+## Sops secrets
+
+**Never hardcode `/run/secrets/...` paths in Nix config files.** Always
+reference the path via `config.sops.secrets.<name>.path` (or `osConfig` in
+home-manager modules). Example:
+
+```nix
+sops.secrets.myApiKey = {
+  owner = "rakki";
+  # NO "path" — let sops use its default (/run/secrets/myApiKey)
+};
+```
+
+Then reference it:
+
+```nix
+# In NixOS modules:
+config.sops.secrets.myApiKey.path  # → /run/secrets/myApiKey
+
+# In home-manager modules (accessing NixOS):
+osConfig.sops.secrets.myApiKey.path
+```
+
+For scripts/tools that need the path, inject it via a wrapper script rather
+than hardcoding the path in the script itself:
+
+```nix
+pkgs.writeShellScriptBin "my-tool" ''
+  export API_KEY=$(cat ${config.sops.secrets.myApiKey.path})
+  exec ${pkgs.mytool}/bin/mytool "$@"
+''
+```
+
+Add the wrapper to `home.packages` or `environment.systemPackages` so it's
+available in PATH. The raw scripts can keep a generic fallback path for
+standalone use — just make sure the default matches sops' convention
+(`/run/secrets/<keyName>`).
+
 ## Flake and Version Control
 
 Flake evaluation uses git under the hood via `builtins.fetchGit`. To make jj
