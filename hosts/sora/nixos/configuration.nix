@@ -214,8 +214,6 @@
       ### Disabled for lix
       # download-buffer-size = 524288000;
     };
-    # Opinionated: disable channels
-    channel.enable = false;
 
     # Opinionated: make flake registry and nix path match flake inputs
     registry = lib.mapAttrs (_: flake: {inherit flake;}) flakeInputs;

@@ -147,6 +147,5 @@ in {
       export MP_ACCESS_TOKEN_PATH=${osConfig.sops.secrets.mercadoPagoToken.path}
       exec python3 ${./skills/firefly/scripts/mercado_pago.py} "$@"
     '')
-
   ];
 }

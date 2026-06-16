@@ -1,10 +1,12 @@
-{ config, pkgs, lib, ... }:
-
-let
-  caldavPass = "/run/secrets/caldavPass";
-in
 {
-  home.packages = with pkgs; [ vdirsyncer khal khard ];
+  config,
+  pkgs,
+  lib,
+  ...
+}: let
+  caldavPass = "/run/secrets/caldavPass";
+in {
+  home.packages = with pkgs; [vdirsyncer khal khard];
 
   accounts.calendar.basePath = "Calendars";
 
@@ -110,14 +112,14 @@ in
   systemd.user.services.vdirsyncer = {
     Unit = {
       Description = "vdirsyncer sync";
-      After = [ "network-online.target" ];
-      Wants = [ "network-online.target" ];
+      After = ["network-online.target"];
+      Wants = ["network-online.target"];
     };
     Service = {
       Type = "oneshot";
       ExecStart = "${lib.getExe pkgs.vdirsyncer} sync";
     };
-    Install.WantedBy = [ "multi-user.target" ];
+    Install.WantedBy = ["multi-user.target"];
   };
 
   systemd.user.timers.vdirsyncer = {
@@ -126,7 +128,7 @@ in
       OnCalendar = "*:0/30";
       Persistent = true;
     };
-    Install.WantedBy = [ "timers.target" ];
+    Install.WantedBy = ["timers.target"];
   };
 
   home.persistence."/persist".directories = lib.mkAfter [
