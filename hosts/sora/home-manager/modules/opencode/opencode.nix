@@ -58,6 +58,7 @@ in {
       linux = ./skills/linux;
       nix = ./skills/nix;
       nix-refactor = ./skills/nix-refactor;
+      opencode-session = ./skills/opencode-session;
       personal-tools = ./skills/personal-tools;
       seo = ./skills/seo;
     };
@@ -87,6 +88,7 @@ in {
           models = {
             "deepseek-v4-flash" = {
               name = "DeepSeek V4 Flash";
+              variant = "max";
               supportsTools = true;
             };
             "deepseek-v4-pro" = {
