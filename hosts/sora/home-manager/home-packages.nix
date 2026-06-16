@@ -95,7 +95,6 @@
     ncdu
     glow
     gitlogue
-    spotify
     ripgrep-all
     fd
     zoxide
