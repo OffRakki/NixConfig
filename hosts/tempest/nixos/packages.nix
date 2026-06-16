@@ -14,10 +14,13 @@
     pciutils
     usbutils
     cifs-utils
-    ffmpeg-headless
+    ffmpeg
     rsync
     duf
     zoxide
+    mpv
+    imv
+    pavucontrol
   ];
   fonts.packages = with pkgs; [
     noto-fonts

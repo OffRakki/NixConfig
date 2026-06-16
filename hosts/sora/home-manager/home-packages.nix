@@ -81,5 +81,52 @@
     # Other
     bemoji
     nix-prefetch-scripts
+
+    # Moved from system packages
+    nmap
+    netcat
+    rofi
+    firefox
+    starship
+    btop
+    waybar-mpris
+    television
+    gdu
+    ncdu
+    glow
+    gitlogue
+    spotify
+    ripgrep-all
+    fd
+    zoxide
+    xh
+    zellij
+    gitui
+    dust
+    dua
+    hyperfine
+    bacon
+    cargo-info
+    fselect
+    ncspot
+    spotify-player
+    delta
+    tokei
+    just
+    mask
+    mprocs
+    presenterm
+    kondo
+    mise
+    espanso
+    rmpc
+    hyprpicker
+    dysk
+    zenith-nvidia
+    tmux
+    bitwarden-desktop
+    pyprland
+    wallust
+    wlogout
   ];
 }

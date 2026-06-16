@@ -58,7 +58,6 @@
     qt6.qtwayland
     qt5.qtwayland
     parallel-full
-    # hyprpolkitagent # Using polkit from noctalia shell plugin
     qgnomeplatform-qt6
     lprint
     android-tools
@@ -83,8 +82,6 @@
     dialog
     freerdp
     iproute2
-    nmap
-    netcat
     tailscale
     nyxt
     sudo-rs
@@ -100,17 +97,9 @@
     refind
     os-prober
     nixd
-    nixfmt
-    tmux
     evil-helix
-    # sublime
     curl
-    rofi
-    firefox
-    starship
     wireplumber
-    btop
-    waybar-mpris
     wl-clipboard-rs
     wl-clip-persist
     clipse
@@ -132,56 +121,18 @@
     podman-tui
     podman-desktop
 
-    # User Packages
     rust-paddle-ocr
-    television
     dgop
-    goofcord
-    gdu
-    ncdu
-    element-desktop
-    glow
-    gitlogue
     vial
-    abaddon
     dnd-tools
     waypaper
-    spotify
     ttyper
-    ripgrep-all
-    fd
-    zoxide
-    xh
-    zellij
-    gitui
-    dust
-    dua
-    hyperfine
-    bacon
-    cargo-info
-    fselect
-    ncspot
     rusty-man
-    delta
-    tokei
     wiki-tui
-    just
-    mask
-    mprocs
-    presenterm
-    kondo
-    mise
-    espanso
-    rmpc
     mpd
-    hyprpicker
     nvidia-container-toolkit
     docker
     docker-client
-    bitwarden-desktop
-    spotify-player
-    dysk
-    zenith-nvidia
     libvirt
     qemu
     baobab
@@ -213,13 +164,10 @@
     nwg-look
     nvitop
     pamixer
-    pyprland
     libsForQt5.qtstyleplugins
     slurp
     swappy
     awww
-    wallust
-    wlogout
     xarchiver
     yad
     hyprshot

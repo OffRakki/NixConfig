@@ -1,5 +1,8 @@
-{ config, pkgs, ... }:
-let
+{
+  config,
+  pkgs,
+  ...
+}: let
   inherit (pkgs) dconf gnused systemd hyprland;
 
   darkGtk = "catppuccin-mocha-lavender-standard+normal";
