@@ -285,6 +285,8 @@ skill has specific details, workflows, and terminology Lucky expects.
   state with the flake. Load `nix` first.
 - **nix-refactor** — flake audit, dead code cleanup, package deduplication,
   unused input removal. Load `nix-refactor` first.
+- **opencode-edit** — editing Ciel's own opencode config: context, skills,
+  agents, and settings. Load `opencode-edit` first.
 - **opencode-session** — retrieving other opencode sessions, exporting
   session data, listing session history, querying the SQLite DB for
   session/message/part content. Load `opencode-session` first.

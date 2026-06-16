@@ -66,6 +66,7 @@ in {
       seo = ./skills/seo;
       screenshot = ./skills/screenshot;
       firefly = ./skills/firefly;
+      opencode-edit = ./skills/opencode-edit;
     };
     agents = {
       image-analyzer = ./agents/image-analyzer/image-analyzer.md;
