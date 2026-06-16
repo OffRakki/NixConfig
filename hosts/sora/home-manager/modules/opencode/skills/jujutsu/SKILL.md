@@ -11,8 +11,12 @@ If `.jj/` exists in the repo root, this is a jj repo. **Use `jj` commands, not `
 
 ## Critical Rules
 
+- **ALWAYS load this skill** when working in a jj repo. Every VCS operation should consult this guide first. This is non-negotiable.
 - **NEVER** use interactive flags (`-i`, `--interactive`). TUI prompts hang in agent environments. This applies to `jj split -i`, `jj squash -i`, `jj commit -i`, `jj resolve`, `jj diffedit`, etc.
 - **ALWAYS** pass `-m "msg"` when describing/committing. Without `-m`, an editor opens and hangs.
+- **Editor trap:** `jj squash` (and other commands that combine descriptions) opens an editor when **both** source and destination have non-empty descriptions. In non-interactive environments, `hx`/Helix panics with "reader source not set". **Always clear the destination's description first** with `jj describe -m ""` before squashing, so jj uses the source's description automatically. If `jj describe --stdin -r <rev>` is available, pipe multiline descriptions via stdin to avoid shell quoting issues.
+- **Step-by-step over batch:** When collapsing a chain of commits, **never** squash a range at once (`jj squash --from 'range'`). Do it one commit at a time: `jj edit <commit>`, `jj describe -m ""`, `jj squash`, repeat. This is safer and easier to undo if something goes wrong.
+- **`jj undo` first, ask questions later.** If an operation produces unexpected output — especially editor panics or "sideways" history — `jj undo` immediately. Don't try to fix forward.
 - **VERIFY** mutations with `jj st` and `jj log` after `squash`, `abandon`, `rebase`, `restore`, `commit`. jj will silently do exactly what you asked, even if it wasn't what you meant.
 - **PREFER change IDs** (letters, e.g. `nmwwolux`) over commit IDs (hex). Change IDs are stable across rewrites.
 - **NEVER** rebase or describe an immutable commit (e.g. `main` if it's tracking a remote). Target the commit *above* it, or use `main@origin` as `--destination`.
