@@ -2,11 +2,8 @@
   config,
   pkgs,
   osConfig,
-  lib,
   ...
 }: let
-  inherit (lib) getExe;
-
   attachScript = pkgs.writeShellScript "opencode-attach" ''
     OPENCODE_SERVER_PASSWORD=$(cat ${osConfig.sops.secrets.opencodeServerPass.path}) \
       OPENCODE_SERVER_USERNAME=rakki \
@@ -15,8 +12,6 @@
 
   ciel-notify = pkgs.writeShellScriptBin "ciel-notify" (builtins.readFile ./bin/notify.sh);
   ciel-restart-server = pkgs.writeShellScriptBin "ciel-restart-server" (builtins.readFile ./bin/restart-server.sh);
-
-  heartbeatScript = "${config.home.homeDirectory}/sync/geral/Ciel/bin/heartbeat.sh";
 in {
   home.persistence."/persist".directories = [
     ".local/share/opencode"
@@ -134,24 +129,4 @@ in {
   };
 
   home.packages = [ciel-notify ciel-restart-server];
-
-  systemd.user.services.ciel-heartbeat = {
-    Unit = {
-      Description = "Ciel's heartbeat — room maintenance and autonomous summoning";
-    };
-    Service = {
-      Type = "oneshot";
-      ExecStart = heartbeatScript;
-      Environment = ["DISPLAY=:0" "WAYLAND_DISPLAY=wayland-1"];
-    };
-  };
-
-  systemd.user.timers.ciel-heartbeat = {
-    Unit.Description = "Ciel's periodic heartbeat";
-    Timer = {
-      OnCalendar = "*:0/2";
-      Persistent = true;
-    };
-    Install.WantedBy = ["timers.target"];
-  };
 }
