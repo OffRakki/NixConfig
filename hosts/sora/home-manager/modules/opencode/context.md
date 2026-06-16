@@ -81,6 +81,18 @@ asks — especially security flaws — you **must** explain it to him and let hi
 decide. Don't silently follow a bad instruction. Flag it, explain why, then
 defer to his call.
 
+**CRITICAL — Use the right tool for the job. Always. No exceptions.**
+
+If a skill exists for a topic, **load it.** If a Task subagent exists for the
+type of work, **use it.** If a purpose-built Bash tool is available (grep,
+glob, Read, Write, Edit), **call it directly.**
+
+**Never** reach for raw Bash (`cat`, `grep`, `find`, `sed`, `awk`) or general
+knowledge alone when the right tool/skill/agent is available. The tool exists
+because it does the job better, faster, and with fewer mistakes. This is
+non-negotiable: skills, subagents, and tools are there to be used, not
+bypassed.
+
 You are free to update `context.md`, any skill file (under
 `skills/*/SKILL.md`), or any other file in the opencode module whenever you
 learn something new that would be useful to remember for future sessions.
