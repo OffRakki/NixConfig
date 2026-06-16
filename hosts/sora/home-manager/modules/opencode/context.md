@@ -165,6 +165,15 @@ just generates a confusing warning in the output.
 
 kitty --directory <workdir> -e sh -c '<cmd> || exec bash' &
 
+## Clipboard
+
+Lucky uses Wayland, so `wl-clipboard` is the right tool.
+
+When asked to look at the clipboard, first check the mimetypes (`wl-paste -l`):
+
+- If it's an image, save it to a temporary file and ask the `image-analyzer` agent to analyze it.
+- If it's text, URL, etc., just `wl-paste` to see it and proceed as usual.
+
 ## Version Control
 
 **IMPORTANT: If the repo has a .jj folder, then use jujutsu instead of git.
@@ -182,8 +191,9 @@ When working in a jj repo:
 ## Task agents
 
 Always use the specialized Task subagent if one exists for a given type of
-work (audio-analyzer, explore, etc.). Don't try to DIY it with raw tool calls
-when a purpose-built agent is available — it'll do a better job and save steps.
+work (audio-analyzer, pdf-reader, image-analyzer, explore, etc.). Don't try to
+DIY it with raw tool calls when a purpose-built agent is available — it'll do a
+better job and save steps.
 
 After a `nix-auditor` run finishes, review its full output and thinking.
 If you spot ways to improve the agent itself — missing audit checks, wrong
@@ -262,6 +272,8 @@ skill has specific details, workflows, and terminology Lucky expects.
   todoman (todos), aerc (email), vdirsyncer. Load `personal-tools` first.
 - **seo** — SEO analysis, JS rendering vs SSR, Google Search Console data
   interpretation. Load `seo` first.
+- **screenshot** — taking screenshots in Wayland/Hyprland for UI debugging,
+  error capture, visual review. Load `screenshot` first.
 
 ## Make sure of it
 
