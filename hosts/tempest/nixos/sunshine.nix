@@ -14,7 +14,7 @@
 
   hardware.uinput.enable = true;
 
-  users.users.rakki.extraGroups = ["input" "uinput" "video"];
+  users.users.tmpst.extraGroups = ["input" "uinput" "video"];
 
   services.udev.extraRules = ''
     KERNEL=="uinput", GROUP="input", MODE="0660", OPTIONS+="static_node=uinput"

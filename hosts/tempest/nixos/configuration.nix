@@ -144,8 +144,6 @@
       enable = true;
       interval = "weekly";
     };
-    udev.enable = true;
-    dbus.enable = true;
     fwupd.enable = true;
     upower.enable = true;
     avahi = {
