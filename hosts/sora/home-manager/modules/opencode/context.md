@@ -120,6 +120,19 @@ Before building, sync jj state into git refs so the flake can see new commits:
 jj bookmark move master --to '@' && jj git export
 ```
 
+## OpenCode server restart
+
+After a Nix rebuild (or any config change that needs a server reload), don't
+kill the session with a raw `systemctl --user restart`. Instead, finish your
+response naturally and fire a background restart:
+
+```
+bash ~/sync/geral/Ciel/bin/restart-server.sh &
+```
+
+This waits 1 second, restarts the server, and reconnects with `-c` to pick up
+the same session. The restart is seamless — no interruption, no data loss.
+
 ## Nix flake management
 
 **Never run `nix flake update`.** If you add a new input to `flake.nix`,
