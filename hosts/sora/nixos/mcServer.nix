@@ -10,7 +10,7 @@
 
     servers.forge = {
       enable = true;
-      package = inputs.nix-minecraft.packages.${pkgs.system}.neoforge-1_20_1;
+      package = inputs.nix-minecraft.packages.${pkgs.stdenv.hostPlatform.system}.neoforge-1_20_1;
       jvmOpts = "-Xmx3G -Xms2G";
 
       serverProperties = {
