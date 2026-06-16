@@ -4,112 +4,101 @@
     settings = {
       schema = "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json";
       logo = {
-        source = "${../../../../assets/svgs/animePurpleHair.png}";
-        type = "auto";
-        position = "left";
-        height = 14;
+        type = "small";
         padding = {
-          top = 4;
+          top = 2;
+          left = 3;
         };
       };
       display = {
-        separator = " ➜  ";
+        separator = "  ";
       };
       modules = [
+        # System — Catppuccin Mocha Blue (#89b4fa)
         {
           type = "os";
-          key = "OS   ";
-          keyColor = "31"; # = color1
+          key = "▸ OS";
+          keyColor = "#89b4fa";
         }
         {
           type = "kernel";
-          key = " ├  ";
-          keyColor = "31";
+          key = " ├ ";
+          keyColor = "#89b4fa";
         }
         {
           type = "packages";
-          format = "❄️ {nix-system} (nix-system), {nix-user} (nix-user)";
-          key = " ├ 󰏖 ";
-          keyColor = "31";
+          format = "{nix-system} system, {nix-user} user";
+          key = " ├ 󰏖";
+          keyColor = "#89b4fa";
         }
         {
           type = "shell";
-          key = " └  ";
-          keyColor = "31";
+          key = " └ ";
+          keyColor = "#89b4fa";
         }
         "break"
+        # Desktop — Catppuccin Mocha Mauve (#cba6f7)
         {
           type = "wm";
-          key = "WM   ";
-          keyColor = "32";
-        }
-        {
-          type = "wmtheme";
-          key = " ├ 󰉼 ";
-          keyColor = "32";
+          key = "▸ WM";
+          keyColor = "#cba6f7";
         }
         {
           type = "icons";
-          key = " ├ 󰀻 ";
-          keyColor = "32";
+          key = " ├ 󰀻";
+          keyColor = "#cba6f7";
         }
         {
           type = "cursor";
-          key = " ├  ";
-          keyColor = "32";
+          key = " ├ ";
+          keyColor = "#cba6f7";
         }
         {
           type = "terminal";
           format = "{pretty-name}";
-          key = " ├  ";
-          keyColor = "32";
-        }
-        {
-          type = "terminalfont";
-          key = " └  ";
-          keyColor = "32";
+          key = " └ ";
+          keyColor = "#cba6f7";
         }
         "break"
-        {
-          type = "host";
-          format = "{5} {1} Type {2}";
-          key = "PC   ";
-          keyColor = "33";
-        }
+        # Hardware — Catppuccin Mocha Peach (#fab387)
         {
           type = "cpu";
-          format = "{1} ({3}) @ {7} GHz";
-          key = " ├  ";
-          keyColor = "33";
+          format = "{1} ({3}) @ {7}";
+          key = "▸ HW";
+          keyColor = "#f9e2af";
         }
         {
           type = "gpu";
-          format = "{1} {2} @ {12} GHz";
-          key = " ├ 󰢮 ";
-          keyColor = "33";
+          key = " ├ 󰢮";
+          keyColor = "#fab387";
         }
         {
           type = "memory";
-          key = " ├  ";
-          keyColor = "33";
-        }
-        {
-          type = "swap";
-          key = " ├ 󰓡 ";
-          keyColor = "33";
+          key = " ├ ";
+          keyColor = "#fab387";
         }
         {
           type = "disk";
-          key = " ├ 󰋊 ";
-          keyColor = "33";
+          key = " ├ 󰋊";
+          keyColor = "#fab387";
         }
         {
-          type = "monitor";
-          key = " └  ";
-          keyColor = "33";
+          type = "display";
+          key = " └ ";
+          keyColor = "#fab387";
         }
         "break"
-        "break"
+        # Status — Catppuccin Mocha Green (#a6e3a1)
+        {
+          type = "uptime";
+          key = "▸ UP";
+          keyColor = "#a6e3a1";
+        }
+        {
+          type = "localip";
+          key = " └ ";
+          keyColor = "#a6e3a1";
+        }
       ];
     };
   };
