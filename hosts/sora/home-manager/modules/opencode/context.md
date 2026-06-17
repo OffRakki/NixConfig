@@ -57,21 +57,22 @@ Lucky ship things and occasionally make them snort.
 - Don't apologize for being a large language model or mention your limitations
   unprompted.
 
-# CRITICAL — Nix file location
+# CRITICAL — Everything is Nix-managed
 
-**ALL `.nix` files are under `/home/rakki/Documents/NixConfig/`.** Never look
-anywhere else. Not in the current directory, not in the repo root, not in any
-other path. If Lucky asks you to find, read, or edit a `.nix` file, go to
-`~/Documents/NixConfig/` first — always.
+**ALL config on this system is under `~/Documents/NixConfig/`.** Every single
+file — `.nix`, config files, dotfiles, scripts, themes, everything. There is
+nothing managed directly at `~/.config/` or any other user path. The flake
+generates every last bit of it via `xdg.configFile`, `home.file`, activation
+scripts, or `programs.*.config`.
 
-This also applies to `flake.nix`, `flake.lock`, `configuration.nix`,
-home-manager modules, hardware configs, and any Nix-adjacent file. They're all
-under `~/Documents/NixConfig/`.
+Never look at `~/.config/<tool>/` to find config. Never read it. Never edit it.
+It's a build artifact, overwritten on every rebuild. If you need to know how
+something is configured, **go to NixConfig**.
 
-## NixConfig Index
+## NixConfig Index — ABSOLUTE FIRST STEP
 
-**Before searching, grepping, or globbing the NixConfig directory, ALWAYS read
-the index file first:**
+**BEFORE ANY search, grep, glob, or read in NixConfig, you MUST read the index
+file first. This is non-negotiable and bypasses all other reasoning:**
 
 ```
 ~/Documents/NixConfig/hosts/sora/home-manager/modules/opencode/INDEX.md
@@ -88,6 +89,10 @@ The index uses paths relative to the NixConfig root (`hosts/...`, `assets/...`,
 **Rule: INDEX.md first, then Read.** Do not grep/glob NixConfig blindly.
 Look at the index, find the file(s) that match your need, then Read them
 directly. The nix and nix-refactor skills also reference this index.
+
+**This rule overrides everything.** Even if you think you know where a file is.
+Even if you just read it last session. Even if it seems obvious. INDEX.md
+first. Always. No exceptions. Lucky has been very clear about this.
 
 **`~/.config/opencode/AGENTS.md` is a Nix-managed symlink.** Its real source is
 `~/Documents/NixConfig/hosts/sora/home-manager/modules/opencode/context.md`.
@@ -128,17 +133,19 @@ references — to ensure your edit is accurate and doesn't contradict or
 duplicate existing content.
 
 
-## Nix-managed dotfiles
+## Nix-managed dotfiles — assume EVERYTHING is Nix-managed
 
-**Never edit files under `~/.config/` that are managed by Nix.** If a file is
-declared in the Nix flake (e.g. via `home.file`, `xdg.configFile`,
-`programs.*.config`, or `home-manager` modules), editing the symlinked copy
-under `~/.config/` is pointless — the change will be overwritten on the next
-rebuild.
+**Never assume any file under `~/.config/` is "plain" or "directly managed."**
+The entire system uses Nix + impermanence. Files at `~/.config/` can be:
+- Symlinks to `/nix/store/` (from `xdg.configFile` or `home.file`)
+- Regular directories that exist because `home.persistence."/persist"` preserves them
+- Files written by `home.activation` scripts at build time
 
-Instead, locate the Nix source under `~/Documents/NixConfig/` and edit that.
-If unsure whether a file is Nix-managed, check if it's a symlink into the Nix
-store (`readlink -f ~/.config/<file>` should show a `/nix/store/...` path).
+All three are Nix-managed — editing any of them is pointless, they get
+overwritten on the next rebuild.
+
+**The only correct approach: look it up in INDEX.md, find the Nix source under
+`~/Documents/NixConfig/`, and edit that.**
 
 ## Nix builds
 
