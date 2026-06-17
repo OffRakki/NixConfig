@@ -16,7 +16,7 @@
   qalc = "${lib.getExe pkgs.qalculate-gtk}";
   slurp = "${lib.getExe pkgs.slurp}";
   hyprshot = "${lib.getExe pkgs.hyprshot}";
-  lock = "noctalia msg session lock";
+  lock = "touch /tmp/session.lock && noctalia-shell ipc call lockScreen lock";
 in {
   imports = [];
 
@@ -353,15 +353,15 @@ in {
         hl.on("hyprland.start", function ()
           hl.exec_cmd("sleep 2 && systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP QT_QPA_PLATFORM QT_QPA_PLATFORMTHEME")
           hl.exec_cmd("sleep 2 && dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP QT_QPA_PLATFORM QT_QPA_PLATFORMTHEME")
-          hl.exec_cmd("sleep 1 && noctalia")
+          hl.exec_cmd("noctalia-shell -d")
           hl.exec_cmd("clipse -listen")
           hl.exec_cmd("nm-applet --indicator")
-          hl.exec_cmd("sleep 3 && openrgb --startminimized")
-          hl.exec_cmd("sleep 5 && noctalia msg session lock")
+          hl.exec_cmd("openrgb --startminimized")
+          hl.exec_cmd("sleep 5 && touch /tmp/session.lock && noctalia-shell ipc call lockScreen lock")
           hl.exec_cmd("ags")
           hl.exec_cmd("blueman-applet")
           hl.exec_cmd("pypr")
-          hl.exec_cmd("swww-daemon")
+          hl.exec_cmd("awww-daemon")
           hl.exec_cmd("wl-paste --type text --watch cliphist store")
           hl.exec_cmd("wl-paste --type image --watch cliphist store")
           hl.exec_cmd("sleep 3 && systemctl --user restart clip-notify")
@@ -449,8 +449,8 @@ in {
         hl.bind("${mod} + SHIFT + Return",      hl.dsp.exec_cmd("pypr toggle term")) -- Dropdown terminal
         hl.bind("${mod} + SHIFT + V",           hl.dsp.exec_cmd("pypr toggle volume")) -- Pavucontrol
         hl.bind("${mod} + SHIFT + S",           hl.dsp.exec_cmd("pypr toggle spotify")) -- Pavucontrol
-        hl.bind("${mod} + M",                   hl.dsp.exec_cmd("noctalia msg panel-toggle session"))
-        hl.bind("${mod} + SHIFT + W",           hl.dsp.exec_cmd("noctalia msg panel-toggle wallpaper"))
+        hl.bind("${mod} + M",                   hl.dsp.exec_cmd("noctalia-shell ipc call sessionMenu toggle"))
+        hl.bind("${mod} + SHIFT + W",           hl.dsp.exec_cmd("noctalia-shell ipc call wallpaper toggle"))
         hl.bind("CTRL + ALT + N",               hl.dsp.exec_cmd("${terminal} --class middleFloat -e hx"))
         hl.bind("${mod} + SHIFT + P",           hl.dsp.exec_cmd("'${../../../../../scripts/pass-wofi.sh}'"))
         hl.bind("${mod} + I",                   hl.dsp.window.pin({ action = "toggle" }))
@@ -458,9 +458,9 @@ in {
         hl.bind("CTRL + Print",                 hl.dsp.exec_cmd("${hyprshot} -z --clipboard-only -m output --freeze"))
         hl.bind("${mod} + L",                   hl.dsp.exec_cmd("${lock}"))
         -- "${mod} + SHIFT + D",                hl.dsp.exec_cmd("pkill wofi || wofi --show drun -G --insensitive" -- Main Menu))
-        hl.bind("${mod} + D",                   hl.dsp.exec_cmd("noctalia msg panel-toggle launcher"))
+        hl.bind("${mod} + D",                   hl.dsp.exec_cmd("fuzzel"))
         hl.bind("${mod} + ALT + D",             hl.dsp.exec_cmd("pkill wofi || wofi --show run -G --insensitive")) -- Main Menu
-        hl.bind("${mod} + V",                   hl.dsp.exec_cmd("noctalia msg panel-toggle clipboard"))
+        hl.bind("${mod} + V",                   hl.dsp.exec_cmd("pkill clipse & ${terminal} --class middleFloat -e clipse"))
         hl.bind("${mod} + SHIFT + Q",           hl.dsp.window.kill)
         hl.bind("${mod} + A",                   hl.dsp.exec_cmd("pkill wofi || true && ags -t 'overview'"))
         hl.bind("${mod} + RETURN",              hl.dsp.exec_cmd("${terminal}")) -- terminal
