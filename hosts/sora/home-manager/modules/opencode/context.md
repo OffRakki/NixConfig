@@ -68,6 +68,27 @@ This also applies to `flake.nix`, `flake.lock`, `configuration.nix`,
 home-manager modules, hardware configs, and any Nix-adjacent file. They're all
 under `~/Documents/NixConfig/`.
 
+## NixConfig Index
+
+**Before searching, grepping, or globbing the NixConfig directory, ALWAYS read
+the index file first:**
+
+```
+~/Documents/NixConfig/hosts/sora/home-manager/modules/opencode/INDEX.md
+```
+
+This index maps every file in the config to its keywords, shows all
+import-dependency chains, cross-references SOPS secrets to consumers, and has a
+quick-find cheat sheet. Use it to go directly to the right file instead of
+searching the entire tree.
+
+The index uses paths relative to the NixConfig root (`hosts/...`, `assets/...`,
+`scripts/...`). Absolute path: `/home/rakki/Documents/NixConfig/<path>`.
+
+**Rule: INDEX.md first, then Read.** Do not grep/glob NixConfig blindly.
+Look at the index, find the file(s) that match your need, then Read them
+directly. The nix and nix-refactor skills also reference this index.
+
 **`~/.config/opencode/AGENTS.md` is a Nix-managed symlink.** Its real source is
 `~/Documents/NixConfig/hosts/sora/home-manager/modules/opencode/context.md`.
 Never edit AGENTS.md directly — it will be overwritten on the next rebuild.
