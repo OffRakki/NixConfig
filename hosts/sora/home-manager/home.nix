@@ -27,6 +27,7 @@
       NH_FLAKE = "$HOME/Documents/NixConfig";
       OPENCODE_SERVER_PASSWORD = "$(cat ${osConfig.sops.secrets.opencodeServerPass.path})";
       OPENCODE_SERVER_USERNAME = "rakki";
+      SOPS_AGE_KEY_FILE = "$HOME/sync/sops/age/keys.txt";
     };
     persistence."/persist".directories = [
       "Documents"

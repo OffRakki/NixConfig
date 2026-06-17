@@ -114,7 +114,7 @@
       owner = "rakki";
     };
 
-    secrets.opencodePrivateInfo = {
+    secrets.lucky-info = {
       sopsFile = ../home-manager/modules/opencode/private.yaml;
       owner = "rakki";
     };

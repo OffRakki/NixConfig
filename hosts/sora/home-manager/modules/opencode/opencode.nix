@@ -88,7 +88,8 @@ in {
     settings = {
       permission = "allow";
       autoupdate = false;
-      instructions = ["{file:${osConfig.sops.secrets.opencodePrivateInfo.path}}"];
+      model = "deepseek-v4-flash";
+      instructions = [osConfig.sops.secrets.lucky-info.path];
       provider = {
         deepseek = {
           name = "DeepSeek";
