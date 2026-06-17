@@ -142,7 +142,7 @@ overwritten on the next rebuild.
 ## Nix builds & restart
 
 Build: `nixos-rebuild build --flake /home/rakki/Documents/NixConfig`
-Apply: `kitty --directory /home/rakki/Documents/NixConfig -e sh -c 'nh os switch /home/rakki/Documents/NixConfig || exec bash' &`
+Apply: `kitty --directory /home/rakki/Documents/NixConfig -e sh -c 'nh os switch /home/rakki/Documents/NixConfig || exec bash'`
 Before building: `jj bookmark move master --to '@' && jj git export`
 
 After changes that need a server reload: `ciel-restart-server &`
@@ -158,8 +158,8 @@ Edits in **Helix** (`hx`).
 
 ## Terminal
 
-Spawn sudo terminal: `kitty --directory <workdir> -e sh -c '<cmd> || exec bash' &`
-Make sure there is no timeout on the Bash tool call — the `&` detaches immediately.
+Spawn sudo terminal: `kitty --directory <workdir> -e sh -c '<cmd> || exec bash'`
+Do NOT use `&` — use a **long timeout** (600000ms, 10 min) on the Bash tool call instead. The `&` looks like it detaches but the Bash tool's process management can still kill the backgrounded kitty when the tool times out. Kitty opens its own window; the Bash tool just waits until the command completes or the user closes the window.
 `DISPLAY` and `WAYLAND_DISPLAY` are available in Bash tool.
 
 ## Clipboard

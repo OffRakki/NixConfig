@@ -18,7 +18,7 @@ Split rebuilds into **two steps** — always, every time:
    `nixos-rebuild build --flake <path>`
 
 2. **Apply on terminal** (spawns a kitty window for interactive auth):
-   `kitty --directory <workdir> -e sh -c 'nh os <option> <flake-path> || exec bash' &`
+   `kitty --directory <workdir> -e sh -c 'nh os <option> <flake-path> || exec bash'`
 
 Where `<option>` is `switch` or `build` and `<flake-path>` is the full path to the
 flake (e.g. `/home/rakki/Documents/NixConfig`). `nh` doesn't auto-detect the
@@ -30,13 +30,14 @@ the `NH_OS_FLAKE` env var.
 For commands that need sudo (interactive auth), spawn kitty:
 
 ```
-kitty --directory <workdir> -e sh -c '<cmd> || exec bash' &
+kitty --directory <workdir> -e sh -c '<cmd> || exec bash'
 ```
 
-The `|| exec bash` keeps the window open on failure. `&` detaches from the
-current session. **No timeout on the Bash tool call** — kitty opens
-asynchronously and the `&` returns immediately. A short timeout fires before
-kitty opens.
+The `|| exec bash` keeps the window open on failure. Do NOT use `&` — the Bash
+tool's process management can still kill the backgrounded kitty when the tool
+times out. Instead, call kitty without `&` and use a **long timeout**
+(600000ms, 10 min) on the Bash tool call. Kitty opens its own window; the Bash
+tool just blocks until the command completes or the window is closed.
 
 `DISPLAY` and `WAYLAND_DISPLAY` are inherited in the Bash tool environment.
 
