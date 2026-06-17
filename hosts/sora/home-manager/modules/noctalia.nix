@@ -1,8 +1,17 @@
 {
   pkgs,
   lib,
+  inputs,
   ...
-}: {
+}: let
+  patchedNoctaliaShell = inputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
+    postInstall = (old.postInstall or "") + ''
+      sed -i '/ToastService.showNotice.*keep-awake/d' \
+        $out/share/noctalia-shell/Services/Power/IdleInhibitorService.qml
+    '';
+  });
+in {
+  programs.noctalia-shell.package = patchedNoctaliaShell;
   home.persistence."/persist".directories = [
     ".cache/noctalia"
     ".cache/noctalia-qs"
