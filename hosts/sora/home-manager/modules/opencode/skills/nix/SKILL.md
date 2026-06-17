@@ -5,6 +5,15 @@ description: Use when working with NixOS rebuilds, Nix package management, and f
 
 # Nix
 
+## File Location
+
+When looking for any NixConfig file, **consult the index first** at:
+`hosts/sora/home-manager/modules/opencode/INDEX.md` (from NixConfig root).
+
+The index maps every module, script, and config file to keywords and
+import-dependency chains. Use it to jump straight to the relevant file
+instead of grepping blindly.
+
 ## Rebuild
 
 Split rebuilds into **two steps** — always, every time:

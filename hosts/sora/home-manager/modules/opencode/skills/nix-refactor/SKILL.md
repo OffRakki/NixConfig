@@ -11,15 +11,13 @@ A repeatable workflow for reviewing and cleaning up a NixOS flake config.
 
 ### 1. Map the territory
 
-```
-find . -type f | sort        # Full file listing
-```
+**Start with the index:**
+`hosts/sora/home-manager/modules/opencode/INDEX.md` (from NixConfig root).
+It already has the full file listing, keyword map, import graph, and
+quick-find cheat sheet. Read it first — it replaces manual `find` and
+gives you the high-level mental model instantly.
 
-Exclude `.git/` and `.jj/` internals. Get a high-level mental model:
-how many machines, which modules are shared vs per-host, what's the
-WM, secrets strategy, filesystem layout, etc.
-
-Key things to identify up front:
+Key things the index already tells you:
 - Hosts: how many machines, their roles (desktop/server/VM)
 - Module structure: shared vs per-host modules
 - Inputs: what flakes are declared
