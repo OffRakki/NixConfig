@@ -66,4 +66,36 @@
     "/var/lib/mysql"
     "/var/lib/firefly-iii"
   ];
+
+  systemd.services.firefly-backup = {
+    description = "Backup Firefly III database to ~/sync/geral/FireflyBKP";
+    path = with pkgs; [mariadb gzip];
+    script = ''
+      OUTDIR="/home/rakki/sync/geral/FireflyBKP"
+      mkdir -p "$OUTDIR"
+
+      FILENAME="$OUTDIR/firefly-$(date +%Y%m%d-%H%M%S).sql.gz"
+
+      mysqldump --databases firefly | gzip > "$FILENAME"
+      chown rakki:users "$FILENAME"
+
+      ls -t "$OUTDIR"/firefly-*.sql.gz \
+        | tail -n +31 \
+        | xargs -r rm
+    '';
+    serviceConfig = {
+      Type = "oneshot";
+      User = "root";
+    };
+  };
+
+  systemd.timers.firefly-backup = {
+    description = "Daily Firefly III database backup";
+    wantedBy = ["timers.target"];
+    timerConfig = {
+      OnCalendar = "daily";
+      Persistent = true;
+      RandomizedDelaySec = 1800;
+    };
+  };
 }
