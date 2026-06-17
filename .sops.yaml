@@ -9,3 +9,9 @@ creation_rules:
           - *admin_rakki
           - *host_sora
           - *host_tempest
+  - path_regex: opencode/private\.yaml$
+    key_groups:
+      - age:
+          - *admin_rakki
+          - *host_sora
+          - *host_tempest

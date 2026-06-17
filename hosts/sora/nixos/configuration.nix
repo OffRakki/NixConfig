@@ -113,6 +113,19 @@
     secrets.caldavPass = {
       owner = "rakki";
     };
+
+    secrets.opencodePrivateInfo = {
+      sopsFile = ../home-manager/modules/opencode/private.yaml;
+      owner = "rakki";
+    };
+    secrets.skillFireflyPrivate = {
+      sopsFile = ../home-manager/modules/opencode/private.yaml;
+      owner = "rakki";
+    };
+    secrets.skillLumisPrivate = {
+      sopsFile = ../home-manager/modules/opencode/private.yaml;
+      owner = "rakki";
+    };
   };
 
   sops.templates."rclone-onedrive.conf" = {
