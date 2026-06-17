@@ -1,19 +1,24 @@
 { config, pkgs, lib, ... }:
 
 let
+  stateFile = "/tmp/player-idle-inhibit";
   playerIdleInhibit = pkgs.writeShellScriptBin "player-idle-inhibit" ''
-    # Initial state check on startup
-    if ${lib.getExe pkgs.playerctl} status --all-players 2>/dev/null | ${pkgs.gnugrep}/bin/grep -q "Playing"; then
-      noctalia-shell ipc call idleInhibitor enable
-    fi
+    set -o pipefail
 
-    # Watch for playback state changes
-    ${lib.getExe pkgs.playerctl} --follow --all-players 2>/dev/null | while read -r _; do
+    update() {
       if ${lib.getExe pkgs.playerctl} status --all-players 2>/dev/null | ${pkgs.gnugrep}/bin/grep -q "Playing"; then
-        noctalia-shell ipc call idleInhibitor enable
+        noctalia-shell ipc call idleInhibitor enable && touch ${stateFile}
       else
-        noctalia-shell ipc call idleInhibitor disable
+        noctalia-shell ipc call idleInhibitor disable && rm -f ${stateFile}
       fi
+    }
+
+    while true; do
+      update
+      ${lib.getExe pkgs.playerctl} --follow --all-players 2>/dev/null | while read -r _; do
+        update
+      done
+      sleep 2
     done
   '';
 in {
