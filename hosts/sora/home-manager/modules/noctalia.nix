@@ -5,7 +5,7 @@
   ...
 }: let
   patchedNoctaliaShell = inputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
-    postInstall = (old.postInstall or "") + ''
+    installPhase = (old.installPhase or "") + ''
       sed -i '/ToastService.showNotice.*keep-awake/d' \
         $out/share/noctalia-shell/Services/Power/IdleInhibitorService.qml
     '';
