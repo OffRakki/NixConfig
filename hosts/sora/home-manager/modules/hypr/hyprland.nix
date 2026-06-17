@@ -458,7 +458,7 @@ in {
         hl.bind("CTRL + Print",                 hl.dsp.exec_cmd("${hyprshot} -z --clipboard-only -m output --freeze"))
         hl.bind("${mod} + L",                   hl.dsp.exec_cmd("${lock}"))
         -- "${mod} + SHIFT + D",                hl.dsp.exec_cmd("pkill wofi || wofi --show drun -G --insensitive" -- Main Menu))
-        hl.bind("${mod} + D",                   hl.dsp.exec_cmd("fuzzel"))
+        hl.bind("${mod} + D",                   hl.dsp.exec_cmd("noctalia-shell ipc call launcher toggle"))
         hl.bind("${mod} + ALT + D",             hl.dsp.exec_cmd("pkill wofi || wofi --show run -G --insensitive")) -- Main Menu
         hl.bind("${mod} + V",                   hl.dsp.exec_cmd("pkill clipse & ${terminal} --class middleFloat -e clipse"))
         hl.bind("${mod} + SHIFT + Q",           hl.dsp.window.kill)
