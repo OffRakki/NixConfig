@@ -37,6 +37,8 @@ in {
     enable = true;
     settings = {
       usegeoclue = true;
+      lat = -22.72;
+      lng = -47.64;
     };
     lightModeScripts = {
       light = common "prefer-light" lightGtk lightIcon lightCursor "0";
