@@ -6,5 +6,6 @@
     # ./hyprpaper.nix
     ./hyprpanel.nix
     ./pyprland.nix
+    ./player-idle-inhibit.nix
   ];
 }
