@@ -34,6 +34,9 @@ in {
   };
   xdg.mimeApps.defaultApplications."x-scheme-handler/opencode" = "opencode.desktop";
 
+  xdg.configFile."opencode/skills/firefly/resources/private.md".source = "${config.lib.file.mkOutOfStoreSymlink osConfig.sops.secrets.skillFireflyPrivate.path}";
+  xdg.configFile."opencode/skills/lumis/resources/private.md".source = "${config.lib.file.mkOutOfStoreSymlink osConfig.sops.secrets.skillLumisPrivate.path}";
+
   systemd.user.services.opencode-server = {
     Unit = {
       Description = "OpenCode Web Server";
@@ -65,7 +68,9 @@ in {
       personal-tools = ./skills/personal-tools;
       seo = ./skills/seo;
       screenshot = ./skills/screenshot;
+      browser = ./skills/browser;
       firefly = ./skills/firefly;
+      lumis = ./skills/lumis;
       opencode-edit = ./skills/opencode-edit;
     };
     agents = {
@@ -83,7 +88,7 @@ in {
     settings = {
       permission = "allow";
       autoupdate = false;
-      model = "deepseek/deepseek-v4-flash";
+      instructions = ["{file:${osConfig.sops.secrets.opencodePrivateInfo.path}}"];
       provider = {
         deepseek = {
           name = "DeepSeek";

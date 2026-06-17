@@ -16,7 +16,7 @@ Also cross-reference against bank data (Mercado Pago API via `mercado_pago.py`, 
 
 ## 2. Audit against the mapping
 
-Load `~/Documents/firefly-private.md` for the full category by budget mapping table.
+Load `resources/private.md` for the full category by budget mapping table.
 Flag two tiers of issues:
 
 - **Definite:** category or budget clearly violates the mapping (e.g. a snack categorized as essential groceries, or a commute tagged as travel).
@@ -55,19 +55,25 @@ If a memo doesn't match a destination in FF:
 
 **Amount matching by value:** When exact (date, amount) matches fail, a single card charge may map to multiple separate FF groups (not just splits within one group) that sum to the charge total. Check same-day FF entries from the same vendor and sum them. This is common when items are logged as separate single-split groups rather than a single multi-split group.
 
-### Shared expenses (piggybacked purchases)
+### Reimbursements (linked transactions)
 
-When someone else reimburses you for a shared purchase, FF tracks only your share as an expense. The card statement shows the full lump charge, but FF splits it:
-- A **withdrawal** (your share, proper category/budget).
-- A **transfer** (card -> checking, no category, representing the other person's reimbursement) — this single transfer corrects the card balance to match the statement and lands their money in checking, without inflating income. No separate deposit is recorded.
+When someone else reimburses the user for a purchase the user paid on their behalf, record everything exactly as the statement shows. See `resources/private.md` for the specific category and budget IDs used for reimbursement tracking.
 
-Both must match the statement total. When reconciling, look for the transfer alongside the withdrawal. When your share is zero (fully reimbursed), there's no withdrawal — only the transfer. Always list the component values in the transfer's **notes** so a future audit can verify the transfer sum matches the statement items.
+Both expenses and deposits share the same reimbursement category, making the net reimbursement status trivially visible from the category balance.
 
-Example: R$20 bar tab split with someone -> R$15 withdrawal to Bar (your share) + R$5 transfer card->checking (their share). The +R$5 in checking *is* their payment.
+**Expenses paid on behalf of others:**
+- Record the full charge as a **withdrawal** from the source account (card or checking).
+- Assign it the reimbursement category and reimbursement budget (see `resources/private.md`).
+- These are excluded from P&L — the reimbursement budget tracks money temporarily out on others' behalf.
 
-### Transfers vs expenses
+**Reimbursement deposits:**
+- When the other person pays you back (PIX, etc.), record it as a **deposit** into the primary checking account.
+- Assign it the reimbursement category (see `resources/private.md`).
+- This is income-neutral in practice — it offsets the earlier expense.
 
-Not every charge on the statement is a withdrawal. Before flagging a card charge as missing from FF, audit all **transfers FROM the card** to any other account — checking (friend repayments), investment accounts (business purchases), or elsewhere. These transfers represent card charges that were repaid or invested, with no P&L impact.
+**Linking:** Use Firefly's linked transactions feature to link the reimbursement deposit to the original expense. Since both use the same category, the category balance directly shows how much is still outstanding. Use the `Reimbursement` link type: fetch it via `ff.link_types()`, then call `ff.link_transactions(expense_jid, deposit_jid, link_type_id=lt_id)`. The expense is `inward` ("is reimbursed by"), the deposit is `outward` ("reimburses").
+
+**Audit rule:** Each reimbursement expense should have a corresponding deposit summing to the same total. Outstanding reimbursements = negative category balance for the reimbursement category (see `resources/private.md`).
 
 ### Settlement method != nature
 
@@ -82,7 +88,7 @@ The bank charges IOF separately, then refunds it days later as a separate credit
 A single card charge often maps to multiple FF entries split across categories. The FF group itself is the semantic link — a multi-split group (group_title is set) means all its entries came from one card charge. The statement posting date may differ from the purchase date by 1 day.
 
 When multiple charges appear from the same vendor on the same day (from a statement or API):
-1. Sum all the Pluggy charges (single + all installments) into a gross total.
+1. Sum all the charges (single + all installments) into a gross total.
 2. Subtract any matching 'Desconto Antecipacao' credit to get the effective cost.
 3. Compare against the **combined total** of all FF entries from that vendor on that day — not individually. Sum all splits in a multi-split group and match group totals.
 
@@ -118,7 +124,7 @@ Statement entries on the 1st (and sometimes 2nd) of the month may be late posts 
 
 In Brazil, food vendors often register their personal name instead of the establishment name on the card machine. When a memo looks like a person's name, search for food-related transactions around that value and date — it's likely the same place.
 
-Small merchants sometimes use their **personal CPF** instead of a CNPJ, creating truncated descriptions like 'NNNNNNNname'. When the same CPF prefix appears across multiple months, cross-reference with FF to find the store's consistent destination name (in ~/Documents/firefly-private.md).
+Small merchants sometimes use their **personal CPF** instead of a CNPJ, creating truncated descriptions like 'NNNNNNNname'. When the same CPF prefix appears across multiple months, cross-reference with FF to find the store's consistent destination name (in resources/private.md).
 
 ### USD subscriptions — exchange rate drift
 

@@ -22,7 +22,7 @@ Key characteristics:
 
 ## Vendor mapping
 
-OFX memo -> Firefly account mapping should be in `~/Documents/firefly-private.md`.
+OFX memo -> Firefly account mapping should be in `resources/private.md`.
 
 ## PDF statement format
 
@@ -32,10 +32,10 @@ The monthly PDF statement includes:
 - Each transaction shows: date, merchant name (untruncated), amount,
   installment info, and card last-4-digits (`.... NNNN`)
 
-All cards map to the same Firefly account (see `~/Documents/firefly-private.md` for the
+All cards map to the same Firefly account (see `resources/private.md` for the
 physical card -> owner mapping).
 
 ## Related files
 
 Reconciliation patterns (how to match OFX data against Firefly) are in
-`auditing.md`. Pluggy integration (alternative data source) is in `pluggy.md`.
+`auditing.md`.

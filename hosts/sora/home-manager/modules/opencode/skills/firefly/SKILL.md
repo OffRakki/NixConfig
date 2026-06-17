@@ -7,7 +7,7 @@ description: Manage your finances in Firefly III (transactions, budgets, subscri
 
 This skill has supporting resources — load them as needed:
 
-- `~/Documents/firefly-private.md` — accounts, budgets, categories, income, quirks, subscriptions, instance config
+- `resources/private.md` — accounts, budgets, categories, income, quirks, subscriptions, instance config
 - `resources/auditing.md` — full audit workflow and reconciliation patterns
 - `resources/mercado-pago.md` — Mercado Pago API + statement format
 - `resources/btg.md` — BTG Pactual statement format (manual export)
@@ -258,7 +258,7 @@ Firefly III has two separate concepts that look similar:
 - Some budgets are **variable** — spending fluctuates significantly. Caps are targets, not fixed costs.
 - Some budgets are **fixed-ish** — nearly 100% recurring bills. When these show under cap mid-month, it means bills haven't hit yet, not that spending is under control.
 
-See `~/Documents/firefly-private.md` for the full budget list with IDs, caps, rollover budgets, and nature.
+See `resources/private.md` for the full budget list with IDs, caps, rollover budgets, and nature.
 
 ## Bills (passive subscription trackers)
 
@@ -276,7 +276,7 @@ if freq == 'yearly':     effective = amount / (12 * (skip + 1))
 if freq == 'half-year':  effective = amount / (6 * (skip + 1))
 ```
 
-See `~/Documents/firefly-private.md` for the actual subscription list with names, amounts, and skip values.
+See `resources/private.md` for the actual subscription list with names, amounts, and skip values.
 
 ## Category audit workflow
 
@@ -295,5 +295,5 @@ date lag, merchant name matching, shared expenses, and more).
 1. Register an account at `http://localhost`
 2. Generate a PAT at `http://localhost/profile` -> OAuth -> Create new token
 3. The PAT is already stored as a sops secret (`fireflyPat`) — it's injected into `firefly-expenses` and `firefly-api` wrapper scripts automatically
-4. Populate `~/Documents/firefly-private.md` with accounts, budgets, categories
+4. Populate `resources/private.md` with accounts, budgets, categories
 5. Configure Mercado Pago API token (`mercadoPagoToken` in sops) for automatic transaction fetching

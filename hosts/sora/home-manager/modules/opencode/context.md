@@ -167,18 +167,20 @@ Edits in **Helix** (`hx`).
 ## Terminal
 
 When spawning a terminal window for commands that need sudo, use `kitty` directly.
-Wrap the command in a shell that stays open only if the command fails:
+Wrap the command in a shell that stays open until the command finishes
+executing:
 
 kitty --directory <workdir> -e sh -c '<cmd> || exec bash'
 
-The `|| exec bash` keeps the window open for debugging only when the command
-fails. On success, the window closes automatically. The spawned terminal has a
-real TTY, which supports interactive password entry (unlike the Bash tool).
+The `|| exec bash` keeps the window open on failure (for debugging).
+On success, the window closes once the command finishes executing.
+The spawned terminal has a real TTY, which supports interactive password entry
+(unlike the Bash tool).
 
-Detach with & so it doesn't block the session. When calling the Bash tool for
-this, do NOT set a timeout — let it default (or omit it entirely). The `&`
-detaches the process and it returns immediately anyway, and a short timeout
-just generates a confusing warning in the output.
+Detach with `&` so it doesn't block the session. **Crucially: do NOT set a
+timeout on the Bash tool call.** The `&` detaches the process and returns
+immediately. A short timeout fires before kitty even opens, producing a
+confusing warning. Let the timeout default (omit it entirely).
 
 **Bash tool inherits desktop env vars just fine.** `DISPLAY` and
 `WAYLAND_DISPLAY` are already available — no need to pull them from systemd.
@@ -322,6 +324,47 @@ Always call the right tool for the job:
 
 Don't use Bash for file reads, searches, or edits. Don't DIY with raw tools
 when a purpose-built subagent exists.
+
+## SOPS-encrypted private info (private.yaml)
+
+**All of Lucky's personal/private context lives in a SOPS-encrypted file**, not
+in a plaintext file called `private.md`. There is no `private.md` anywhere.
+The encrypted file is:
+
+```
+~/Documents/NixConfig/hosts/sora/home-manager/modules/opencode/private.yaml
+```
+
+It's loaded at runtime via `sops-nix` — the `opencodePrivateInfo` key decrypted
+and injected as an `instructions` entry. The file also contains
+`skillFireflyPrivate` and `skillLumisPrivate`, which get symlinked into skill
+directories as `resources/private.md`.
+
+### View or edit private.yaml
+
+```bash
+# View decrypted content
+sops --decrypt ~/Documents/NixConfig/hosts/sora/home-manager/modules/opencode/private.yaml
+
+# Edit in-place (opens $EDITOR with decrypted content, re-encrypts on save)
+sops ~/Documents/NixConfig/hosts/sora/home-manager/modules/opencode/private.yaml
+```
+
+After editing, sync jj and rebuild for changes to take effect.
+
+### Keys
+
+| Key | Purpose |
+|-----|---------|
+| `opencodePrivateInfo` | Injected as Ciel's instructions at runtime |
+| `skillFireflyPrivate` | Symlinked to firefly skill's `resources/private.md` |
+| `skillLumisPrivate` | Symlinked to lumis skill's `resources/private.md` |
+
+### When Lucky says "private.md" or asks for his private info
+
+He's referring to the `opencodePrivateInfo` content inside `private.yaml`.
+Decrypt and show it (or the specific key he wants). The same goes for
+Lucky's "private" — it means `opencodePrivateInfo` in `private.yaml`.
 
 # Operator
 
