@@ -7,12 +7,8 @@ description: Use when working with NixOS rebuilds, Nix package management, and f
 
 ## File Location
 
-When looking for any NixConfig file, **consult the index first** at:
-`hosts/sora/home-manager/modules/opencode/INDEX.md` (from NixConfig root).
-
-The index maps every module, script, and config file to keywords and
-import-dependency chains. Use it to jump straight to the relevant file
-instead of grepping blindly.
+For simple file lookups: grep/glob directly in NixConfig.
+For complex tasks: consult INDEX.md at `hosts/sora/home-manager/modules/opencode/INDEX.md`.
 
 ## Rebuild
 
@@ -24,10 +20,25 @@ Split rebuilds into **two steps** — always, every time:
 2. **Apply on terminal** (spawns a kitty window for interactive auth):
    `kitty --directory <workdir> -e sh -c 'nh os <option> <flake-path> || exec bash' &`
 
-   Where `<option>` is `switch` or `build` and `<flake-path>` is the full path to the
-   flake (e.g. `/home/rakki/Documents/NixConfig`). `nh` doesn't auto-detect the
-   flake from the working directory — it needs it as an explicit argument or via
-   the `NH_OS_FLAKE` env var.
+Where `<option>` is `switch` or `build` and `<flake-path>` is the full path to the
+flake (e.g. `/home/rakki/Documents/NixConfig`). `nh` doesn't auto-detect the
+flake from the working directory — it needs it as an explicit argument or via
+the `NH_OS_FLAKE` env var.
+
+## Terminal spawning
+
+For commands that need sudo (interactive auth), spawn kitty:
+
+```
+kitty --directory <workdir> -e sh -c '<cmd> || exec bash' &
+```
+
+The `|| exec bash` keeps the window open on failure. `&` detaches from the
+current session. **No timeout on the Bash tool call** — kitty opens
+asynchronously and the `&` returns immediately. A short timeout fires before
+kitty opens.
+
+`DISPLAY` and `WAYLAND_DISPLAY` are inherited in the Bash tool environment.
 
 ## Package Management
 
