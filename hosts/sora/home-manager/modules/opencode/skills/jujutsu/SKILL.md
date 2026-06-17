@@ -210,7 +210,13 @@ Full revset language reference: `references/revsets.md`.
 6. **`Commit is immutable` error** — you targeted a tracked bookmark like `main` directly. Target the commit above it, or use `main@origin` as the destination.
 7. **Bookmark may not exist.** `jj bookmark move <name>` fails with "No matching bookmarks" if the bookmark doesn't exist locally. Check first with `jj bookmark list`. If deleted locally but exists on remote (`deleted` + `@origin`), recreate it: `jj bookmark set <name> -r <name>@origin`.
 8. **Stale working copy** — usually caused by another workspace rewriting the working-copy commit. Run `jj workspace update-stale`.
-8. **Don't run `git checkout`/`git commit`/`git reset` in a colocated repo.** Use jj for mutations; use git only for read-only operations or things jj doesn't have (e.g. `git submodule`).
+9. **Don't run `git checkout`/`git commit`/`git reset` in a colocated repo.** Use jj for mutations; use git only for read-only operations or things jj doesn't have (e.g. `git submodule`).
+10. **Rebase can orphan commits.** `jj rebase -r <rev> -d <dest>` detaches `<rev>` from its old parent chain and reattaches it to `<dest>`. The intermediate parent chain (commits between old parent and old grandparent) is **left behind as an orphan** — they become disconnected from the main DAG. **Always verify after rebase:**
+    - `jj log -r '::<rebased-rev>'` — chain should connect down to trunk
+    - `jj log -r 'orphan()'` — shows commits with no lineage to any bookmark/remote
+    - Recovery: `jj rebase -r <orphan> -d <new-dest>` reattaches it
+11. **`jj abandon` of a middle commit places `@` unpredictably.** After abandoning a non-tip commit, jj may place `@` on a sibling instead of the chain tip. Always check `jj st` after `jj abandon`, then use `jj new -r <correct-tip>` explicitly. If a fork appears (two children of same parent), abandon the wrong one and `jj new -r <correct-tip>`.
+12. **Bookmark drift: moving `master` to an empty `@` hides real changes.** If `@` is a fresh working copy (diff = empty) and you run `jj bookmark move master --to @`, the bookmark now points to an empty commit. The real changes are in `@-`. Fix with `jj bookmark set master -r <change-id> --allow-backwards` to point it back to the commit with content.
 
 ## Progressive Disclosure — When to Read More
 
