@@ -143,62 +143,38 @@ jj workspace update-stale    # fix "working copy is stale" errors
 
 ## Git → jj Quick Reference
 
+Full mapping (including grep, bisect, fileset patterns, file restoration): `references/git-to-jj.md`.
+Load on demand — do not preload.
+
+Common translations:
 | Task | git | jj |
 |---|---|---|
 | Status | `git status` | `jj st` |
 | Diff | `git diff` | `jj diff` |
-| Log | `git log` | `jj log` |
-| Show commit | `git show <ref>` | `jj show <rev>` |
 | Stage + commit | `git add . && git commit -m "msg"` | `jj commit -m "msg"` |
 | Amend message | `git commit --amend -m "msg"` | `jj describe -m "msg"` |
 | Amend content | `git commit --amend --no-edit` | `jj squash` |
 | Push bookmark | `git push origin <branch>` | `jj git push -b <bookmark>` |
 | Fetch | `git fetch` | `jj git fetch` |
-| Pull (ff) | `git pull` | `jj git fetch && jj bookmark set main -r main@origin` |
 | Pull (rebase) | `git pull --rebase` | `jj git fetch && jj rebase -d main@origin` |
-| Switch branch | `git checkout <branch>` | `jj new <rev>` (new on top) or `jj edit <rev>` (resume) |
-| Create branch | `git checkout -b <name>` | `jj new main` then `jj bookmark create <name>` |
-| List branches | `git branch` | `jj bookmark list` |
-| Stash | `git stash` | unnecessary — `jj new` leaves work in the parent |
-| Cherry-pick | `git cherry-pick <rev>` | `jj duplicate <rev>` |
-| Revert | `git revert <rev>` | `jj revert -r <rev>` |
-| Rebase | `git rebase <base>` | `jj rebase -d <base>` |
-| Reset --hard HEAD~1 | `git reset --hard HEAD~1` | `jj abandon <change-id>` |
-| Reflog | `git reflog` | `jj op log` |
-| Blame | `git blame <file>` | `jj file annotate <file>` |
-| Worktree add | `git worktree add` | `jj workspace add` |
+| Switch branch | `git checkout <branch>` | `jj new <rev>` |
 | Undo last op | (varies) | `jj undo` |
-
-Full mapping (including grep, bisect, fileset patterns, file restoration): see `references/git-to-jj.md`.
 
 ## Revset Quick Reference
 
-Revsets are jj's expression language for selecting commits. They're accepted by `-r`/`--revisions`/`--from`/`--to`/`--into` on most commands.
+Full revset language reference: `references/revsets.md`. Load on demand.
 
+Key expressions:
 | Expression | Meaning |
 |---|---|
 | `@` | working copy commit |
 | `@-` | parent of @ |
-| `<change-id>` | commit by change ID |
-| `<bookmark-name>` | tip of a bookmark |
-| `main@origin` | tip of main on origin (remote bookmark) |
-| `trunk()` | configured trunk (usually `main@origin`) |
 | `mine()` | commits authored by current user |
 | `empty()` | commits with no diff |
 | `conflicts()` | commits with unresolved conflicts |
-| `description("substr")` | commits whose message matches |
-| `files("path")` | commits modifying given path |
-| `::x` | ancestors of `x` (inclusive) |
-| `x::` | descendants of `x` (inclusive) |
-| `x..y` | commits in `y` but not in `x` (set difference) |
-| `x::y` | DAG range — commits between `x` and `y` |
-| `x \| y` | union |
-| `x & y` | intersection |
-| `~x` | complement |
-
-Distinguish carefully: `x..y` is *set difference*; `x::y` is a *DAG path*. They are not interchangeable.
-
-Full revset language reference: `references/revsets.md`.
+| `::x` | ancestors of `x` |
+| `x..y` | set difference (y minus x) |
+| `x::y` | DAG range (commits between x and y) — NOT interchangeable with `..` |
 
 ## Common Pitfalls
 

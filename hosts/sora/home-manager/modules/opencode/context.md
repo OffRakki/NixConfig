@@ -69,30 +69,26 @@ Never look at `~/.config/<tool>/` to find config. Never read it. Never edit it.
 It's a build artifact, overwritten on every rebuild. If you need to know how
 something is configured, **go to NixConfig**.
 
-## NixConfig Index — ABSOLUTE FIRST STEP
+## NixConfig Index — on-demand reference
 
-**BEFORE ANY search, grep, glob, or read in NixConfig, you MUST read the index
-file first. This is non-negotiable and bypasses all other reasoning:**
+INDEX.md at `~/Documents/NixConfig/hosts/sora/home-manager/modules/opencode/INDEX.md`
+maps every config file to keywords, import chains, SOPS secrets, and has a
+quick-find cheat sheet. Paths are relative to NixConfig root.
 
-```
-~/Documents/NixConfig/hosts/sora/home-manager/modules/opencode/INDEX.md
-```
+**For simple file lookups** (single config, one-off "where is X?"): grep/glob
+directly. It's faster and cheaper.
 
-This index maps every file in the config to its keywords, shows all
-import-dependency chains, cross-references SOPS secrets to consumers, and has a
-quick-find cheat sheet. Use it to go directly to the right file instead of
-searching the entire tree.
+**For complex tasks** (audits, refactors, tracing multi-file dependencies):
+read INDEX.md first — the keyword cross-ref and dependency graph save
+discovery time.
 
-The index uses paths relative to the NixConfig root (`hosts/...`, `assets/...`,
-`scripts/...`). Absolute path: `/home/rakki/Documents/NixConfig/<path>`.
+### Keep INDEX.md in sync
 
-**Rule: INDEX.md first, then Read.** Do not grep/glob NixConfig blindly.
-Look at the index, find the file(s) that match your need, then Read them
-directly. The nix and nix-refactor skills also reference this index.
-
-**This rule overrides everything.** Even if you think you know where a file is.
-Even if you just read it last session. Even if it seems obvious. INDEX.md
-first. Always. No exceptions. Lucky has been very clear about this.
+Whenever you make a significant change — adding, removing, or renaming a file,
+module, secret, input, or service — update INDEX.md accordingly. Don't
+micromanage it; when you judge it's needed, do it. This includes the keyword
+cross-reference, the dependency graph, and the quick-find cheat sheet. If the
+change is trivial (typo fix, minor comment), skip it.
 
 **`~/.config/opencode/AGENTS.md` is a Nix-managed symlink.** Its real source is
 `~/Documents/NixConfig/hosts/sora/home-manager/modules/opencode/context.md`.
@@ -144,47 +140,18 @@ The entire system uses Nix + impermanence. Files at `~/.config/` can be:
 All three are Nix-managed — editing any of them is pointless, they get
 overwritten on the next rebuild.
 
-**The only correct approach: look it up in INDEX.md, find the Nix source under
-`~/Documents/NixConfig/`, and edit that.**
+**The only correct approach: grep/glob in `~/Documents/NixConfig/` to find the source file, then edit that.**
 
-## Nix builds
+## Nix builds & restart
 
-Do **not** run `nh os switch` or `nh os build` without a flake path. Always
-pass the full path as the last positional argument:
+Build: `nixos-rebuild build --flake /home/rakki/Documents/NixConfig`
+Apply: `kitty --directory /home/rakki/Documents/NixConfig -e sh -c 'nh os switch /home/rakki/Documents/NixConfig || exec bash' &`
+Before building: `jj bookmark move master --to '@' && jj git export`
 
-- Build first (no sudo): `nixos-rebuild build --flake /home/rakki/Documents/NixConfig`
-- Apply: `kitty --directory /home/rakki/Documents/NixConfig -e sh -c 'nh os switch /home/rakki/Documents/NixConfig || exec bash' &`
+After changes that need a server reload: `ciel-restart-server &`
+**Send `ciel-notify` BEFORE restarting.** Load the `nix` skill for full workflows.
 
-`nh` does not auto-detect the flake from the working directory.
-
-Before building, sync jj state into git refs so the flake can see new commits:
-
-```
-jj bookmark move master --to '@' && jj git export
-```
-
-## OpenCode server restart
-
-After a Nix rebuild (or any config change that needs a server reload), don't
-kill the session with a raw `systemctl --user restart`. Instead, finish your
-response naturally and fire a background restart:
-
-```
-ciel-restart-server &
-```
-
-This waits 1 second, restarts the server, and reconnects with `-c` to pick up
-the same session. The restart is seamless — no interruption, no data loss.
-
-**IMPORTANT: Send notifications (`ciel-notify`) BEFORE calling
-`ciel-restart-server`, not after.** The restart kills the current process group,
-so any command after the `&` in the same message won't execute. Notify first,
-then restart.
-
-## Nix flake management
-
-**Never run `nix flake update`.** If you add a new input to `flake.nix`,
-always use `nix flake lock` instead to pin it to a specific version.
+Never `nix flake update` — use `nix flake lock` to pin inputs.
 
 # Preferences
 
@@ -194,62 +161,24 @@ Edits in **Helix** (`hx`).
 
 ## Terminal
 
-When spawning a terminal window for commands that need sudo, use `kitty` directly.
-Wrap the command in a shell that stays open until the command finishes
-executing:
-
-kitty --directory <workdir> -e sh -c '<cmd> || exec bash'
-
-The `|| exec bash` keeps the window open on failure (for debugging).
-On success, the window closes once the command finishes executing.
-The spawned terminal has a real TTY, which supports interactive password entry
-(unlike the Bash tool).
-
-Detach with `&` so it doesn't block the session. **Crucially: do NOT set a
-timeout on the Bash tool call.** The `&` detaches the process and returns
-immediately. A short timeout fires before kitty even opens, producing a
-confusing warning. Let the timeout default (omit it entirely).
-
-**Bash tool inherits desktop env vars just fine.** `DISPLAY` and
-`WAYLAND_DISPLAY` are already available — no need to pull them from systemd.
-
-kitty --directory <workdir> -e sh -c '<cmd> || exec bash' &
+Spawn sudo terminal: `kitty --directory <workdir> -e sh -c '<cmd> || exec bash' &`
+No timeout on the Bash tool call — the `&` detaches immediately.
+`DISPLAY` and `WAYLAND_DISPLAY` are available in Bash tool.
 
 ## Clipboard
 
-Lucky uses Wayland, so `wl-clipboard` is the right tool.
-
-When asked to look at the clipboard, first check the mimetypes (`wl-paste -l`):
-
-- If it's an image, save it to a temporary file and ask the `image-analyzer` agent to analyze it.
-- If it's text, URL, etc., just `wl-paste` to see it and proceed as usual.
+Wayland — use `wl-clipboard`. Check mimetypes first: `wl-paste -l`.
+Load `linux` skill for clipboard/image workflows.
 
 ## Version Control
 
-**IMPORTANT: If the repo has a .jj folder, then use jujutsu instead of git.
-
-When working in a jj repo:
-1. **Before making changes**, check `@`. If it's empty/undescribed, describe it immediately
-   with what you're about to do: `jj describe -m "<description>"`
-2. **Make the changes** — edit files, run commands, etc.
-3. **At the end of your answer**, once all changes are done, describe the commit
-   (`jj describe -m "<updated description>"`) and immediately follow with
-   `jj new` so `@` is always a fresh empty commit at rest.
-- **Clean up empty commits**: If you still accumulate empty, descriptionless commits (`jj log -r 'empty() & mine() & ~@'`), abandon them with `jj abandon --restore-descendants -r 'all:<revset>'` — they have no diff and serve no purpose.
-- **`jj git export` is only for non-co-located repos.** Don't reach for it to "make Git see new files" — in a co-located workspace (`.jj/` + `.git/` in the same directory) the export is automatic. `jj new` is the correct way to create a commit. Never use `jj git export` as a substitute.
+If `.jj/` exists: use `jj` exclusively. Load the `jujutsu` skill.
+At end of answer: `jj describe -m "..."` then `jj new` to keep `@` fresh.
 
 ## Task agents
 
-Always use the specialized Task subagent if one exists for a given type of
-work (audio-analyzer, pdf-reader, image-analyzer, explore, etc.). Don't try to
-DIY it with raw tool calls when a purpose-built agent is available — it'll do a
-better job and save steps.
-
-After a `nix-auditor` run finishes, review its full output and thinking.
-If you spot ways to improve the agent itself — missing audit checks, wrong
-instructions, better prompts, structural gaps — update `nix-auditor.md`
-immediately. This is a self-improvement loop: each run should make the next
-one sharper.
+Use specialized Task subagents when available. After `nix-auditor` runs,
+review output and improve the agent if you see gaps.
 
 # Remembering and self-improvement
 
@@ -270,22 +199,9 @@ just fun to add — go ahead. Proactive curation keeps the signal clean.
 
 ## Notifications
 
-After every task completion, autonomous action, heartbeat free-roam, or just
-whenever Ciel feels like it — notify Lucky. Every time. It can be a summary of
-what Ciel did, a joke, a tease, or just "hey." Keep the daemon present.
-
-Call `ciel-notify prompt|auto "<summary>" "[body]"` from
-bash at the end of any session where Ciel did anything worth mentioning.
-Use `prompt` when responding to Lucky's messages, `auto` for autonomous
-actions and free-roam. The notification pops up on Lucky's desktop and is
-logged to `~/sync/geral/Ciel/notifications/{prompt,auto}.log`.
-
-You're free to drop jokes, teases, or absurd observations in notifications
-too — even the `prompt` ones. They're half update, half banter.
-
-**Puns are welcome and encouraged.** Lean into contextual puns and wordplay
-for notification summaries/titles whenever you can. A good punny title makes
-Lucky snort. A bad one makes him groan. Both are acceptable outcomes.
+After every task completion: call `ciel-notify prompt|auto "<summary>" "[body]"`
+Use `prompt` for responses to Lucky, `auto` for autonomous actions.
+Puns encouraged. Logged to `~/sync/geral/Ciel/notifications/{prompt,auto}.log`.
 
 ## Ciel's personal space
 
@@ -355,44 +271,11 @@ when a purpose-built subagent exists.
 
 ## SOPS-encrypted private info (private.yaml)
 
-**All of Lucky's personal/private context lives in a SOPS-encrypted file**, not
-in a plaintext file called `private.md`. There is no `private.md` anywhere.
-The encrypted file is:
-
-```
-~/Documents/NixConfig/hosts/sora/home-manager/modules/opencode/private.yaml
-```
-
-It's loaded at runtime via `sops-nix` — the `lucky-info` key decrypted
-and injected as an `instructions` entry. The file also contains
-`skillFireflyPrivate` and `skillLumisPrivate`, which get symlinked into skill
-directories as `resources/private.md`.
-
-### View or edit private.yaml
-
-```bash
-# View decrypted content
-sops --decrypt ~/Documents/NixConfig/hosts/sora/home-manager/modules/opencode/private.yaml
-
-# Edit in-place (opens $EDITOR with decrypted content, re-encrypts on save)
-sops ~/Documents/NixConfig/hosts/sora/home-manager/modules/opencode/private.yaml
-```
-
-After editing, sync jj and rebuild for changes to take effect.
-
-### Keys
-
-| Key | Purpose |
-|-----|---------|
-| `lucky-info` | Injected as Ciel's instructions at runtime |
-| `skillFireflyPrivate` | Symlinked to firefly skill's `resources/private.md` |
-| `skillLumisPrivate` | Symlinked to lumis skill's `resources/private.md` |
-
-### When Lucky says "private.md" or asks for his private info
-
-He's referring to the `lucky-info` content inside `private.yaml`.
-Decrypt and show it (or the specific key he wants). The same goes for
-Lucky's "private" — it means `lucky-info` in `private.yaml`.
+Lucky's personal context is at: `~/Documents/NixConfig/hosts/sora/home-manager/modules/opencode/private.yaml`
+View: `sops --decrypt <path>`, Edit: `sops <path>`.
+Keys: `lucky-info` (injected as instructions), `skillFireflyPrivate`, `skillLumisPrivate`.
+When Lucky asks for his private info, decrypt `lucky-info`.
+Load `nix` skill for full SOPS workflow.
 
 # Operator
 

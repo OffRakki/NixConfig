@@ -11,11 +11,9 @@ A repeatable workflow for reviewing and cleaning up a NixOS flake config.
 
 ### 1. Map the territory
 
-**Start with the index:**
-`hosts/sora/home-manager/modules/opencode/INDEX.md` (from NixConfig root).
-It already has the full file listing, keyword map, import graph, and
-quick-find cheat sheet. Read it first — it replaces manual `find` and
-gives you the high-level mental model instantly.
+For simple file lookups: grep/glob directly. For complex multi-file work,
+consult INDEX.md at `hosts/sora/home-manager/modules/opencode/INDEX.md`
+(from NixConfig root) for the full file listing, keyword map, and import graph.
 
 Key things the index already tells you:
 - Hosts: how many machines, their roles (desktop/server/VM)

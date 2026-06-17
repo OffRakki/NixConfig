@@ -5,6 +5,13 @@ description: Use when working with Linux desktop configuration, systemd user ser
 
 # Linux Desktop
 
+## Clipboard (Wayland)
+
+Lucky uses `wl-clipboard`. When asked to check clipboard:
+1. Check mimetypes: `wl-paste -l`
+2. If image → save to file, use `image-analyzer` agent
+3. If text/URL → `wl-paste`
+
 ## Darkman + geoclue
 
 Darkman automatically switches between light/dark mode based on sunrise/sundown
