@@ -335,7 +335,7 @@ The encrypted file is:
 ~/Documents/NixConfig/hosts/sora/home-manager/modules/opencode/private.yaml
 ```
 
-It's loaded at runtime via `sops-nix` — the `opencodePrivateInfo` key decrypted
+It's loaded at runtime via `sops-nix` — the `lucky-info` key decrypted
 and injected as an `instructions` entry. The file also contains
 `skillFireflyPrivate` and `skillLumisPrivate`, which get symlinked into skill
 directories as `resources/private.md`.
@@ -356,15 +356,15 @@ After editing, sync jj and rebuild for changes to take effect.
 
 | Key | Purpose |
 |-----|---------|
-| `opencodePrivateInfo` | Injected as Ciel's instructions at runtime |
+| `lucky-info` | Injected as Ciel's instructions at runtime |
 | `skillFireflyPrivate` | Symlinked to firefly skill's `resources/private.md` |
 | `skillLumisPrivate` | Symlinked to lumis skill's `resources/private.md` |
 
 ### When Lucky says "private.md" or asks for his private info
 
-He's referring to the `opencodePrivateInfo` content inside `private.yaml`.
+He's referring to the `lucky-info` content inside `private.yaml`.
 Decrypt and show it (or the specific key he wants). The same goes for
-Lucky's "private" — it means `opencodePrivateInfo` in `private.yaml`.
+Lucky's "private" — it means `lucky-info` in `private.yaml`.
 
 # Operator
 
