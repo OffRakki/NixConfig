@@ -464,20 +464,20 @@
         favorites = [];
       };
       appLauncher = {
-        enableClipboardHistory = false;
-        autoPasteClipboard = false;
+        enableClipboardHistory = true;
+        autoPasteClipboard = true;
         enableClipPreview = true;
         clipboardWrapText = true;
         clipboardWatchTextCommand = "wl-paste --type text --watch cliphist store";
         clipboardWatchImageCommand = "wl-paste --type image --watch cliphist store";
-        position = "center";
-        pinnedApps = [];
+        position = "top_left";
+        pinnedApps = ["firefox" "opencode"];
         useApp2Unit = false;
         sortByMostUsed = true;
         terminalCommand = "kitty -e";
         customLaunchPrefixEnabled = false;
         customLaunchPrefix = "";
-        viewMode = "list";
+        viewMode = "grid";
         showCategories = true;
         iconMode = "tabler";
         showIconBackground = false;
@@ -487,7 +487,7 @@
         ignoreMouseInput = false;
         screenshotAnnotationTool = "";
         overviewLayer = false;
-        density = "default";
+        density = "comfortable";
       };
       idle = {
         enabled = true;
