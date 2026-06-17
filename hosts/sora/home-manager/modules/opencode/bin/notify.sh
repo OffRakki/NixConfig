@@ -24,7 +24,7 @@ echo "[$(date '+%Y-%m-%d %H:%M:%S')] $SUMMARY${BODY:+ | $BODY}" >> "$LOG_DIR/$SO
 
 notify-send \
   --app-name="Ciel" \
-  --icon=/dev/null \
+  --icon=dialog-information \
   --urgency=normal \
   "ciel — $SUMMARY" \
   "${BODY:-}"
