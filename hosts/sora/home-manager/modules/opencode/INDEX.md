@@ -195,7 +195,7 @@
 | File | Keywords |
 |------|----------|
 | `hosts/sora/home-manager/modules/opencode/default.nix` | opencode, agents, skills, config, binary |
-| `hosts/sora/home-manager/modules/opencode/opencode.nix` | opencode-package, config-file |
+| `hosts/sora/home-manager/modules/opencode/opencode.nix` | opencode-package, config-file, compaction(prune+tail_turns:1), tool_output(1000l/30kb) |
 | `hosts/sora/home-manager/modules/opencode/ciel.nix` | ciel-personality, context-injection, sops-secrets(deepseek,openai,opencode-server,caldav,lucky-info,skill-firefly,skill-lumis) |
 | `hosts/sora/home-manager/modules/opencode/context.md` | AGENTS.md-symlink-source, Ciel-personality-rules, first-person-third-person-rule, nix-flake-path, jujutsu-workflow, skill-routing, notification-scripts, index-sync-rule |
 | `hosts/sora/home-manager/modules/opencode/private.yaml` | sops-encrypted, lucky-info, skillFireflyPrivate, skillLumisPrivate |

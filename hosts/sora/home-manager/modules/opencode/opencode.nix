@@ -90,6 +90,15 @@ in {
       autoupdate = false;
       model = "deepseek-v4-flash";
       instructions = [osConfig.sops.secrets.lucky-info.path];
+      compaction = {
+        auto = true;
+        prune = true;
+        tail_turns = 1;
+      };
+      tool_output = {
+        max_lines = 1000;
+        max_bytes = 30000;
+      };
       provider = {
         deepseek = {
           name = "DeepSeek";
