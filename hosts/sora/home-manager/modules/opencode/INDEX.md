@@ -196,11 +196,12 @@
 |------|----------|
 | `hosts/sora/home-manager/modules/opencode/default.nix` | opencode, agents, skills, config, binary |
 | `hosts/sora/home-manager/modules/opencode/opencode.nix` | opencode-package, config-file, compaction(prune+tail_turns:1), tool_output(1000l/30kb) |
-| `hosts/sora/home-manager/modules/opencode/ciel.nix` | ciel-personality, context-injection, sops-secrets(deepseek,openai,opencode-server,caldav,lucky-info,skill-firefly,skill-lumis) |
+| `hosts/sora/home-manager/modules/opencode/ciel.nix` | ciel-personality, context-injection, heartbeat(free-roam,2min-timer,systemd), sops-secrets(deepseek,openai,opencode-server,caldav,lucky-info,skill-firefly,skill-lumis) |
 | `hosts/sora/home-manager/modules/opencode/context.md` | AGENTS.md-symlink-source, Ciel-personality-rules, first-person-third-person-rule, nix-flake-path, jujutsu-workflow, skill-routing, notification-scripts, index-sync-rule |
 | `hosts/sora/home-manager/modules/opencode/private.yaml` | sops-encrypted, lucky-info, skillFireflyPrivate, skillLumisPrivate |
 | `hosts/sora/home-manager/modules/opencode/bin/notify.sh` | ciel-notify, dunstify-desktop-notification, log(~/sync/geral/Ciel/notifications/) |
 | `hosts/sora/home-manager/modules/opencode/bin/restart-server.sh` | ciel-restart-server, systemctl--user, opencode-reconnect |
+| `hosts/sora/home-manager/modules/opencode/bin/freeroam.sh` | ciel-freeroam, free-roam, opencode-run--attach, summon-like-heartbeat |
 | `hosts/sora/home-manager/modules/opencode/agents/*` | agents: audio-analyzer(whisper-cli,ffprobe), image-analyzer(gpt-4o-mini-vision), nix-auditor(readonly-nix-audit), pdf-reader(pdftotext+image) |
 | Skills: (16 total) | jujutsu, nix, nix-refactor, linux, invest, firefly, lumis, personal-tools, browser, opencode-edit, opencode-session, context-curation, seo, screenshot, customize-opencode |
 | `skills/firefly/scripts/*` | firefly_client.py, expenses.py, import_mp.py, mercado_pago.py |
@@ -405,6 +406,7 @@ hosts/tempest/home-manager/home.nix
 | Email config | `hosts/sora/home-manager/modules/aerc.nix`, `neomutt.nix` |
 | Calendar/contacts/todos | `hosts/sora/home-manager/modules/calendar.nix` |
 | Opencode personality/skills | `hosts/sora/home-manager/modules/opencode/` |
+| Ciel free-roam (/freeroam) | `opencode.nix`(command.freeroam), `bin/freeroam.sh`, `ciel.nix`(heartbeat-timer) |
 | Glance dashboard YAML | `hosts/*/nixos/containers/data/glance/glance.yml` |
 | NixOS containers | `hosts/*/nixos/containers/default.nix`, `containers/containers.nix` |
 | Wallpapers | `assets/wallpapers/` |

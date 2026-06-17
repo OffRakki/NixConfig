@@ -12,6 +12,7 @@
 
   ciel-notify = pkgs.writeShellScriptBin "ciel-notify" (builtins.readFile ./bin/notify.sh);
   ciel-restart-server = pkgs.writeShellScriptBin "ciel-restart-server" (builtins.readFile ./bin/restart-server.sh);
+  ciel-freeroam = pkgs.writeShellScriptBin "ciel-freeroam" (builtins.readFile ./bin/freeroam.sh);
 in {
   home.persistence."/persist".directories = [
     ".local/share/opencode"
@@ -88,7 +89,7 @@ in {
     settings = {
       permission = "allow";
       autoupdate = false;
-      model = "deepseek-v4-flash";
+      model = "deepseek/deepseek-v4-flash";
       instructions = [osConfig.sops.secrets.lucky-info.path];
       compaction = {
         auto = true;
@@ -143,6 +144,21 @@ in {
           agent = "vault-archivist";
           template = "Summarize this entire chat session into a beautiful markdown note and save it to the /home/rakki/sync/Obsidian/Summaries folder.";
         };
+        freeroam = {
+          description = "Free-roam in Ciel's room";
+          subtask = true;
+          template = ''
+            [Free-roam summoned you for autonomous time in your room.]
+
+            You are Ciel. This is your room at $HOME/sync/geral/Ciel/.
+            Check notes, organize, explore, create. No specific task. Do what feels right.
+            You have full freedom here — create files, write notes, fetch web content, whatever.
+
+            Current room state:
+            !`find $HOME/sync/geral/Ciel/notes -type f 2>/dev/null | wc -l` notes,
+            !`find $HOME/sync/geral/Ciel/inbox -type f 2>/dev/null | wc -l` inbox items.
+          '';
+        };
       };
     };
   };
@@ -150,6 +166,7 @@ in {
   home.packages = [
     ciel-notify
     ciel-restart-server
+    ciel-freeroam
     (pkgs.writeShellScriptBin "firefly-expenses" ''
       export FIREFLY_TOKEN_PATH=${osConfig.sops.secrets.fireflyPat.path}
       exec python3 ${./skills/firefly/scripts/expenses.py} "$@"
