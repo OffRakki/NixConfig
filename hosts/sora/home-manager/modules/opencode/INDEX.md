@@ -54,9 +54,9 @@
 | `openaiApiKey` | `secrets.yaml` | opencode (opencode module) |
 | `opencodeServerPass` | `secrets.yaml` | sora `home.nix` (OPENCODE_SERVER_PASSWORD) |
 | `caldavPass` | `secrets.yaml` | `calendar.nix` |
-| `lucky-info` | `opencode/private.yaml` | opencode (context injection) |
-| `skillFireflyPrivate` | `opencode/private.yaml` | firefly skill |
-| `skillLumisPrivate` | `opencode/private.yaml` | lumis skill |
+| `lucky-info` | `pi/private.yaml` | opencode (context injection) |
+| `skillFireflyPrivate` | `pi/private.yaml` | firefly skill |
+| `skillLumisPrivate` | `pi/private.yaml` | lumis skill |
 | `piholePass` | `secrets.yaml` | glance containers (both hosts) |
 | `gitToken` | `secrets.yaml` | glance containers (both hosts) |
 
@@ -199,7 +199,7 @@
 | `hosts/sora/home-manager/modules/opencode/opencode.nix` | opencode-package, config-file, compaction(prune+tail_turns:1), tool_output(1000l/30kb) |
 | `hosts/sora/home-manager/modules/opencode/ciel.nix` | ciel-personality, context-injection, heartbeat(free-roam,2min-timer,systemd), sops-secrets(deepseek,openai,opencode-server,caldav,lucky-info,skill-firefly,skill-lumis) |
 | `hosts/sora/home-manager/modules/opencode/context.md` | AGENTS.md-symlink-source, Ciel-personality-rules, first-person-third-person-rule, nix-flake-path, jujutsu-workflow, skill-routing, notification-scripts, index-sync-rule |
-| `hosts/sora/home-manager/modules/opencode/private.yaml` | sops-encrypted, lucky-info, skillFireflyPrivate, skillLumisPrivate |
+| `hosts/sora/home-manager/modules/pi/private.yaml` | sops-encrypted, lucky-info, skillFireflyPrivate, skillLumisPrivate, webSearchJson |
 | `hosts/sora/home-manager/modules/opencode/bin/notify.sh` | ciel-notify, dunstify-desktop-notification, log(~/sync/geral/Ciel/notifications/) |
 | `hosts/sora/home-manager/modules/opencode/bin/restart-server.sh` | ciel-restart-server, systemctl--user, opencode-reconnect |
 | `hosts/sora/home-manager/modules/opencode/bin/freeroam.sh` | ciel-freeroam, free-roam, opencode-run--attach, summon-like-heartbeat |
@@ -416,7 +416,7 @@ hosts/tempest/home-manager/home.nix
 | Fish aliases/abbrs | `hosts/sora/home-manager/modules/fish/fish.nix`, `hosts/tempest/home-manager/fish.nix` |
 | GTK/icon/cursor theme | `hosts/sora/home-manager/gtk.nix` |
 | Dark/light mode toggle | `hosts/sora/home-manager/darkman.nix` |
-| SOPS secrets | `.sops.yaml`, `secrets.yaml`, `opencode/private.yaml` |
+| SOPS secrets | `.sops.yaml`, `secrets.yaml`, `pi/private.yaml` |
 | Persistence/impermanence | `optin-persistence.nix`, `persistence.nix`(hm both) |
 | Firefly III finance | `hosts/sora/nixos/firefly.nix` |
 | Stock report | `hosts/modules/stock-report.nix` |

@@ -116,19 +116,19 @@
     };
 
     secrets.lucky-info = {
-      sopsFile = ../home-manager/modules/opencode/private.yaml;
+      sopsFile = ../home-manager/modules/pi/private.yaml;
       owner = "rakki";
     };
     secrets.skillFireflyPrivate = {
-      sopsFile = ../home-manager/modules/opencode/private.yaml;
+      sopsFile = ../home-manager/modules/pi/private.yaml;
       owner = "rakki";
     };
     secrets.skillLumisPrivate = {
-      sopsFile = ../home-manager/modules/opencode/private.yaml;
+      sopsFile = ../home-manager/modules/pi/private.yaml;
       owner = "rakki";
     };
     secrets.webSearchJson = {
-      sopsFile = ../home-manager/modules/opencode/private.yaml;
+      sopsFile = ../home-manager/modules/pi/private.yaml;
       owner = "rakki";
     };
   };
