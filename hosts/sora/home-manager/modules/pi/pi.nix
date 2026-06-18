@@ -8,14 +8,13 @@
 }: let
   cfg = config.programs.pi-coding-agent;
   piDir = cfg.configDir;
-  opendir = ../opencode;
 in {
   # Persist pi state directories — sessions, npm packages, git clones and sets pi to offline mode (no update/telemetry)
   home = {
     sessionVariables = {
-      PI_OFFLINE = 1;
+      PI_SKIP_VERSION_CHECK = 1;
     };
-    packages = with pkgs; [
+    packages = [
       inputs.llm-agents.packages.${pkgs.system}.lean-ctx
     ];
     persistence."/persist".directories = [
@@ -40,7 +39,7 @@ in {
 
   programs.pi-coding-agent = {
     enable = true;
-    context = ./AGENTS.md;
+    context = ./context.md;
 
     # Node is needed for npm-based pi package installs.
     # nodejs includes npm in recent nixpkgs versions.
@@ -64,17 +63,6 @@ in {
         keepRecentTokens = 20000;
       };
 
-      retry = {
-        enabled = true;
-        maxRetries = 3;
-        baseDelayMs = 2000;
-        provider = {
-          timeoutMs = 3600000;
-          maxRetries = 0;
-          maxRetryDelayMs = 60000;
-        };
-      };
-
       enabledModels = [
         "deepseek-v4-*"
         "gpt-4o*"
@@ -86,7 +74,7 @@ in {
         maxRetries = 3;
         baseDelayMs = 2000;
         provider = {
-          timeoutMs = 300000;
+          timeoutMs = 600000;
           maxRetries = 0;
           maxRetryDelayMs = 60000;
         };
@@ -123,41 +111,6 @@ in {
 
     models = {
       providers = {
-        deepseek = {
-          baseUrl = "https://api.deepseek.com/v1";
-          api = "openai-completions";
-          apiKey = "!cat ${osConfig.sops.secrets.deepseekApiKey.path}";
-          models = [
-            {
-              id = "deepseek-v4-flash";
-              name = "DeepSeek V4 Flash";
-              reasoning = true;
-              input = ["text"];
-              # cost = {
-              #   input = 0.14;
-              #   output = 0.28;
-              #   cacheRead = 0.014;
-              #   cacheWrite = 0.14;
-              # };
-              contextWindow = 128000;
-              maxTokens = 16384;
-            }
-            {
-              id = "deepseek-v4-pro";
-              name = "DeepSeek V4 Pro";
-              reasoning = true;
-              input = ["text"];
-              # cost = {
-              #   input = 0.55;
-              #   output = 2.19;
-              #   cacheRead = 0.055;
-              #   cacheWrite = 0.55;
-              # };
-              contextWindow = 128000;
-              maxTokens = 32768;
-            }
-          ];
-        };
         openai = {
           baseUrl = "https://api.openai.com/v1";
           api = "openai-completions";
