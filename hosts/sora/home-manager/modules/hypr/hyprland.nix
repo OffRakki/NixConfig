@@ -91,7 +91,7 @@ in {
           cursor = {
             no_hardware_cursors = false,
             enable_hyprcursor = true,
-            warp_on_change_workspace = 0,
+            warp_on_change_workspace = 1,
             no_warps = true,
           },
 

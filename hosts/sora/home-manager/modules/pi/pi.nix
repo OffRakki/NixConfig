@@ -2,7 +2,6 @@
   config,
   pkgs,
   osConfig,
-  lib,
   inputs,
   ...
 }: let
@@ -27,7 +26,7 @@ in {
     name = "Pi";
     genericName = "AI Coding Assistant";
     comment = "Terminal-based AI coding assistant";
-    exec = "kitty --override background_opacity=1.0 --override background_blur=0 -e pi";
+    exec = "kitty --override background_opacity=1.0 --override background_blur=0 --directory /home/rakki/Projects/NixConfig -e pi";
     icon = "utilities-terminal";
     terminal = false;
     categories = [
@@ -87,6 +86,9 @@ in {
         blockImages = false;
       };
       warnings.anthropicExtraUsage = true;
+      powerline = {
+        preset = "nerd";
+      };
 
       packages = [
         "npm:pi-web-access"
@@ -126,15 +128,6 @@ in {
             }
           ];
         };
-      };
-    };
-  };
-
-  # Place models, extensions, skills, prompts, themes, and APPEND_SYSTEM.md into ~/.pi/agent/
-  home.file = {
-    # Custom provider models (hyper.charm.land)
-    "${piDir}/models.json".text = builtins.toJSON {
-      providers = {
         hyper = {
           baseUrl = "https://hyper.charm.land/v1";
           apiKey = "!cat ${osConfig.sops.secrets.hyperApiKey.path}";
@@ -292,7 +285,10 @@ in {
         };
       };
     };
+  };
 
+  # Place models, extensions, skills, prompts, themes, and APPEND_SYSTEM.md into ~/.pi/agent/
+  home.file = {
     # Extensions (notify only — providers are defined declaratively in models.json)
     "${piDir}/extensions/notify.ts".source = ./extensions/notify.ts;
 
