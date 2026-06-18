@@ -179,6 +179,12 @@ in {
     # Theme
     "${piDir}/themes/ciel-cursor.json".source = ./themes/ciel-cursor.json;
 
+    # Agents (subagent definitions — auto-discovered by pi-subagents)
+    "${piDir}/agents/nix-auditor.md".source = ./agents/nix-auditor.md;
+    "${piDir}/agents/image-analyzer/image-analyzer.md".source = ./agents/image-analyzer/image-analyzer.md;
+    "${piDir}/agents/audio-analyzer/audio-analyzer.md".source = ./agents/audio-analyzer/audio-analyzer.md;
+    "${piDir}/agents/pdf-reader/pdf-reader.md".source = ./agents/pdf-reader/pdf-reader.md;
+
     # Lucky's personal info appended to system prompt (out-of-store symlink to SOPS secret)
     "${piDir}/APPEND_SYSTEM.md".source = config.lib.file.mkOutOfStoreSymlink osConfig.sops.secrets.lucky-info.path;
 

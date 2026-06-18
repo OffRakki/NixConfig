@@ -9,7 +9,7 @@ export default function (pi: ExtensionAPI) {
         ? session.split("/").pop()?.replace(".jsonl", "").slice(0, 8)
         : "?";
       execSync(
-        `notify-send --app-name="Ciel" --icon=dialog-information --urgency=normal "ciel — Task complete" "session: ${short}"`,
+        `notify-send --app-name="Pi" --icon=dialog-information --urgency=normal "ciel — Task complete" "session: ${short}"`,
         { timeout: 3000 }
       );
     } catch {
@@ -23,7 +23,7 @@ export default function (pi: ExtensionAPI) {
       const summary = args || "Done";
       try {
         execSync(
-          `notify-send --app-name="Ciel" --icon=dialog-information --urgency=normal "ciel — ${summary}"`,
+          `notify-send --app-name="Pi" --icon=dialog-information --urgency=normal "ciel — ${summary}"`,
           { timeout: 3000 }
         );
       } catch {
