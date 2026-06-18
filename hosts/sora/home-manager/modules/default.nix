@@ -1,5 +1,8 @@
 {
   imports = [
+    ./opencode
+    ./cursh.nix
+    ./pi.nix
     ./obs.nix
     ./steam.nix
     ./fish
@@ -23,7 +26,6 @@
     ./eza.nix
     ./kitty.nix
     ./qutebrowser.nix
-    ./opencode
     ./aerc.nix
     ./hytale.nix
     ./quickshell/quickshell.nix
