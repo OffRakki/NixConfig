@@ -15,6 +15,20 @@ in {
     ".local/share/pi"
   ];
 
+  xdg.desktopEntries.pi-coding-agent = {
+    name = "Pi";
+    genericName = "AI Coding Assistant";
+    comment = "Terminal-based AI coding assistant";
+    exec = "pi";
+    icon = "utilities-terminal";
+    terminal = true;
+    categories = [
+      "Development"
+      "ConsoleOnly"
+    ];
+    type = "Application";
+  };
+
   programs.pi-coding-agent = {
     enable = true;
     context = ./AGENTS.md;
@@ -134,7 +148,7 @@ in {
     # Extensions (notify only — providers are defined declaratively in models.json)
     "${piDir}/extensions/notify.ts".source = ./extensions/notify.ts;
 
-    # Skills — out-of-store symlinks to.ILL.md".source = ./skills/jujutsu/SKILL.md";
+    "${piDir}/skills/jujutsu/SKILL.md".source = ./skills/jujutsu/SKILL.md;
     "${piDir}/skills/jujutsu/references".source = ./skills/jujutsu/references;
     "${piDir}/skills/nix/SKILL.md".source = ./skills/nix/SKILL.md;
     "${piDir}/skills/nix-refactor/SKILL.md".source = ./skills/nix-refactor/SKILL.md;
