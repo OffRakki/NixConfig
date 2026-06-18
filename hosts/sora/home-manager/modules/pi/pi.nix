@@ -3,6 +3,7 @@
   pkgs,
   osConfig,
   lib,
+  inputs,
   ...
 }: let
   cfg = config.programs.pi-coding-agent;
@@ -14,6 +15,9 @@ in {
     sessionVariables = {
       PI_OFFLINE = 1;
     };
+    packages = with pkgs; [
+      inputs.llm-agents.packages.${pkgs.system}.lean-ctx
+    ];
     persistence."/persist".directories = [
       ".pi"
       ".local/share/pi"
@@ -42,6 +46,7 @@ in {
     # nodejs includes npm in recent nixpkgs versions.
     extraPackages = with pkgs; [
       nodejs
+      inputs.llm-agents.packages.${pkgs.system}.lean-ctx
     ];
 
     settings = {
