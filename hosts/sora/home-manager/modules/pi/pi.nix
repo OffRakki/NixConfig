@@ -171,5 +171,8 @@ in {
     # SOPS-encrypted skill private data (firefly, lumis)
     "${piDir}/skills/firefly/resources/private.md".source = config.lib.file.mkOutOfStoreSymlink osConfig.sops.secrets.skillFireflyPrivate.path;
     "${piDir}/skills/lumis/resources/private.md".source = config.lib.file.mkOutOfStoreSymlink osConfig.sops.secrets.skillLumisPrivate.path;
+
+    # Web search config — Gemini API key + browser cookie access
+    "${piDir}/../web-search.json".source = config.lib.file.mkOutOfStoreSymlink osConfig.sops.secrets.webSearchJson.path;
   };
 }
