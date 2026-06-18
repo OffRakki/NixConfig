@@ -1,7 +1,6 @@
 {
   imports = [
     ./opencode
-    ./pi.nix
     ./obs.nix
     ./steam.nix
     ./fish
