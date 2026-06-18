@@ -127,6 +127,10 @@
       sopsFile = ../home-manager/modules/opencode/private.yaml;
       owner = "rakki";
     };
+    secrets.webSearchJson = {
+      sopsFile = ../home-manager/modules/opencode/private.yaml;
+      owner = "rakki";
+    };
   };
 
   sops.templates."rclone-onedrive.conf" = {
