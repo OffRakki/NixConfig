@@ -27,9 +27,9 @@ in {
     name = "Pi";
     genericName = "AI Coding Assistant";
     comment = "Terminal-based AI coding assistant";
-    exec = "pi";
+    exec = "kitty --override background_opacity=1.0 --override background_blur=0 -e pi";
     icon = "utilities-terminal";
-    terminal = true;
+    terminal = false;
     categories = [
       "Development"
       "ConsoleOnly"
@@ -51,8 +51,8 @@ in {
     settings = {
       defaultProvider = "deepseek";
       defaultModel = "deepseek-v4-flash";
-      defaultThinkingLevel = "medium";
-      theme = "ciel-cursor";
+      defaultThinkingLevel = "high";
+      theme = "gruvbox-dark-hard";
 
       quietStartup = false;
       collapseChangelog = true;
@@ -62,10 +62,6 @@ in {
         reserveTokens = 16384;
         keepRecentTokens = 20000;
       };
-
-      enabledModels = [
-        "*"
-      ];
 
       retry = {
         enabled = true;
