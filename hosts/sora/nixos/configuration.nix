@@ -131,6 +131,10 @@
       sopsFile = ../home-manager/modules/pi/private.yaml;
       owner = "rakki";
     };
+    secrets.hyperApiKey = {
+      sopsFile = ../home-manager/modules/pi/private.yaml;
+      owner = "rakki";
+    };
   };
 
   sops.templates."rclone-onedrive.conf" = {

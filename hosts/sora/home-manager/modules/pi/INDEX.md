@@ -15,8 +15,8 @@
 
 | File | Keywords |
 |------|----------|
-| `pi.nix` | pi-coding-agent, deepseek-provider, openai, settings, models, compaction, retry, theme(ciel-cursor), packages(pi-web-access,pi-mcp-adapter,pi-subagents), persistence(.pi), sops-secrets, home.file(symlinked-skills), home.file(individual-resource-files), APPEND_SYSTEM.md |
-| `context.md` | Ciel-personality, pi-specific tool-discipline(read,bash,edit,write,grep,find,ls), skill-routing, nix-managed, sops-refs |
+| `pi.nix` | pi-coding-agent, deepseek-provider, openai, settings, models, compaction, retry, theme(ciel-cursor), packages(pi-web-access,pi-mcp-adapter,pi-subagents,pi-intercom), persistence(.pi), sops-secrets, home.file(symlinked-skills), home.file(agents), home.file(individual-resource-files), APPEND_SYSTEM.md, xdg.desktopEntries |
+| `context.md` | Ciel-personality, pi-specific tool-discipline(read,bash,edit,write,grep,find,ls), skill-routing, nix-managed, sops-refs, speak-up-rule, read-before-write, keep-index-in-sync, subagents-list |
 | `extensions/notify.ts` | pi-extension, desktop-notifications, notify-send, agent-end-event, /notify-command |
 | `prompts/archive.md` | pi-prompt, session-summary, obsidian-save, frontmatter |
 | `prompts/nix-rebuild.md` | pi-prompt, nixos-rebuild, jj-sync, nh-os-switch |
@@ -57,8 +57,7 @@
 
 | Secret | Source | Consumer |
 |--------|--------|----------|
-| `deepseekApiKey` | `secrets.yaml` | `pi.nix` → `models.providers.deepseek.apiKey` |
-| `openaiApiKey` | `secrets.yaml` | `pi.nix` → `models.providers.openai.apiKey` |
+| `hyperApiKey` | `pi/private.yaml` | `pi.nix` → `models.json` (hyper provider apiKey via `!cat`) |
 | `lucky-info` | `pi/private.yaml` | `pi.nix` → `APPEND_SYSTEM.md` |
 | `skillFireflyPrivate` | `pi/private.yaml` | `pi.nix` → `xdg.configFile pi/skills/firefly/resources/private.md` |
 | `skillLumisPrivate` | `pi/private.yaml` | `pi.nix` → `xdg.configFile pi/skills/lumis/resources/private.md` |
@@ -71,6 +70,7 @@
 | What you're looking for | Look in |
 |-------------------------|---------|
 | Pi settings/providers | `pi.nix` → `programs.pi-coding-agent.settings` |
+| Pi custom model providers | `pi.nix` → `home.file models.json` (generated inline) |
 | Pi extensions | `pi/extensions/*.ts` |
 | Pi prompt templates | `pi/prompts/*.md` |
 | Pi theme definitions | `pi/themes/*.json` |
@@ -81,4 +81,4 @@
 
 ---
 
-*Last updated: 2026-06-18 by Ciel.*
+*Last updated: 2026-06-18 by Ciel. Added hyper.charm.land models + hyperApiKey secret.*
