@@ -9,11 +9,16 @@
   piDir = cfg.configDir;
   opendir = ../opencode;
 in {
-  # Persist pi state directories — sessions, npm packages, git clones
-  home.persistence."/persist".directories = [
-    ".pi"
-    ".local/share/pi"
-  ];
+  # Persist pi state directories — sessions, npm packages, git clones and sets pi to offline mode (no update/telemetry)
+  home = {
+    sessionVariables = {
+      PI_OFFLINE = 1;
+    };
+    persistence."/persist".directories = [
+      ".pi"
+      ".local/share/pi"
+    ];
+  };
 
   xdg.desktopEntries.pi-coding-agent = {
     name = "Pi";
@@ -102,9 +107,8 @@ in {
         "npm:pi-subagents"
         "npm:pi-intercom"
         "npm:pi-hermes-memory"
-        "npm:pi-lean-ctx"
+        # "npm:pi-lean-ctx"
         "npm:pi-powerline-footer"
-        "npm:pi-lens"
         "npm:@juicesharp/rpiv-args"
         "npm:@juicesharp/rpiv-btw"
         "npm:pi-markdown-preview"
@@ -192,7 +196,12 @@ in {
               input = ["text" "image"];
               contextWindow = 1000000;
               maxTokens = 384000;
-              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
+              cost = {
+                input = 0;
+                output = 0;
+                cacheRead = 0;
+                cacheWrite = 0;
+              };
               thinkingLevelMap = {
                 minimal = null;
                 low = null;
@@ -208,7 +217,12 @@ in {
               input = ["text"];
               contextWindow = 1000000;
               maxTokens = 384000;
-              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
+              cost = {
+                input = 0;
+                output = 0;
+                cacheRead = 0;
+                cacheWrite = 0;
+              };
               thinkingLevelMap = {
                 minimal = null;
                 low = null;
@@ -224,7 +238,12 @@ in {
               input = ["text"];
               contextWindow = 256000;
               maxTokens = 25600;
-              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
+              cost = {
+                input = 0;
+                output = 0;
+                cacheRead = 0;
+                cacheWrite = 0;
+              };
             }
             {
               id = "glm-5";
@@ -233,7 +252,12 @@ in {
               input = ["text"];
               contextWindow = 202752;
               maxTokens = 20275;
-              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
+              cost = {
+                input = 0;
+                output = 0;
+                cacheRead = 0;
+                cacheWrite = 0;
+              };
             }
             {
               id = "glm-5.1";
@@ -242,7 +266,12 @@ in {
               input = ["text" "image"];
               contextWindow = 202800;
               maxTokens = 64000;
-              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
+              cost = {
+                input = 0;
+                output = 0;
+                cacheRead = 0;
+                cacheWrite = 0;
+              };
               thinkingLevelMap = {
                 off = null;
                 minimal = null;
@@ -258,7 +287,12 @@ in {
               input = ["text"];
               contextWindow = 131072;
               maxTokens = 13107;
-              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
+              cost = {
+                input = 0;
+                output = 0;
+                cacheRead = 0;
+                cacheWrite = 0;
+              };
               thinkingLevelMap = {
                 off = null;
                 minimal = null;
@@ -274,7 +308,12 @@ in {
               input = ["text"];
               contextWindow = 262144;
               maxTokens = 26214;
-              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
+              cost = {
+                input = 0;
+                output = 0;
+                cacheRead = 0;
+                cacheWrite = 0;
+              };
             }
             {
               id = "kimi-k2.6";
@@ -283,7 +322,12 @@ in {
               input = ["text" "image"];
               contextWindow = 262000;
               maxTokens = 262000;
-              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
+              cost = {
+                input = 0;
+                output = 0;
+                cacheRead = 0;
+                cacheWrite = 0;
+              };
               thinkingLevelMap = {
                 off = null;
                 minimal = null;
@@ -291,103 +335,6 @@ in {
                 medium = "medium";
                 high = "high";
               };
-            }
-            {
-              id = "llama-3.3-70b-instruct";
-              name = "Llama 3.3 70B Instruct";
-              reasoning = true;
-              input = ["text"];
-              contextWindow = 128000;
-              maxTokens = 12800;
-              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
-            }
-            {
-              id = "llama-4-maverick-17b-128e-instruct-fp8";
-              name = "Llama 4 Maverick 17B 128E Instruct FP8";
-              reasoning = true;
-              input = ["text"];
-              contextWindow = 430000;
-              maxTokens = 43000;
-              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
-            }
-            {
-              id = "minimax-m2.7";
-              name = "MiniMax M2.7";
-              reasoning = true;
-              input = ["text"];
-              contextWindow = 204800;
-              maxTokens = 131000;
-              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
-              thinkingLevelMap = {
-                off = null;
-                minimal = null;
-                low = "low";
-                medium = "medium";
-                high = "high";
-              };
-            }
-            {
-              id = "qwen3.6-flash";
-              name = "Qwen3.6-Flash";
-              reasoning = true;
-              input = ["text" "image"];
-              contextWindow = 1000000;
-              maxTokens = 64000;
-              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
-            }
-            {
-              id = "qwen3.6-max";
-              name = "Qwen3.6-Max";
-              reasoning = true;
-              input = ["text"];
-              contextWindow = 256000;
-              maxTokens = 64000;
-              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
-            }
-            {
-              id = "qwen3.6-plus";
-              name = "Qwen3.6-Plus";
-              reasoning = true;
-              input = ["text" "image"];
-              contextWindow = 1000000;
-              maxTokens = 64000;
-              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
-            }
-            {
-              id = "qwen3.7-max";
-              name = "Qwen3.7-Max";
-              reasoning = true;
-              input = ["text"];
-              contextWindow = 1000000;
-              maxTokens = 64000;
-              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
-            }
-            {
-              id = "qwen3.7-plus";
-              name = "Qwen3.7-Plus";
-              reasoning = true;
-              input = ["text" "image"];
-              contextWindow = 1000000;
-              maxTokens = 64000;
-              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
-            }
-            {
-              id = "qwen3-coder-480b-a35b-instruct-int4-mixed-ar";
-              name = "Qwen3 Coder 480B A35B Instruct";
-              reasoning = true;
-              input = ["text"];
-              contextWindow = 106000;
-              maxTokens = 10600;
-              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
-            }
-            {
-              id = "qwen3-next-80b-a3b-instruct";
-              name = "Qwen3 Next 80B A3B Instruct";
-              reasoning = true;
-              input = ["text"];
-              contextWindow = 262144;
-              maxTokens = 26214;
-              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
             }
           ];
         };
