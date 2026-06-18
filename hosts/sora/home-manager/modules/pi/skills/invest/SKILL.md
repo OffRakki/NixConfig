@@ -1,8 +1,9 @@
 ---
 name: invest
-description: Use when Lucky asks about investing, personal finance, stocks, FIIs, Bitcoin,
-gold, or any AUVP/Investidor Sardinha investment concepts. Covers budgeting, fixed income,
-variable income, store of value, and international investing.
+description: >
+  Use when Lucky asks about investing, personal finance, stocks, FIIs, Bitcoin, gold, or any
+  AUVP/Investidor Sardinha investment concepts. Covers budgeting, fixed income, variable income,
+  store of value, and international investing.
 ---
 
 # Invest — Guia de Investimentos AUVP
