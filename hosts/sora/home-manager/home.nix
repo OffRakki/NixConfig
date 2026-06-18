@@ -2,6 +2,7 @@
   inputs,
   lib,
   osConfig,
+  nixConfigRoot,
   ...
 }: {
   imports = [
@@ -24,7 +25,7 @@
     username = "rakki";
     homeDirectory = "/home/rakki";
     sessionVariables = {
-      NH_FLAKE = "$HOME/Documents/NixConfig";
+      NH_FLAKE = nixConfigRoot;
       OPENCODE_SERVER_PASSWORD = "$(cat ${osConfig.sops.secrets.opencodeServerPass.path})";
       OPENCODE_SERVER_USERNAME = "rakki";
       SOPS_AGE_KEY_FILE = "$HOME/sync/sops/age/keys.txt";

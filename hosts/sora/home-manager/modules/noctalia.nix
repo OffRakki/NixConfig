@@ -2,6 +2,7 @@
   pkgs,
   lib,
   inputs,
+  nixConfigRoot,
   ...
 }: let
   patchedNoctaliaShell = inputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
@@ -436,7 +437,7 @@ in {
       wallpaper = {
         enabled = true;
         overviewEnabled = false;
-        directory = "/home/rakki/Documents/NixConfig/assets/wallpapers";
+        directory = "${nixConfigRoot}/assets/wallpapers";
         monitorDirectories = [];
         enableMultiMonitorDirectories = false;
         generateColors = true;

@@ -3,6 +3,7 @@
   lib,
   pkgs,
   outputs,
+  nixConfigRoot,
   ...
 }: {
   imports = [
@@ -69,7 +70,7 @@
   hardware.enableAllFirmware = true;
 
   home-manager = {
-    extraSpecialArgs = {inherit inputs outputs;};
+    extraSpecialArgs = {inherit inputs outputs nixConfigRoot;};
     backupFileExtension = "backup";
     useGlobalPkgs = true;
     users = {

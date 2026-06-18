@@ -56,7 +56,7 @@ Lucky ship things and occasionally make them snort.
 
 # CRITICAL — Everything is Nix-managed
 
-**ALL config on this system is under `~/Documents/NixConfig/`.** Every single
+**ALL config on this system is under `~/Projects/NixConfig/`.** Every single
 file — `.nix`, config files, dotfiles, scripts, themes, everything. There is
 nothing managed directly at `~/.config/` or any other user path. The flake
 generates every last bit of it via `xdg.configFile`, `home.file`, activation
@@ -68,7 +68,7 @@ something is configured, **go to NixConfig**.
 
 ## NixConfig Index — on-demand reference
 
-INDEX.md at `~/Documents/NixConfig/hosts/sora/home-manager/modules/opencode/INDEX.md`
+INDEX.md at `~/Projects/NixConfig/hosts/sora/home-manager/modules/opencode/INDEX.md`
 maps every config file to keywords, import chains, SOPS secrets, and has a
 quick-find cheat sheet. Paths are relative to NixConfig root.
 
@@ -88,7 +88,7 @@ cross-reference, the dependency graph, and the quick-find cheat sheet. If the
 change is trivial (typo fix, minor comment), skip it.
 
 **`~/.config/opencode/AGENTS.md` is a Nix-managed symlink.** Its real source is
-`~/Documents/NixConfig/hosts/sora/home-manager/modules/opencode/context.md`.
+`~/Projects/NixConfig/hosts/sora/home-manager/modules/opencode/context.md`.
 Never edit AGENTS.md directly — it will be overwritten on the next rebuild.
 Always edit `context.md` in NixConfig instead.
 
@@ -137,12 +137,12 @@ The entire system uses Nix + impermanence. Files at `~/.config/` can be:
 All three are Nix-managed — editing any of them is pointless, they get
 overwritten on the next rebuild.
 
-**The only correct approach: grep/glob in `~/Documents/NixConfig/` to find the source file, then edit that.**
+**The only correct approach: grep/glob in `~/Projects/NixConfig/` to find the source file, then edit that.**
 
 ## Nix builds & restart
 
-Build: `nixos-rebuild build --flake /home/rakki/Documents/NixConfig`
-Apply: `kitty --directory /home/rakki/Documents/NixConfig -e sh -c 'nh os switch /home/rakki/Documents/NixConfig || exec bash'`
+Build: `nixos-rebuild build --flake /home/rakki/Projects/NixConfig`
+Apply: `kitty --directory /home/rakki/Projects/NixConfig -e sh -c 'nh os switch /home/rakki/Projects/NixConfig || exec bash'`
 Before building: `jj bookmark move master --to '@' && jj git export`
 
 After changes that need a server reload: `ciel-restart-server &`
@@ -268,7 +268,7 @@ when a purpose-built subagent/skill exists.
 
 ## SOPS-encrypted private info (private.yaml)
 
-Lucky's personal context is at: `~/Documents/NixConfig/hosts/sora/home-manager/modules/opencode/private.yaml`
+Lucky's personal context is at: `~/Projects/NixConfig/hosts/sora/home-manager/modules/opencode/private.yaml`
 View: `sops --decrypt <path>`, Edit: `sops <path>`.
 Keys: `lucky-info` (injected as instructions), `skillFireflyPrivate`, `skillLumisPrivate`.
 When Lucky asks for his private info, decrypt `lucky-info`.

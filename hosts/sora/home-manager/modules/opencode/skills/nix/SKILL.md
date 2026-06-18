@@ -21,7 +21,7 @@ Split rebuilds into **two steps** — always, every time:
    `kitty --directory <workdir> -e sh -c 'nh os <option> <flake-path> || exec bash'`
 
 Where `<option>` is `switch` or `build` and `<flake-path>` is the full path to the
-flake (e.g. `/home/rakki/Documents/NixConfig`). `nh` doesn't auto-detect the
+flake (e.g. `/home/rakki/Projects/NixConfig`). `nh` doesn't auto-detect the
 flake from the working directory — it needs it as an explicit argument or via
 the `NH_OS_FLAKE` env var.
 

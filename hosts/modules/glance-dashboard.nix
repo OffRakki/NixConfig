@@ -1,6 +1,7 @@
 {
   config,
   userHome,
+  nixConfigRoot,
 }: ''
   server:
     port: 1201
@@ -9,7 +10,7 @@
     background-color: 50 1 6
     primary-color: 24 97 58
     negative-color: 209 88 54
-    background: "${userHome}/Documents/NixConfig/assets/wallpapers/agbg.jpg"
+    background: "${nixConfigRoot}/assets/wallpapers/agbg.jpg"
 
   branding:
     custom-footer: |

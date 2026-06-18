@@ -6,13 +6,13 @@ description: Edit Ciel's opencode configuration — context, skills, agents, and
 ## Context (`~/.config/opencode/AGENTS.md`)
 
 AGENTS.md is a Nix-managed symlink. The real source is:
-`/home/rakki/Documents/NixConfig/hosts/sora/home-manager/modules/opencode/context.md`
+`/home/rakki/Projects/NixConfig/hosts/sora/home-manager/modules/opencode/context.md`
 
 **Never edit AGENTS.md directly** — it will be overwritten on the next rebuild.
 
 ### Editing context.md
 
-1. Edit the source file at `~/Documents/NixConfig/hosts/sora/home-manager/modules/opencode/context.md`
+1. Edit the source file at `~/Projects/NixConfig/hosts/sora/home-manager/modules/opencode/context.md`
 2. Sync jj, rebuild, restart (see Build + Restart below)
 
 ### Adding extra instructions (sops-backed)
@@ -33,7 +33,7 @@ Skills are symlinked by home-manager from their source in NixConfig. Home-manage
 
 1. Create the skill directory:
    ```
-   mkdir -p ~/Documents/NixConfig/hosts/sora/home-manager/modules/opencode/skills/<name>/
+   mkdir -p ~/Projects/NixConfig/hosts/sora/home-manager/modules/opencode/skills/<name>/
    ```
 2. Write the skill file at `<dir>/SKILL.md`
 3. Add the skill to the `programs.opencode.skills` attribute set in `opencode.nix`:
@@ -45,7 +45,7 @@ Skills are symlinked by home-manager from their source in NixConfig. Home-manage
 
 ### Editing an existing skill
 
-1. Edit the source at `~/Documents/NixConfig/hosts/sora/home-manager/modules/opencode/skills/<name>/SKILL.md`
+1. Edit the source at `~/Projects/NixConfig/hosts/sora/home-manager/modules/opencode/skills/<name>/SKILL.md`
 2. Sync jj, rebuild, restart
 
 ### Adding a private resource to a skill (sops pattern)
@@ -66,13 +66,13 @@ This keeps the skill public while only the specific resource is encrypted.
 
 ## Agents (`~/.config/opencode/agents/<name>.md`)
 
-Agent files are symlinked by home-manager from `~/Documents/NixConfig/hosts/sora/home-manager/modules/opencode/agents/<name>/`.
+Agent files are symlinked by home-manager from `~/Projects/NixConfig/hosts/sora/home-manager/modules/opencode/agents/<name>/`.
 
 ### Creating/Editing an agent
 
 1. Create the agent directory and file:
    ```
-   mkdir -p ~/Documents/NixConfig/hosts/sora/home-manager/modules/opencode/agents/<name>/
+   mkdir -p ~/Projects/NixConfig/hosts/sora/home-manager/modules/opencode/agents/<name>/
    ```
 2. Write the agent file at `<dir>/<name>.md`
 3. Add the agent to the `programs.opencode.agents` attribute set in `opencode.nix`:
@@ -84,12 +84,12 @@ Agent files are symlinked by home-manager from `~/Documents/NixConfig/hosts/sora
 ## Opencode config (`~/.config/opencode/opencode.json`)
 
 The main settings don't live in a JSON file — they're generated from Nix at:
-`~/Documents/NixConfig/hosts/sora/home-manager/modules/opencode/opencode.nix`
+`~/Projects/NixConfig/hosts/sora/home-manager/modules/opencode/opencode.nix`
 under `programs.opencode.settings`.
 
 ### Editing opencode settings
 
-1. Edit `~/Documents/NixConfig/hosts/sora/home-manager/modules/opencode/opencode.nix`
+1. Edit `~/Projects/NixConfig/hosts/sora/home-manager/modules/opencode/opencode.nix`
 2. Sync jj, rebuild, restart
 
 ## Build + Restart workflow
@@ -102,7 +102,7 @@ After any change to opencode files in NixConfig:
    ```
 2. Rebuild and apply:
    ```
-   kitty --directory ~/Documents/NixConfig -e sh -c 'nh os switch ~/Documents/NixConfig || exec bash' &
+   kitty --directory ~/Projects/NixConfig -e sh -c 'nh os switch ~/Projects/NixConfig || exec bash' &
    ```
 3. Notify Lucky about what changed:
    ```

@@ -97,6 +97,7 @@
         specialArgs = {
           inherit inputs;
           inherit (self) outputs;
+          nixConfigRoot = "/home/rakki/Projects/NixConfig";
         };
         modules = [
           ./hosts/sora/nixos/configuration.nix
@@ -106,6 +107,7 @@
         specialArgs = {
           inherit inputs;
           inherit (self) outputs;
+          nixConfigRoot = "/home/tmpst/Documents/NixConfig";
         };
         modules = [
           ./hosts/tempest/nixos/configuration.nix
