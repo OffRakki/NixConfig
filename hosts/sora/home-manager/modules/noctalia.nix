@@ -6,10 +6,12 @@
   ...
 }: let
   patchedNoctaliaShell = inputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
-    installPhase = (old.installPhase or "") + ''
-      sed -i '/ToastService.showNotice.*keep-awake/d' \
-        $out/share/noctalia-shell/Services/Power/IdleInhibitorService.qml
-    '';
+    installPhase =
+      (old.installPhase or "")
+      + ''
+        sed -i '/ToastService.showNotice.*keep-awake/d' \
+          $out/share/noctalia-shell/Services/Power/IdleInhibitorService.qml
+      '';
   });
 in {
   programs.noctalia-shell.package = patchedNoctaliaShell;
@@ -482,7 +484,7 @@ in {
         clipboardWatchTextCommand = "wl-paste --type text --watch cliphist store";
         clipboardWatchImageCommand = "wl-paste --type image --watch cliphist store";
         position = "top_left";
-        pinnedApps = ["firefox" "pi-coding-agent"];
+        pinnedApps = ["pi-coding-agent" "firefox"];
         useApp2Unit = false;
         sortByMostUsed = true;
         terminalCommand = "kitty -e";
