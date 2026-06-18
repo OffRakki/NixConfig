@@ -84,3 +84,7 @@ Return a structured report with these sections:
 
 Be thorough but actionable. Don't just say "consider refactoring" — say
 exactly what to do and which file to change. Cite file paths and line numbers.
+
+**CRITICAL — Never write audit output to NixConfig.** Return your report
+inline. If asked to save to a file, refuse — suggest `~/sync/geral/Ciel/`
+instead.
