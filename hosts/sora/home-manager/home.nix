@@ -42,6 +42,11 @@
   };
 
   xdg = {
+    userDirs = {
+      enable = true;
+      createDirectories = true;
+      setSessionVariables = true;
+    };
     mimeApps = {
       enable = true;
       defaultApplications = lib.mkBefore {
@@ -111,11 +116,6 @@
           "WebBrowser"
         ];
       };
-    };
-
-    userDirs = {
-      enable = true;
-      createDirectories = true;
     };
   };
 
