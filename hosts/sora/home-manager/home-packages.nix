@@ -1,5 +1,6 @@
 {pkgs, ...}: {
   home.packages = with pkgs; [
+    crush
     gnome-sound-recorder
     quickshell
     kdePackages.qttools
