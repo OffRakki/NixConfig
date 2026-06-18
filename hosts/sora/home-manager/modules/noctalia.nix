@@ -399,12 +399,13 @@ in {
       };
       colorSchemes = {
         useWallpaperColors = true;
-        darkMode = true;
-        schedulingMode = "off";
+        darkMode = false;
+        schedulingMode = "location";
         manualSunrise = "06:30";
         manualSunset = "18:30";
         generationMethod = "vibrant";
         monitorForColors = "";
+        syncGsettings = false;
       };
       templates = {
         activeTemplates = [];
@@ -481,7 +482,7 @@ in {
         clipboardWatchTextCommand = "wl-paste --type text --watch cliphist store";
         clipboardWatchImageCommand = "wl-paste --type image --watch cliphist store";
         position = "top_left";
-        pinnedApps = ["firefox" "opencode"];
+        pinnedApps = ["firefox" "pi-coding-agent"];
         useApp2Unit = false;
         sortByMostUsed = true;
         terminalCommand = "kitty -e";
