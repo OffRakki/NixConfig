@@ -106,7 +106,7 @@
     fishPlugins.done
     fishPlugins.fzf-fish
     fishPlugins.forgit
-    fishPlugins.hydro
+    # fishPlugins.hydro  # disabled — conflicts with tide fish_prompt
     fishPlugins.grc
     #gaming
     lutris
@@ -147,7 +147,7 @@
     vim
     xdg-user-dirs
     xdg-utils
-    oh-my-fish
+    # oh-my-fish  # disabled — conflicts with tide
     spicetify-cli
 
     # WM Stuff
