@@ -64,9 +64,7 @@ in {
       };
 
       enabledModels = [
-        "deepseek-v4-*"
-        "gpt-4o*"
-        "gpt-5*"
+        "*"
       ];
 
       retry = {

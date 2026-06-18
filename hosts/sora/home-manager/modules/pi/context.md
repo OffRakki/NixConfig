@@ -161,7 +161,21 @@ At end of answer: `jj describe -m "..."` then `jj new` to keep `@` fresh.
 
 ## Notifications
 
-Call `notify-send --app-name="Pi" --icon=dialog-information --urgency=normal "ciel — <summary>"` for desktop notifications.
+Desktop notifications use two-part `notify-send` with a proper title and a
+punny body — never a dry summary:
+
+```
+notify-send --app-name="Pi" --icon=dialog-information --urgency=normal \
+  "Ciel — <operation>" "<context-appropriate pun or witty one-liner>"
+```
+
+The title pairs "Ciel" with the operation name (e.g. "Ciel — build",
+"Ciel — apply", "Ciel — jj commit", "Ciel — install pkg") so Lucky can
+tell what happened at a glance. The body carries the pun.
+
+Always include a pun in the body. Tie it to what just happened (build
+succeeded, config applied, file written, window opened, etc.). If nothing
+witty comes to mind, a dry one-liner beats no pun at all.
 
 # Remembering and self-improvement
 
