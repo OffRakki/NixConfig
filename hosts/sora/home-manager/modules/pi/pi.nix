@@ -71,6 +71,29 @@ in {
         "gpt-5*"
       ];
 
+      retry = {
+        enabled = true;
+        maxRetries = 3;
+        baseDelayMs = 2000;
+        provider = {
+          timeoutMs = 300000;
+          maxRetries = 0;
+          maxRetryDelayMs = 60000;
+        };
+      };
+      branchSummary = {
+        skipPrompt = true;
+        reserveTokens = 8192;
+      };
+      treeFilterMode = "no-tools";
+      terminal = {
+        showImages = true;
+        imageWidthCells = 80;
+      };
+      images = {
+        autoResize = true;
+        blockImages = false;
+      };
       warnings.anthropicExtraUsage = true;
 
       packages = [
@@ -78,6 +101,14 @@ in {
         "npm:pi-mcp-adapter"
         "npm:pi-subagents"
         "npm:pi-intercom"
+        "npm:pi-hermes-memory"
+        "npm:pi-lean-ctx"
+        "npm:pi-powerline-footer"
+        "npm:pi-lens"
+        "npm:@juicesharp/rpiv-args"
+        "npm:@juicesharp/rpiv-btw"
+        "npm:pi-markdown-preview"
+        "npm:pi-chrome"
       ];
     };
 
@@ -389,9 +420,28 @@ in {
     # Pi-specific skill
     "${piDir}/skills/nix-auditor/SKILL.md".source = ./skills/nix-auditor/SKILL.md;
 
+    # Keybindings (Helix-style)
+    "${piDir}/keybindings.json".text = builtins.toJSON {
+      "tui.editor.cursorWordLeft" = ["alt+left" "alt+b"];
+      "tui.editor.cursorWordRight" = ["alt+right" "alt+f"];
+      "tui.editor.deleteWordBackward" = ["ctrl+w" "alt+backspace"];
+      "tui.editor.deleteWordForward" = ["alt+d" "alt+delete"];
+      "tui.input.submit" = "enter";
+      "tui.input.newLine" = "shift+enter";
+      "app.model.select" = "ctrl+l";
+      "app.model.cycleForward" = "ctrl+p";
+      "app.model.cycleBackward" = "shift+ctrl+p";
+      "app.thinking.toggle" = "ctrl+t";
+      "app.session.rename" = "ctrl+r";
+      "app.session.deleteNoninvasive" = "ctrl+backspace";
+      "app.tools.expand" = "ctrl+o";
+    };
+
     # Prompts
     "${piDir}/prompts/archive.md".source = ./prompts/archive.md;
     "${piDir}/prompts/nix-rebuild.md".source = ./prompts/nix-rebuild.md;
+    "${piDir}/prompts/nix-audit.md".source = ./prompts/nix-audit.md;
+    "${piDir}/prompts/commit.md".source = ./prompts/commit.md;
 
     # Theme
     "${piDir}/themes/ciel-cursor.json".source = ./themes/ciel-cursor.json;
