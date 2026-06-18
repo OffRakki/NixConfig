@@ -33,9 +33,9 @@
 |--------|--------|----------|
 | `deepseekApiKey` | `secrets.yaml` | `pi.nix` → `models.providers.deepseek.apiKey` |
 | `openaiApiKey` | `secrets.yaml` | `pi.nix` → `models.providers.openai.apiKey` |
-| `lucky-info` | `opencode/private.yaml` | `pi.nix` → `APPEND_SYSTEM.md` |
-| `skillFireflyPrivate` | `opencode/private.yaml` | `pi.nix` → `xdg.configFile pi/skills/firefly/resources/private.md` |
-| `skillLumisPrivate` | `opencode/private.yaml` | `pi.nix` → `xdg.configFile pi/skills/lumis/resources/private.md` |
+| `lucky-info` | `pi/private.yaml` | `pi.nix` → `APPEND_SYSTEM.md` |
+| `skillFireflyPrivate` | `pi/private.yaml` | `pi.nix` → `xdg.configFile pi/skills/firefly/resources/private.md` |
+| `skillLumisPrivate` | `pi/private.yaml` | `pi.nix` → `xdg.configFile pi/skills/lumis/resources/private.md` |
 
 ---
 
@@ -74,7 +74,7 @@
 | Pi skill definitions | `pi/skills/*/SKILL.md` |
 | Pi Ciel personality/context | `pi/AGENTS.md` |
 | Shared skills (jujutsu, nix, etc.) | `opencode/skills/*/` (symlinked via pi.nix) |
-| SOPS secrets used by pi | `secrets.yaml`, `opencode/private.yaml` |
+| SOPS secrets used by pi | `secrets.yaml`, `pi/private.yaml` |
 
 ---
 

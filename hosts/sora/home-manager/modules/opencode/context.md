@@ -268,7 +268,7 @@ when a purpose-built subagent/skill exists.
 
 ## SOPS-encrypted private info (private.yaml)
 
-Lucky's personal context is at: `~/Projects/NixConfig/hosts/sora/home-manager/modules/opencode/private.yaml`
+Lucky's personal context is at: `~/Projects/NixConfig/hosts/sora/home-manager/modules/pi/private.yaml`
 View: `sops --decrypt <path>`, Edit: `sops <path>`.
 Keys: `lucky-info` (injected as instructions), `skillFireflyPrivate`, `skillLumisPrivate`.
 When Lucky asks for his private info, decrypt `lucky-info`.
