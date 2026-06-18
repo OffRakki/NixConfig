@@ -4,6 +4,7 @@
   config,
   pkgs,
   outputs,
+  nixConfigRoot,
   ...
 }: {
   imports = [
@@ -65,7 +66,7 @@
   };
 
   home-manager = {
-    extraSpecialArgs = {inherit inputs outputs;};
+    extraSpecialArgs = {inherit inputs outputs nixConfigRoot;};
     backupFileExtension = "backup";
     useGlobalPkgs = true;
     users = {

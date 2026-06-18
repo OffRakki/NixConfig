@@ -1,6 +1,6 @@
-{config, ...}: let
+{config, nixConfigRoot, ...}: let
   glanceYaml = import ../../../modules/glance-dashboard.nix {
-    inherit config;
+    inherit config nixConfigRoot;
     userHome = "/home/rakki";
   };
 in {

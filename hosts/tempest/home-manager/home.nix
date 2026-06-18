@@ -1,4 +1,4 @@
-{...}: {
+{ nixConfigRoot, ... }: {
   imports = [
     ./persistence.nix
     ./fish.nix
@@ -15,7 +15,7 @@
     username = "tmpst";
     homeDirectory = "/home/tmpst";
     sessionVariables = {
-      NH_FLAKE = "$HOME/Documents/NixConfig";
+      NH_FLAKE = nixConfigRoot;
     };
     persistence."/persist".directories = [
       "Documents"

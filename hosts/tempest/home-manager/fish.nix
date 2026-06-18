@@ -91,7 +91,7 @@
 
         # nix
         ncg = "nix-collect-garbage";
-        nrd = "sudo nixos-rebuild switch --flake ~/Documents/NixConfig#tempest";
+        nrd = "sudo nixos-rebuild switch --flake $NH_FLAKE#tempest";
         # nhos = "nh os switch ~/Documents/nix-config";
         nixdev = "nix develop -c $SHELL";
         nix-shell = "nix-shell --command $SHELL";
