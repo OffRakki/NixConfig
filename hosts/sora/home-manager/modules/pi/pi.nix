@@ -107,7 +107,7 @@ in {
         "npm:pi-subagents"
         "npm:pi-intercom"
         "npm:pi-hermes-memory"
-        # "npm:pi-lean-ctx"
+        "npm:pi-lean-ctx"
         "npm:pi-powerline-footer"
         "npm:@juicesharp/rpiv-args"
         "npm:@juicesharp/rpiv-btw"
