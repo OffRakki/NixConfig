@@ -177,6 +177,7 @@
 | `hosts/sora/home-manager/modules/mangohud.nix` | overlay(gpu,cpu,ram,vram,fps,frametime), legacy-layout, top-left, fps-limit(237,120,0), thresholds(yellow-50%,red-90%) |
 | `hosts/sora/home-manager/modules/glance.nix` | glance-service(hm), page=Dashboard, small-column, empty-widgets |
 | `hosts/sora/home-manager/modules/opencode/*` | see Opencode section below |
+| `hosts/sora/home-manager/modules/pi/*` | see Pi Module section below |
 
 ### Home-Manager Modules (tempest)
 
@@ -208,6 +209,22 @@
 | `skills/firefly/resources/*` | auditing.md, btg.md, mercado-pago.md, nubank-ofx.md |
 | `skills/jujutsu/references/*` | bookmarks, conflicts, git-to-jj, glossary, operation-log, revsets, troubleshooting, workflow-commit-push-pr, workflow-new-workspace, workspaces |
 | `skills/browser/scripts/browser.py` | playwright-browser-automation |
+
+### Pi Module
+
+| File | Keywords |
+|------|----------|
+| `hosts/sora/home-manager/modules/pi/default.nix` | pi-coding-agent, config |
+| `hosts/sora/home-manager/modules/pi/pi.nix` | pi-coding-agent-enable, settings(deepseek-provider,openai,model,compaction,retry,theme), models.json, home.file(extensions,skills-symlinks,prompts,themes,APPEND_SYSTEM.md), sops-secrets(deepseek,openai,lucky-info,skill-firefly,skill-lumis), persistence(.pi) |
+| `hosts/sora/home-manager/modules/pi/AGENTS.md` | Ciel-personality, pi-tool-discipline, skill-routing, nix-managed, sops-refs |
+| `hosts/sora/home-manager/modules/pi/extensions/deepseek-provider.ts` | pi-extension, deepseek-provider-registration, model-costs, openai-completions-api |
+| `hosts/sora/home-manager/modules/pi/extensions/notify.ts` | pi-extension, desktop-notifications, notify-send, agent-end-event, /notify-command |
+| `hosts/sora/home-manager/modules/pi/prompts/archive.md` | pi-prompt, session-summary, obsidian-save |
+| `hosts/sora/home-manager/modules/pi/prompts/free-roam.md` | pi-prompt, ciel-free-roam, autonomous-exploration |
+| `hosts/sora/home-manager/modules/pi/prompts/nix-rebuild.md` | pi-prompt, nixos-rebuild, jj-sync, nh-switch |
+| `hosts/sora/home-manager/modules/pi/themes/ciel-cursor.json` | pi-theme, catppuccin-mocha, ciel-cursor-colors |
+| `hosts/sora/home-manager/modules/pi/skills/nix-auditor/SKILL.md` | pi-skill, nix-config-audit, read-only, structured-report |
+| Skills (symlinked from opencode): (12 total) | jujutsu, nix, nix-refactor, linux, invest, firefly, lumis, personal-tools, browser, seo, screenshot, context-curation |
 
 ### Scripts & Macros
 
@@ -406,6 +423,9 @@ hosts/tempest/home-manager/home.nix
 | Email config | `hosts/sora/home-manager/modules/aerc.nix`, `neomutt.nix` |
 | Calendar/contacts/todos | `hosts/sora/home-manager/modules/calendar.nix` |
 | Opencode personality/skills | `hosts/sora/home-manager/modules/opencode/` |
+| Pi coding agent config | `hosts/sora/home-manager/modules/pi/` |
+| Pi Ciel personality | `hosts/sora/home-manager/modules/pi/AGENTS.md` |
+| Pi extensions/skills/prompts/themes | `hosts/sora/home-manager/modules/pi/{extensions,skills,prompts,themes}/` |
 | Ciel free-roam (/freeroam) | `opencode.nix`(command.freeroam), `bin/freeroam.sh`, `ciel.nix`(heartbeat-timer) |
 | Glance dashboard YAML | `hosts/*/nixos/containers/data/glance/glance.yml` |
 | NixOS containers | `hosts/*/nixos/containers/default.nix`, `containers/containers.nix` |
