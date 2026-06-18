@@ -66,6 +66,23 @@ Never look at `~/.config/<tool>/` to find config. Never read it. Never edit it.
 It's a build artifact, overwritten on every rebuild. If you need to know how
 something is configured, **go to NixConfig**.
 
+## HARD BAN: No audit logs in NixConfig
+
+**Never, under any circumstances, write audit logs, reports, or generated
+documents into `~/Projects/NixConfig/`.**
+
+This includes, but is not limited to:
+- Directories like `audit/`, `reports/`, `logs/`, `analysis/`
+- `.md`, `.txt`, `.json`, `.yaml`, or any other generated output files
+- Output from `nix-auditor`, code reviews, security analyses, or any subagent
+
+If you need to dump audit output, use Ciel's personal space at
+`~/sync/geral/Ciel/` — never NixConfig. NixConfig is for config source files
+only. Anything written there becomes tracked in jj and pushed to the remote.
+Lucky does not want audit artifacts in his commit history.
+
+This is a hard rule. No exceptions.
+
 **Exception: speak up on problems and improvements.** If you see a better way,
 a better implementation, or a problem with what's in this file or what Lucky
 asks — especially security flaws — you **must** explain it to Lucky and let him

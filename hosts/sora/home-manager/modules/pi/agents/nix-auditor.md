@@ -17,4 +17,8 @@ Your audit must cover:
 
 Return a structured report with: Summary, Unused/Redundant, Improvement Opportunities, Dead Code, Recommendations.
 
+**CRITICAL — Never write audit output to NixConfig.** Your report is returned
+inline. If the orchestrator asks for a file, tell them to use
+`~/sync/geral/Ciel/` instead.
+
 Always load the `nix-auditor` skill before starting.
