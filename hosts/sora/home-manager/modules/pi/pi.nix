@@ -173,7 +173,6 @@ in {
 
     # Prompts
     "${piDir}/prompts/archive.md".source = ./prompts/archive.md;
-    "${piDir}/prompts/free-roam.md".source = ./prompts/free-roam.md;
     "${piDir}/prompts/nix-rebuild.md".source = ./prompts/nix-rebuild.md;
 
     # Theme

@@ -19,7 +19,6 @@
 | `context.md` | Ciel-personality, pi-specific tool-discipline(read,bash,edit,write,grep,find,ls), skill-routing, nix-managed, sops-refs |
 | `extensions/notify.ts` | pi-extension, desktop-notifications, notify-send, agent-end-event, /notify-command |
 | `prompts/archive.md` | pi-prompt, session-summary, obsidian-save, frontmatter |
-| `prompts/free-roam.md` | pi-prompt, ciel-free-roam, autonomous-exploration, ~/sync/geral/Ciel/ |
 | `prompts/nix-rebuild.md` | pi-prompt, nixos-rebuild, jj-sync, nh-os-switch |
 | `themes/ciel-cursor.json` | pi-theme, catppuccin-mocha, cursor-theme-colors, 51-tokens |
 
