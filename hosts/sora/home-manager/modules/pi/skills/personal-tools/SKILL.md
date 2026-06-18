@@ -1,6 +1,10 @@
 ---
 name: personal-tools
-description: Use when answering Lucky's questions about his terminal PIM tools: khal (calendar), khard (contacts), and todoman (todos). Covers all commands, options, configuration, and troubleshooting for each tool. Use for calendar queries, contact lookups, task management, and pimutils ecosystem questions.
+description: >
+  Use when answering Lucky's questions about his terminal PIM tools: khal (calendar), khard
+  (contacts), and todoman (todos). Covers all commands, options, configuration, and
+  troubleshooting for each tool. Use for calendar queries, contact lookups, task management,
+  and pimutils ecosystem questions.
 ---
 
 # Personal PIM Tools
