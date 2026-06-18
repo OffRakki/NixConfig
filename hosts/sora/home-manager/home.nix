@@ -33,6 +33,7 @@
       "Documents"
       "Downloads"
       "Pictures"
+      "Projects"
       "Videos"
       ".local/bin"
       ".local/share/nix" # trusted settings and repl history
@@ -109,6 +110,11 @@
           "WebBrowser"
         ];
       };
+    };
+
+    userDirs = {
+      enable = true;
+      createDirectories = true;
     };
   };
 
