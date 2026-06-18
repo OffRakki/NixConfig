@@ -143,8 +143,226 @@ in {
     };
   };
 
-  # Place extensions, skills, prompts, themes, and APPEND_SYSTEM.md into ~/.pi/agent/
+  # Place models, extensions, skills, prompts, themes, and APPEND_SYSTEM.md into ~/.pi/agent/
   home.file = {
+    # Custom provider models (hyper.charm.land)
+    "${piDir}/models.json".text = builtins.toJSON {
+      providers = {
+        hyper = {
+          baseUrl = "https://hyper.charm.land/v1";
+          apiKey = "!cat ${osConfig.sops.secrets.hyperApiKey.path}";
+          api = "openai-completions";
+          compat.supportsDeveloperRole = false;
+          models = [
+            {
+              id = "deepseek-v4-flash";
+              name = "DeepSeek V4 Flash";
+              reasoning = true;
+              input = ["text" "image"];
+              contextWindow = 1000000;
+              maxTokens = 384000;
+              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
+              thinkingLevelMap = {
+                minimal = null;
+                low = null;
+                medium = null;
+                high = "high";
+                xhigh = "xhigh";
+              };
+            }
+            {
+              id = "deepseek-v4-pro";
+              name = "DeepSeek V4 Pro";
+              reasoning = true;
+              input = ["text"];
+              contextWindow = 1000000;
+              maxTokens = 384000;
+              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
+              thinkingLevelMap = {
+                minimal = null;
+                low = null;
+                medium = null;
+                high = "high";
+                xhigh = "xhigh";
+              };
+            }
+            {
+              id = "gemma-4-26b-a4b-it";
+              name = "Gemma 4 26B A4B";
+              reasoning = true;
+              input = ["text"];
+              contextWindow = 256000;
+              maxTokens = 25600;
+              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
+            }
+            {
+              id = "glm-5";
+              name = "GLM-5";
+              reasoning = true;
+              input = ["text"];
+              contextWindow = 202752;
+              maxTokens = 20275;
+              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
+            }
+            {
+              id = "glm-5.1";
+              name = "GLM 5.1";
+              reasoning = true;
+              input = ["text" "image"];
+              contextWindow = 202800;
+              maxTokens = 64000;
+              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
+              thinkingLevelMap = {
+                off = null;
+                minimal = null;
+                low = "low";
+                medium = "medium";
+                high = "high";
+              };
+            }
+            {
+              id = "gpt-oss-120b";
+              name = "gpt-oss-120b";
+              reasoning = true;
+              input = ["text"];
+              contextWindow = 131072;
+              maxTokens = 13107;
+              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
+              thinkingLevelMap = {
+                off = null;
+                minimal = null;
+                low = "low";
+                medium = "medium";
+                high = "high";
+              };
+            }
+            {
+              id = "kimi-k2.5";
+              name = "Kimi K2.5";
+              reasoning = true;
+              input = ["text"];
+              contextWindow = 262144;
+              maxTokens = 26214;
+              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
+            }
+            {
+              id = "kimi-k2.6";
+              name = "Kimi K2.6";
+              reasoning = true;
+              input = ["text" "image"];
+              contextWindow = 262000;
+              maxTokens = 262000;
+              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
+              thinkingLevelMap = {
+                off = null;
+                minimal = null;
+                low = "low";
+                medium = "medium";
+                high = "high";
+              };
+            }
+            {
+              id = "llama-3.3-70b-instruct";
+              name = "Llama 3.3 70B Instruct";
+              reasoning = true;
+              input = ["text"];
+              contextWindow = 128000;
+              maxTokens = 12800;
+              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
+            }
+            {
+              id = "llama-4-maverick-17b-128e-instruct-fp8";
+              name = "Llama 4 Maverick 17B 128E Instruct FP8";
+              reasoning = true;
+              input = ["text"];
+              contextWindow = 430000;
+              maxTokens = 43000;
+              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
+            }
+            {
+              id = "minimax-m2.7";
+              name = "MiniMax M2.7";
+              reasoning = true;
+              input = ["text"];
+              contextWindow = 204800;
+              maxTokens = 131000;
+              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
+              thinkingLevelMap = {
+                off = null;
+                minimal = null;
+                low = "low";
+                medium = "medium";
+                high = "high";
+              };
+            }
+            {
+              id = "qwen3.6-flash";
+              name = "Qwen3.6-Flash";
+              reasoning = true;
+              input = ["text" "image"];
+              contextWindow = 1000000;
+              maxTokens = 64000;
+              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
+            }
+            {
+              id = "qwen3.6-max";
+              name = "Qwen3.6-Max";
+              reasoning = true;
+              input = ["text"];
+              contextWindow = 256000;
+              maxTokens = 64000;
+              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
+            }
+            {
+              id = "qwen3.6-plus";
+              name = "Qwen3.6-Plus";
+              reasoning = true;
+              input = ["text" "image"];
+              contextWindow = 1000000;
+              maxTokens = 64000;
+              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
+            }
+            {
+              id = "qwen3.7-max";
+              name = "Qwen3.7-Max";
+              reasoning = true;
+              input = ["text"];
+              contextWindow = 1000000;
+              maxTokens = 64000;
+              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
+            }
+            {
+              id = "qwen3.7-plus";
+              name = "Qwen3.7-Plus";
+              reasoning = true;
+              input = ["text" "image"];
+              contextWindow = 1000000;
+              maxTokens = 64000;
+              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
+            }
+            {
+              id = "qwen3-coder-480b-a35b-instruct-int4-mixed-ar";
+              name = "Qwen3 Coder 480B A35B Instruct";
+              reasoning = true;
+              input = ["text"];
+              contextWindow = 106000;
+              maxTokens = 10600;
+              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
+            }
+            {
+              id = "qwen3-next-80b-a3b-instruct";
+              name = "Qwen3 Next 80B A3B Instruct";
+              reasoning = true;
+              input = ["text"];
+              contextWindow = 262144;
+              maxTokens = 26214;
+              cost = { input = 0; output = 0; cacheRead = 0; cacheWrite = 0; };
+            }
+          ];
+        };
+      };
+    };
+
     # Extensions (notify only — providers are defined declaratively in models.json)
     "${piDir}/extensions/notify.ts".source = ./extensions/notify.ts;
 
