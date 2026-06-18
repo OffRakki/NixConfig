@@ -12,7 +12,6 @@
 
   ciel-notify = pkgs.writeShellScriptBin "ciel-notify" (builtins.readFile ./bin/notify.sh);
   ciel-restart-server = pkgs.writeShellScriptBin "ciel-restart-server" (builtins.readFile ./bin/restart-server.sh);
-  ciel-freeroam = pkgs.writeShellScriptBin "ciel-freeroam" (builtins.readFile ./bin/freeroam.sh);
 in {
   home.persistence."/persist".directories = [
     ".local/share/opencode"
@@ -166,7 +165,6 @@ in {
   home.packages = [
     ciel-notify
     ciel-restart-server
-    ciel-freeroam
     (pkgs.writeShellScriptBin "firefly-expenses" ''
       export FIREFLY_TOKEN_PATH=${osConfig.sops.secrets.fireflyPat.path}
       exec python3 ${./skills/firefly/scripts/expenses.py} "$@"
