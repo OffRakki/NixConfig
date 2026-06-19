@@ -8,6 +8,23 @@ description: Use when working with NixOS rebuilds, Nix package management, and f
 Ciel can also use `ctx_shell` for nix commands — output goes through lean-ctx
 compression, saving tokens on verbose build output.
 
+## LSP Warm-up
+
+At session start (or after 240s idle timeout), pi-lens shows "LSP Inactive" in
+the footer because no LSP server is connected. To warm up `nixd`:
+
+1. Use the native `read` tool (not `ctx_read`) on a `.nix` file:
+   `read("/home/rakki/Projects/NixConfig/flake.nix", {limit: 5})`
+2. This fires a `tool_call` event, which pi-lens hooks to spawn `nixd`
+3. The footer flips to `LSP Active (N)` within ~150ms
+
+`ctx_*` tools (`ctx_read`, `ctx_shell`, etc.) route through MCP and skip pi's
+native `tool_call` event — they do NOT trigger LSP warm-up. Always warm with
+the native `read` tool first.
+
+After warm-up, `ctx_read` works fine while the server stays alive (the 240s
+idle timer resets on each file touch). On timeout, just warm again.
+
 ## File Location
 
 For simple file lookups: grep/glob directly in NixConfig.

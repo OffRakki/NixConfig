@@ -108,6 +108,7 @@ in {
         "npm:@juicesharp/rpiv-todo"
         "npm:@juicesharp/rpiv-args"
         "npm:@juicesharp/rpiv-btw"
+        "npm:@juicesharp/rpiv-advisor"
         "npm:@juicesharp/rpiv-ask-user-question"
         "npm:@vigolium/piolium"
       ];

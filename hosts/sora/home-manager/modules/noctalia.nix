@@ -402,7 +402,7 @@ in {
       colorSchemes = {
         useWallpaperColors = true;
         darkMode = true;
-        schedulingMode = "location";
+        schedulingMode = "system";
         manualSunrise = "06:30";
         manualSunset = "18:30";
         generationMethod = "vibrant";
