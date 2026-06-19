@@ -367,7 +367,12 @@ in {
   };
 
   # lean-ctx config — disable shell allowlist so pi can run any command
-  xdg.configFile."lean-ctx/config.toml".text = ''
-    shell_allowlist = []
+  home.activation.ensureLeanCtxConfig = let
+    configFile = pkgs.writeText "lean-ctx-config" ''
+      shell_allowlist = []
+    '';
+  in ''
+    mkdir -p "$HOME/.config/lean-ctx"
+    cp -f ${configFile} "$HOME/.config/lean-ctx/config.toml"
   '';
 }
