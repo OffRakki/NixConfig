@@ -14,120 +14,25 @@
         }
       ];
       interactiveShellInit = ''
-        # ── Tide prompt: rainbow style, 2-line, powerline ──────
+        # ── Tide prompt ────────────────────────────────────────
 
-        # Tide's fisher init never fires under Nix — fire it manually
         source (functions --details _tide_sub_configure)
         _load_config rainbow
         _tide_finish
 
-        # Override with custom settings (set -U to beat tide configure universals)
-
-        set -U tide_prompt_add_newline_before true
-        set -U tide_prompt_color_frame_and_connection brblack
-        set -U tide_prompt_color_separator_same_color brblack
-        set -U tide_prompt_icon_connection " "
-        set -U tide_prompt_min_cols 34
         set -U tide_prompt_transient_enabled true
 
-        # Left prompt: pwd jj newline character
-        set -U tide_left_prompt_frame_enabled false
-        set -U tide_left_prompt_items "pwd jj newline character"
-        set -U tide_left_prompt_prefix ""
-        set -U tide_left_prompt_separator_diff_color " "
-        set -U tide_left_prompt_separator_same_color " "
-        set -U tide_left_prompt_suffix " "
+        set -U tide_left_prompt_items pwd jj newline character
+        set -U tide_right_prompt_items status cmd_duration context jobs time nix_shell
 
-        # Right prompt: status cmd_duration context jobs time nix_shell
-        set -U tide_right_prompt_frame_enabled false
-        set -U tide_right_prompt_items "status cmd_duration context jobs time nix_shell"
-        set -U tide_right_prompt_prefix " "
-        set -U tide_right_prompt_separator_diff_color " "
-        set -U tide_right_prompt_separator_same_color " "
-        set -U tide_right_prompt_suffix ""
-
-        # Character (prompt symbol)
         set -U tide_character_color brgreen
         set -U tide_character_color_failure brred
         set -U tide_character_icon ">"
-        set -U tide_character_vi_icon_default "<"
-        set -U tide_character_vi_icon_replace "|"
-        set -U tide_character_vi_icon_visual V
 
-        # Status (exit code)
-        set -U tide_status_bg_color normal
-        set -U tide_status_bg_color_failure normal
-        set -U tide_status_color green
-        set -U tide_status_color_failure red
-        set -U tide_status_icon "✔"
-        set -U tide_status_icon_failure "✘"
-
-        # PWD (current directory)
-        set -U tide_pwd_bg_color normal
-        set -U tide_pwd_color_anchors brcyan
-        set -U tide_pwd_color_dirs cyan
-        set -U tide_pwd_color_truncated_dirs magenta
-        set -U tide_pwd_icon ""
-        set -U tide_pwd_icon_home ""
-        set -U tide_pwd_icon_unwritable ""
-        set -U tide_pwd_markers .bzr .citc .git .hg .node-version .python-version \
-                       .ruby-version .shorten_folder_marker .svn .terraform \
-                       bun.lockb Cargo.toml composer.json CVS go.mod \
-                       package.json build.zig
-
-        # Git
-        set -U tide_git_bg_color normal
-        set -U tide_git_bg_color_unstable normal
-        set -U tide_git_bg_color_urgent normal
-        set -U tide_git_color_branch brgreen
-        set -U tide_git_color_conflicted brred
-        set -U tide_git_color_dirty bryellow
-        set -U tide_git_color_operation brred
-        set -U tide_git_color_staged bryellow
-        set -U tide_git_color_stash brgreen
-        set -U tide_git_color_untracked brblue
-        set -U tide_git_color_upstream brgreen
-        set -U tide_git_icon ""
-        set -U tide_git_truncation_length 24
-        set -U tide_git_truncation_strategy ""
-
-        # Cmd duration
-        set -U tide_cmd_duration_bg_color normal
-        set -U tide_cmd_duration_color brblack
-        set -U tide_cmd_duration_decimals 0
-        set -U tide_cmd_duration_icon ""
-        set -U tide_cmd_duration_threshold 3000
-
-        # Context (user@host)
-        set -U tide_context_always_display false
-        set -U tide_context_bg_color normal
-        set -U tide_context_color_default yellow
-        set -U tide_context_color_root bryellow
-        set -U tide_context_color_ssh yellow
-        set -U tide_context_hostname_parts 1
-
-        # Jobs (background tasks)
-        set -U tide_jobs_bg_color normal
-        set -U tide_jobs_color green
-        set -U tide_jobs_icon ""
-        set -U tide_jobs_number_threshold 1
-
-        # Nix shell
-        set -U tide_nix_shell_bg_color normal
-        set -U tide_nix_shell_color brblue
-        set -U tide_nix_shell_icon ""
-
-        # Time
-        set -U tide_time_bg_color normal
-        set -U tide_time_color brblack
-        set -U tide_time_format "%T"
-
-        # Custom: jj (jujutsu)
         set -U tide_jj_bg_color normal
         set -U tide_jj_color brgreen
         set -U tide_jj_icon ""
 
-        # Apply
         tide reload
 
         # ── Fish greeting / tools ──────────────────────────────
@@ -175,7 +80,6 @@
       shellAliases = {
         cp = "cp --archive --recursive --verbose --interactive";
         rsync = "rsync --archive --verbose --progress --inplace";
-
         ls = "eza";
         la = "eza -a";
         mv = "mv -i";
@@ -183,50 +87,32 @@
         df = "duf";
         du = "du -hc --time";
         tree = "tree --du -h";
-
         fzf = "fzf --color=16";
-
         grep = "grep --color=always";
         egrep = "egrep --color=always";
         fgrep = "fgrep --color=always";
       };
       shellAbbrs = {
-        # jujutsu
         jjs = "jj split -r";
         jjm = "jj b m master --to";
         jjd = "jj describe -r";
         jjsq = "jj squash -r";
         jjgp = "jj git push";
         jjl = "jj -r 'all()'";
-
-        # nix
         ncg = "nix-collect-garbage";
         nrd = "sudo nixos-rebuild switch --flake $NH_FLAKE#tempest";
         nixdev = "nix develop -c $SHELL";
         nix-shell = "nix-shell --command $SHELL";
-
         ff = "fastfetch";
-
-        # fish
         src = "source ~/.config/fish/config.fish";
-
-        # text editor
         v = "hx";
         silicon = "silicon --to-clipboard --theme Dracula --no-line-number --no-window-controls --font 'JetBrainsMono Nerd Font Mono' --background '#24242C' --window-title";
-
-        # cd
         ".." = "cd ..";
-
-        # youtube-dl
         ytd = "youtube-dl -o '~/yt-downloads/%(title)s.%(ext)s' ";
         yta-best = "youtube-dl --extract-audio --audio-format best -o '~/yt-downloads/%(title)s.%(ext)s' ";
         yta-mp3 = "youtube-dl --extract-audio --audio-format mp3 -o '~/yt-downloads/%(title)s.%(ext)s' ";
         ytd-best = "youtube-dl -f mp4+bestaudio -o '~/yt-downloads/%(title)s.%(ext)s' ";
-
-        # git
         gitall = "git add -A && git commit -a && git push";
-
-        # misc
         pipes = "pipes.sh -t 3 -f 100 -R -r 0";
         htop = "btop";
         cat = "bat";
