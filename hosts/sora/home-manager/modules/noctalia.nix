@@ -401,7 +401,7 @@ in {
       };
       colorSchemes = {
         useWallpaperColors = true;
-        darkMode = false;
+        darkMode = true;
         schedulingMode = "location";
         manualSunrise = "06:30";
         manualSunset = "18:30";

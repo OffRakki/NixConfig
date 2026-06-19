@@ -98,10 +98,14 @@ in {
         "npm:pi-hermes-memory"
         "npm:pi-lean-ctx"
         "npm:pi-powerline-footer"
-        "npm:@juicesharp/rpiv-args"
-        "npm:@juicesharp/rpiv-btw"
         "npm:pi-markdown-preview"
         "npm:pi-chrome"
+        "npm:pi-simplify"
+        "npm:@juicesharp/rpiv-todo"
+        "npm:@juicesharp/rpiv-args"
+        "npm:@juicesharp/rpiv-btw"
+        "npm:@juicesharp/rpiv-ask-user-question"
+        "npm:@vigolium/piolium"
       ];
     };
 
@@ -338,8 +342,10 @@ in {
     "${piDir}/prompts/nix-audit.md".source = ./prompts/nix-audit.md;
     "${piDir}/prompts/commit.md".source = ./prompts/commit.md;
 
-    # Theme
+    # Themes
+    "${piDir}/themes/catppuccin-mocha.json".source = ./themes/catppuccin-mocha.json;
     "${piDir}/themes/ciel-cursor.json".source = ./themes/ciel-cursor.json;
+    "${piDir}/themes/gruvbox-dark-hard.json".source = ./themes/gruvbox-dark-hard.json;
 
     # Agents (subagent definitions — auto-discovered by pi-subagents)
     "${piDir}/agents/nix-auditor.md".source = ./agents/nix-auditor.md;

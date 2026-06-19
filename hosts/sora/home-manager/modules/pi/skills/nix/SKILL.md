@@ -8,7 +8,7 @@ description: Use when working with NixOS rebuilds, Nix package management, and f
 ## File Location
 
 For simple file lookups: grep/glob directly in NixConfig.
-For complex tasks: consult INDEX.md at `hosts/sora/home-manager/modules/opencode/INDEX.md`.
+For complex tasks: consult INDEX.md at `hosts/sora/home-manager/modules/pi/INDEX.md`.
 
 ## Rebuild
 
