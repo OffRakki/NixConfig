@@ -51,7 +51,7 @@ in {
     ];
 
     settings = {
-      defaultProvider = "deepseek";
+      defaultProvider = "hyper";
       defaultModel = "deepseek-v4-flash";
       defaultThinkingLevel = "high";
       theme = "gruvbox-dark-hard";
