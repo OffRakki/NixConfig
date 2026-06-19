@@ -94,21 +94,28 @@ in {
       };
 
       packages = [
-        "npm:pi-web-access"
-        "npm:pi-mcp-adapter"
-        "npm:pi-subagents"
         "npm:pi-intercom"
-        "npm:pi-hermes-memory"
         "npm:pi-lean-ctx"
-        "npm:pi-powerline-footer"
         "npm:pi-lens"
-        "npm:pi-markdown-preview"
         "npm:pi-chrome"
         "npm:pi-simplify"
+        "npm:pi-namespace"
+        "npm:pi-ask-user"
+        "npm:pi-web-access"
+        "npm:pi-mcp-adapter"
+        "npm:pi-markdown-preview"
+        "npm:pi-powerline-footer"
+        "npm:pi-hermes-memory"
+        "npm:pi-invisible-continue"
+        "npm:pi-subagents"
+        "npm:@tintinweb/pi-subagents"
+        "npm:@juicesharp/rpiv-pi"
         "npm:@juicesharp/rpiv-todo"
         "npm:@juicesharp/rpiv-args"
         "npm:@juicesharp/rpiv-btw"
+        "npm:@juicesharp/rpiv-i18n"
         "npm:@juicesharp/rpiv-advisor"
+        "npm:@juicesharp/rpiv-workflow"
         "npm:@juicesharp/rpiv-ask-user-question"
         "npm:@vigolium/piolium"
       ];
@@ -377,5 +384,15 @@ in {
   in ''
     mkdir -p "$HOME/.config/lean-ctx"
     cp -f ${configFile} "$HOME/.config/lean-ctx/config.toml"
+  '';
+
+  # Patch pi-powerline-footer cost display to show 4 decimal places
+  home.activation.patchPowerlineCostDisplay = ''
+    SEG_FILE="$HOME/.pi/agent/npm/node_modules/pi-powerline-footer/segments.ts"
+    if [ -f "$SEG_FILE" ]; then
+      if grep -q 'cost.toFixed(2)' "$SEG_FILE"; then
+        ${pkgs.gnused}/bin/sed -i 's/cost\.toFixed(2)/cost.toFixed(4)/g' "$SEG_FILE"
+      fi
+    fi
   '';
 }
