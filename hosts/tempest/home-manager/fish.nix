@@ -25,13 +25,43 @@
         set -U tide_left_prompt_items pwd jj newline character
         set -U tide_right_prompt_items status cmd_duration context jobs time nix_shell
 
-        set -U tide_character_color brgreen
-        set -U tide_character_color_failure brred
+        # ── Tide colors — Gruvbox dark hard ──────────────────
+        # Palette: https://github.com/morhetz/gruvbox
+        # bg=#1d2021 fg=#ebdbb2  |  red=#cc241d green=#98971a yellow=#d79921
+        # blue=#458588 purple=#b16286 aqua=#689d6a orange=#d65d0e gray=#a89984
+        # bright: #fb4934 #b8bb26 #fabd2f #83a598 #d3869b #8ec07c #fe8019
+
+        set -U tide_character_color "#98971a"
+        set -U tide_character_color_failure "#cc241d"
         set -U tide_character_icon ">"
 
+        set -U tide_pwd_color_dirs "#d65d0e"
+        set -U tide_pwd_color_anchors "#d3869b"
+        set -U tide_pwd_color_truncated_dirs "#fe8019"
+        set -U tide_pwd_bg_color "#1d2021"
+
+        set -U tide_time_color "#d3869b"
+        set -U tide_time_bg_color "#282828"
+
+        set -U tide_status_color "#b8bb26"
+        set -U tide_status_color_failure "#fb4934"
+
+        set -U tide_context_color_default "#83a598"
+        set -U tide_context_color_root "#fb4934"
+        set -U tide_context_color_ssh "#d3869b"
+
+        set -U tide_jobs_color "#fabd2f"
+
+        set -U tide_cmd_duration_color "#d79921"
+        set -U tide_cmd_duration_bg_color "#1d2021"
+
+        # Custom jj item colors
         set -U tide_jj_bg_color normal
-        set -U tide_jj_color brgreen
+        set -U tide_jj_color "#83a598"
         set -U tide_jj_icon ""
+
+        # Nix shell
+        set -U tide_nix_shell_color "#8ec07c"
 
         tide reload
 
@@ -49,7 +79,7 @@
 
 
         # Use terminal colors
-        set -x fish_color_autosuggestion      brblack
+        set -x fish_color_autosuggestion      BE9F6E
         set -x fish_color_cancel              -r
         set -x fish_color_command             brgreen
         set -x fish_color_comment             brmagenta
@@ -72,7 +102,7 @@
         set -x fish_color_status              red
         set -x fish_color_user                brgreen
         set -x fish_color_valid_path          --underline
-        set -x fish_pager_color_completion    normal
+        set -x fish_pager_color_completion    BE9F6E
         set -x fish_pager_color_description   yellow
         set -x fish_pager_color_prefix        'white' '--bold' '--underline'
         set -x fish_pager_color_progress      'brwhite' '--background=cyan'
