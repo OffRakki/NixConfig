@@ -5,6 +5,9 @@ description: Use when working with NixOS rebuilds, Nix package management, and f
 
 # Nix
 
+Ciel can also use `ctx_shell` for nix commands — output goes through lean-ctx
+compression, saving tokens on verbose build output.
+
 ## File Location
 
 For simple file lookups: grep/glob directly in NixConfig.
@@ -61,6 +64,7 @@ The `-c` flag tells `nix shell` to exec the following arguments as a command.
 Everything after `-c` is passed straight to the shell, so quoting works naturally.
 
 **CRITICAL**: NEVER double-quote `"<command> [args...]"` together. This causes bash to treat the entire thing as the executable name:
+
 - Wrong: `nix shell nixpkgs#python3 -c "python3 foo.py arg1 arg2"`
 - Right: `nix shell nixpkgs#python3 -c python3 foo.py arg1 arg2`
 
@@ -70,6 +74,7 @@ nix shell nixpkgs#yq -c yq eval '.foo.bar' file.yml
 ```
 
 Multiple packages in one shell (drops into interactive shell):
+
 ```bash
 nix shell nixpkgs#jq nixpkgs#yq nixpkgs#curl -c sh
 ```
@@ -83,11 +88,13 @@ nix run nixpkgs#jq -- -r '.name' file.json
 ```
 
 Use `nix run` when:
+
 - You want a single command with arguments (everything after `--` is passed to the binary)
 - The package's default binary name matches what you need
 - You don't need multiple packages simultaneously
 
 Use `nix shell` when:
+
 - You need to chain multiple commands in the same ephemeral environment
 - The command name differs from the package name (e.g. `nixpkgs#nodePackages.prettier`)
 - You want an interactive shell with multiple tools available

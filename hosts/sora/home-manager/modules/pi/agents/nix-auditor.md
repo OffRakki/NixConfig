@@ -1,7 +1,7 @@
 ---
 name: nix-auditor
 description: Audits the NixOS flake and home-manager configs. Read-only, no edits, no bash beyond grep/find.
-tools: read, bash
+tools: read, bash, ctx_read, ctx_grep, ctx_find, ctx_ls
 skills: nix-auditor
 model: deepseek/deepseek-v4-pro
 ---

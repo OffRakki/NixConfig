@@ -3,6 +3,28 @@ name: browser
 description: Automate web browsers — navigate, click, fill forms, extract data, take screenshots.
 ---
 
+## Tooling
+
+This skill uses **pi-chrome** (installed npm package) via a Python script. The script
+launches Chromium with your real Chrome profile, using your existing authenticated
+sessions (cookies, passwords, 2FA). No Playwright, no Puppeteer — just your browser.
+
+### How pi-chrome integrates
+
+The `scripts/browser.py` script uses pi-chrome under the hood:
+
+- **Persistent sessions** (`--persist`): saves cookies/localStorage so logins survive
+  across invocations. Uses Chrome's actual profile directory.
+- **Stealth mode** (`--stealth`): anti-bot-detection (Cloudflare bypass). Overrides
+  user agent, hides `navigator.webdriver`, adds plugin/WebGL mimicry.
+- **Visible mode** (`--visible`): launches a real Chrome window for captchas and
+  debugging. Chrome shows with your extensions, bookmarks, and saved passwords.
+
+### Browser automation via subagent
+
+For complex workflows (multi-step, conditional logic, login flows), consider using
+`pi-subagents` to delegate browser work to a focused subagent that loads this skill.
+
 ## Script
 
 The helper script lives at `scripts/browser.py` relative to this skill's root
@@ -129,6 +151,7 @@ screenshot to confirm and report back.
 ### Visible browser (captchas / debugging)
 
 Only use `--visible` when:
+
 - A captcha or bot-blocker was detected (see above), OR
 - The user explicitly asks for it
 
@@ -202,6 +225,7 @@ subprocess.run([browser, '--stealth', '--persist', json.dumps(steps)])
 ```
 
 Notes from the trenches:
+
 - Sites like Reddit use `button:has-text("Log In")` for the submit button, not
   `button[type=submit]` (which often matches invisible elements).
 - Always add a `navigate` step before filling — the persisted session doesn't
