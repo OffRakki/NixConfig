@@ -21,6 +21,7 @@ in {
       ".local/share/pi"
       ".config/lean-ctx"
       ".local/share/lean-ctx"
+      ".pi-lens"
     ];
   };
 
@@ -100,6 +101,7 @@ in {
         "npm:pi-hermes-memory"
         "npm:pi-lean-ctx"
         "npm:pi-powerline-footer"
+        "npm:pi-lens"
         "npm:pi-markdown-preview"
         "npm:pi-chrome"
         "npm:pi-simplify"
