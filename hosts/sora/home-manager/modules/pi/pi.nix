@@ -51,7 +51,7 @@ in {
     ];
 
     settings = {
-      defaultProvider = "hyper";
+      defaultProvider = "deepseek";
       defaultModel = "deepseek-v4-flash";
       defaultThinkingLevel = "high";
       theme = "gruvbox-dark-hard";
@@ -327,6 +327,7 @@ in {
     "${piDir}/skills/browser/scripts".source = ./skills/browser/scripts;
     "${piDir}/skills/seo/SKILL.md".source = ./skills/seo/SKILL.md;
     "${piDir}/skills/context-curation/SKILL.md".source = ./skills/context-curation/SKILL.md;
+    "${piDir}/skills/security-sweep/SKILL.md".source = ./skills/security-sweep/SKILL.md;
 
     # Pi-specific skill
     "${piDir}/skills/nix-auditor/SKILL.md".source = ./skills/nix-auditor/SKILL.md;
