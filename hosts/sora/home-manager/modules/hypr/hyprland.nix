@@ -77,6 +77,7 @@ in {
             vrr = 0,
             mouse_move_enables_dpms = true,
             enable_swallow = true,
+            swallow_regex = "^(kitty)$",
             focus_on_activate = false,
             initial_workspace_tracking = 1,
             middle_click_paste = false,

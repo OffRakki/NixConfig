@@ -12,7 +12,7 @@ A repeatable workflow for reviewing and cleaning up a NixOS flake config.
 ### 1. Map the territory
 
 For simple file lookups: grep/glob directly. For complex multi-file work,
-consult INDEX.md at `hosts/sora/home-manager/modules/opencode/INDEX.md`
+consult INDEX.md at `hosts/sora/home-manager/modules/pi/INDEX.md`
 (from NixConfig root) for the full file listing, keyword map, and import graph.
 
 Key things the index already tells you:

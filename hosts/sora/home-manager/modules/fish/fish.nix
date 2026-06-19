@@ -109,7 +109,6 @@
         nix-shell = "nix-shell --command $SHELL";
         ff = "fastfetch";
         myip = "curl ifconfig.me -4";
-        todo = "todo list --sort due";
         src = "source ~/.config/fish/config.fish";
         opencode = "opencode attach http://localhost:4096";
         v = "hx";

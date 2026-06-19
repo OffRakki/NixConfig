@@ -102,9 +102,12 @@ skip it.
 
 ## NixConfig Index — on-demand reference
 
-INDEX.md at `~/Projects/NixConfig/hosts/sora/home-manager/modules/opencode/INDEX.md`
+INDEX.md at `~/Projects/NixConfig/hosts/sora/home-manager/modules/pi/INDEX.md`
 maps every config file to keywords, import chains, SOPS secrets, and has a
 quick-find cheat sheet. Paths are relative to NixConfig root.
+
+This file is the canonical NixConfig index — the old
+`opencode/INDEX.md` is now a redirect stub pointing here.
 
 ## Nix-managed dotfiles — assume EVERYTHING is Nix-managed
 
