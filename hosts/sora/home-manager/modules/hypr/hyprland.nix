@@ -458,6 +458,7 @@ in {
         hl.bind("${mod} + SHIFT + V",           hl.dsp.exec_cmd("pypr toggle volume")) -- Pavucontrol
         hl.bind("${mod} + SHIFT + S",           hl.dsp.exec_cmd("pypr toggle spotify")) -- Pavucontrol
         hl.bind("${mod} + M",                   hl.dsp.exec_cmd("noctalia-shell ipc call sessionMenu toggle"))
+        hl.bind("${mod} + N",                   hl.dsp.exec_cmd("noctalia-shell ipc call notifications toggleHistory"))
         hl.bind("${mod} + SHIFT + W",           hl.dsp.exec_cmd("noctalia-shell ipc call wallpaper toggle"))
         hl.bind("CTRL + ALT + N",               hl.dsp.exec_cmd("${terminal} --class middleFloat -e hx"))
         hl.bind("${mod} + SHIFT + P",           hl.dsp.exec_cmd("'${../../../../../scripts/pass-wofi.sh}'"))
