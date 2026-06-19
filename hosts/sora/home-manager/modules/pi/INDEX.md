@@ -215,7 +215,7 @@
 | `hosts/sora/home-manager/modules/opencode/bin/restart-server.sh` | ciel-restart-server, systemctl--user, opencode-reconnect |
 | `hosts/sora/home-manager/modules/opencode/bin/freeroam.sh` | ciel-freeroam, free-roam, opencode-run--attach, summon-like-heartbeat |
 | `hosts/sora/home-manager/modules/opencode/agents/*` | agents: audio-analyzer(whisper-cli,ffprobe), image-analyzer(gpt-4o-mini-vision), nix-auditor(readonly-nix-audit), pdf-reader(pdftotext+image) |
-| Skills: (16 total) | jujutsu, nix, nix-refactor, linux, invest, firefly, lumis, personal-tools, browser, opencode-edit, opencode-session, context-curation, seo, screenshot, customize-opencode |
+| Skills: (17 total) | jujutsu, nix, nix-refactor, linux, invest, firefly, lumis, personal-tools, browser, opencode-edit, opencode-session, context-curation, seo, screenshot, customize-opencode, security-sweep |
 | `skills/firefly/scripts/*` | firefly_client.py, expenses.py, import_mp.py, mercado_pago.py |
 | `skills/firefly/resources/*` | auditing.md, btg.md, mercado-pago.md, nubank-ofx.md |
 | `skills/jujutsu/references/*` | bookmarks, conflicts, git-to-jj, glossary, operation-log, revsets, troubleshooting, workflow-commit-push-pr, workflow-new-workspace, workspaces |
@@ -263,6 +263,7 @@
 | browser | `skills/browser/` |
 | seo | `skills/seo/` |
 | context-curation | `skills/context-curation/` |
+| security-sweep | `skills/security-sweep/` |
 | opencode-edit | `skills/opencode-edit/` |
 | opencode-session | `skills/opencode-session/` |
 | nix-auditor | `skills/nix-auditor/` (pi-specific) |

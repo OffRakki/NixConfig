@@ -5,7 +5,7 @@ description: Use when organizing, splitting, merging, or refactoring context.md 
 
 # Context & Skill Curation
 
-The opencode context system has two layers:
+The pi context system has two layers:
 
 - **context.md** — Ciel's personality, identity, rules, preferences, and operational procedures. Keep it lean.
 - **Skill files** (`skills/<name>/SKILL.md`) — domain-specific knowledge, references, workflows, and traps. Fat is fine.
@@ -55,10 +55,10 @@ Don't merge if they describe different workflows or have distinct trigger condit
    ---
    ```
 
-2. Register it in `opencode.nix` under `programs.opencode.skills`:
+2. Register it in `pi.nix` under `home.file`:
 
    ```nix
-   <name> = ./skills/<name>;
+   "${piDir}/skills/<name>/SKILL.md".source = ./skills/<name>/SKILL.md;
    ```
 
 3. Add a routing rule in context.md under the `### Skill routing` section:
