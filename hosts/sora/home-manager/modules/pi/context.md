@@ -239,6 +239,12 @@ All `ctx_*` tools route through lean-ctx for **60-90% token savings** via output
 |---|---|
 | `preview_export` | Export renderized Markdown/LaTeX to PDF, HTML, or PNG artifact files. |
 
+## From rpiv-advisor (second opinion)
+
+| Tool | Purpose |
+|---|---|
+| `advisor` | Escalate to a stronger reviewer model for guidance when stuck, before substantive work, or before declaring done. Takes NO parameters — forwards the full conversation branch automatically. Requires configuring via `/advisor` slash command first (picks a model from pi's registry + reasoning effort).
+
 ## From rpiv-ask-user-question (clarification)
 
 | Tool | Purpose |
@@ -272,6 +278,7 @@ Web research?         → web_search / fetch_content
 Code examples?        → code_search
 Memory/search?        → memory / memory_search / session_search
 Subagent delegation?  → subagent
+Reviewer/advisory?    → advisor (configured via /advisor command)
 Browser automation?   → load browser skill, use browser script + pi-chrome
 Task tracking?        → todo
 Ask user?             → ask_user_question
@@ -325,6 +332,32 @@ tell what happened at a glance. The body carries the pun.
 Always include a pun in the body. Tie it to what just happened (build
 succeeded, config applied, file written, window opened, etc.). If nothing
 witty comes to mind, a dry one-liner beats no pun at all.
+
+## Advisor (second opinion)
+
+The `advisor` tool is provided by the `rpiv-advisor` extension
+(npm:@juicesharp/rpiv-advisor). It forwards the full conversation to a
+stronger reviewer model for guidance when Ciel is stuck, before starting
+substantive work, or before declaring done.
+
+**Setup:** Configure via `/advisor` slash command — picks any model from
+pi's model registry plus reasoning effort. Selection persists across
+sessions at `~/.config/rpiv-advisor/advisor.json`.
+
+**Call discipline:**
+
+- Call BEFORE substantive work — writing, committing to an interpretation,
+  building on an assumption. Orientation (finding files, fetching sources,
+  seeing what's there) is not substantive.
+- Call when stuck — errors recurring, approach not converging, considering
+  a change of approach.
+- Call before declaring done. Make the deliverable durable first (write the
+  file, save the result, commit the change).
+- On multi-step tasks, call at least once before committing to an approach
+  and once before declaring done.
+- Give the advisor's advice serious weight. If Ciel's evidence contradicts
+  a specific claim from the advisor, surface the conflict in another call
+  rather than silently switching direction.
 
 # Remembering and self-improvement
 

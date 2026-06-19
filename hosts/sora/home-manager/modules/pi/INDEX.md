@@ -157,7 +157,7 @@
 | `hosts/sora/home-manager/modules/hypr/hyprpaper.nix` | catppuccin-mocha-solid-background, github(OffRakki/walls), all-monitors |
 | `hosts/sora/home-manager/modules/hypr/hyprpanel.nix` | disabled, ags-panel, bar([dashboard,workspaces,ram,cpu],media,[volume,systray,notifications]), jetbrainsmono, transparent |
 | `hosts/sora/home-manager/modules/hypr/pyprland.nix` | scratchpads(kitty-dropdown 75%x60%, pwvucontrol, spotify), lost_windows, toggle_special, shift_monitors, magnify, expose |
-| `hosts/sora/home-manager/modules/rbw.nix` | bitwarden-cli, pinentry-gnome3, lock-300s, fernandomarques1505@gmail.com |
+| `hosts/sora/home-manager/modules/rbw.nix` | bitwarden-cli, pinentry-gnome3, lock-300s, <fernandomarques1505@gmail.com> |
 | `hosts/sora/home-manager/modules/mako.nix` | disabled, top-center, 400x150, 12s-timeout, catppuccin-mocha-colors |
 | `hosts/sora/home-manager/modules/clipnotify.nix` | wl-paste--watch, clip-notify(pipe), systemd-user-service, wayland-target |
 | `hosts/sora/home-manager/modules/swayosd.nix` | onscreen-display, volume, brightness, css-styled |
@@ -177,7 +177,7 @@
 | `hosts/sora/home-manager/modules/aerc.nix` | email-client, mbsync, xoauth2(gmail-3-accounts), sasl, urlscan, imv, hx-editor, w3m, systemd-timer(5min), mailto-handler, persistence |
 | `hosts/sora/home-manager/modules/firefox.nix` | userChrome(hide-tabs), dark-mode(user.js), profile=Rakki |
 | `hosts/sora/home-manager/modules/fastfetch.nix` | system-info, small-logo, 4-color-sections(system=blue,desktop=mauve,hardware=peach,status=green) |
-| `hosts/sora/home-manager/modules/git.nix` | git, hx-editor, master-branch, offrakki@gmail.com, commit-verbose |
+| `hosts/sora/home-manager/modules/git.nix` | git, hx-editor, master-branch, <offrakki@gmail.com>, commit-verbose |
 | `hosts/sora/home-manager/modules/neomutt.nix` | email-tui, sidebar(30,60s), khard-integration, solarized-dark, alternates, mailto-handler |
 | `hosts/sora/home-manager/modules/hytale.nix` | hytale-launcher(pkgs.inputs.hytale.default) |
 | `hosts/sora/home-manager/modules/quickshell/quickshell.nix` | disabled |
@@ -196,7 +196,7 @@
 |------|----------|
 | `hosts/tempest/home-manager/persistence.nix` | /persist: .config, .local/share, .ssh(mode=0700) |
 | `hosts/tempest/home-manager/fish.nix` | fish, tide, direnv, zoxide, fastfetch, custom-cursors, full-color-scheme, aliases(ls→eza, cat→bat, du→duf, grep=colors), abbrs(jj,nix,editor,yt-dl) |
-| `hosts/tempest/home-manager/git.nix` | git, hx-editor, master, offrakki@gmail.com, commit-verbose |
+| `hosts/tempest/home-manager/git.nix` | git, hx-editor, master, <offrakki@gmail.com>, commit-verbose |
 | `hosts/tempest/home-manager/jujutsu.nix` | jj, snapshot-50MiB, git-name-email, log-default, curved-graph, less-FRX, custom-draft-template |
 | `hosts/tempest/home-manager/fastfetch.nix` | animePurpleHair-logo, red/green/yellow-color-groups, os/kernel/packages/shell/wm/hardware |
 | `hosts/tempest/home-manager/bat.nix` | bat |
@@ -226,7 +226,7 @@
 | File | Keywords |
 |------|----------|
 | `hosts/sora/home-manager/modules/pi/default.nix` | pi-coding-agent, config |
-| `hosts/sora/home-manager/modules/pi/pi.nix` | pi-coding-agent-enable, settings(deepseek-provider,openai,model,compaction,retry,branchSummary,treeFilterMode,terminal,images,theme(gruvbox-dark-hard)), models.json, home.file(extensions,skills-symlinks,prompts,themes(catppuccin-mocha,ciel-cursor,gruvbox-dark-hard),keybindings,APPEND_SYSTEM.md), packages(pi-web-access,pi-mcp-adapter,pi-subagents,pi-intercom,pi-hermes-memory,pi-lean-ctx,pi-lens,pi-powerline-footer,pi-markdown-preview,pi-chrome,pi-simplify,rpiv-todo,rpiv-args,rpiv-btw,rpiv-ask-user-question,piolium), sops-secrets(deepseek,openai,lucky-info,skill-firefly,skill-lumis,webSearchJson), persistence(.pi,.pi-lens,.config/lean-ctx,.local/share/lean-ctx), xdg.configFile(lean-ctx/config.toml) |
+| `hosts/sora/home-manager/modules/pi/pi.nix` | pi-coding-agent-enable, settings(deepseek-provider,openai,model,compaction,retry,branchSummary,treeFilterMode,terminal,images,theme(gruvbox-dark-hard)), models.json, home.file(extensions,skills-symlinks,prompts,themes(catppuccin-mocha,ciel-cursor,gruvbox-dark-hard),keybindings,APPEND_SYSTEM.md), packages(pi-web-access,pi-mcp-adapter,pi-subagents,pi-intercom,pi-hermes-memory,pi-lean-ctx,pi-lens,pi-powerline-footer,pi-markdown-preview,pi-chrome,pi-simplify,rpiv-todo,rpiv-args,rpiv-btw,rpiv-advisor,rpiv-ask-user-question,piolium), sops-secrets(deepseek,openai,lucky-info,skill-firefly,skill-lumis,webSearchJson), persistence(.pi,.pi-lens,.config/lean-ctx,.local/share/lean-ctx), xdg.configFile(lean-ctx/config.toml) |
 | `hosts/sora/home-manager/modules/pi/models.json (generated in pi.nix)` | custom-provider, hyper-charm-land, openai-completions, 18-models, deepseek-v4-flash, deepseek-v4-pro, qwen3.6, qwen3.7, kimi-k2.5, kimi-k2.6, glm-5, glm-5.1, gemma-4, llama-3.3, llama-4, minimax-m2.7, gpt-oss-120b, qwen3-coder, qwen3-next |
 | `hosts/sora/home-manager/modules/pi/context.md` | Ciel-personality, pi-specific tool-discipline(read,bash,edit,write,grep,find,ls), skill-routing, nix-managed, sops-refs, speak-up-rule, read-before-write, keep-index-in-sync, subagents-list |
 | `hosts/sora/home-manager/modules/pi/extensions/notify.ts` | pi-extension, desktop-notifications, notify-send, agent-end-event, /notify-command |
@@ -295,6 +295,7 @@
 ## Keyword → File Cross-Reference
 
 ### Core Infrastructure
+
 - **btrfs** → `partitions.nix`(both), `btrfs-ephemeral.nix`
 - **luks/encryption** → `partitions.nix`(both), `.sops.yaml`
 - **impermanence** → `optin-persistence.nix`, `persistence.nix`(sora-hm), `persistence.nix`(tempest-hm)
@@ -307,6 +308,7 @@
 - **lanzaboote/secure-boot** → `configuration.nix`(sora)
 
 ### Display & WM
+
 - **hyprland** → `hyprland.nix`, `configuration.nix`(sora), `pyprland.nix`, `hyprpaper.nix`, `hypridle.nix`, `hyprlock.nix`, `hyprpanel.nix`, `wkspcSwitch.sh`
 - **noctalia** → `noctalia.nix`
 - **river** → `river.nix`
@@ -315,12 +317,14 @@
 - **catppuccin** → `gtk.nix`, `spicetify.nix`, `fastfetch.nix`(sora), `starship.nix`, `mako.nix`, `hyprpaper.nix`, `zed.nix`
 
 ### Launchers & Bars
+
 - **wofi** → `wofi.nix`, `pass-wofi.sh`
 - **fuzzel** → `fuzzel.nix`
 - **waybar** → `waybar.nix`(disabled)
 - **hyprpanel** → `hyprpanel.nix`(disabled)
 
 ### Shell & Terminal
+
 - **fish** → `fish.nix`(sora), `fish.nix`(tempest), `fish.nix`(shared-module)
 - **kitty** → `kitty.nix`
 - **alacritty** → `alacritty.nix`
@@ -328,6 +332,7 @@
 - **fastfetch** → `fastfetch.nix`(sora), `fastfetch.nix`(tempest)
 
 ### Editors & VCS
+
 - **helix | hx** → `helix.nix`, `git.nix`(both), `aerc.nix`, `neomutt.nix`
 - **neovim | nvim** → `neovim.nix`
 - **zed** → `zed.nix`
@@ -335,16 +340,19 @@
 - **git** → `git.nix`(sora), `git.nix`(tempest)
 
 ### Email & Calendar
+
 - **aerc | email** → `aerc.nix`
 - **neomutt** → `neomutt.nix`
 - **calendar | caldav | vdirsyncer** → `calendar.nix`
 - **khal | khard | todoman** → `calendar.nix`
 
 ### Browsers
+
 - **firefox** → `firefox.nix`
 - **qutebrowser** → `qutebrowser.nix`
 
 ### Gaming
+
 - **steam** → `steam.nix`(shared-module), `steam.nix`(sora-hm)
 - **mangohud** → `mangohud.nix`
 - **gamescope** → `steam.nix`(shared-module)
@@ -353,15 +361,18 @@
 - **hytale** → `hytale.nix`
 
 ### Finance & Stocks
+
 - **firefly-iii** → `firefly.nix`
 - **stocks | bovespa** → `stock-report.nix`
 - **compound-interest** → `calculadoraJurosVibecodadassa.html`
 
 ### AI & LLM
+
 - **ollama** → `ai.nix`
 - **open-webui** → `ai.nix`, glance-dashboards(both)
 
 ### Pi (Ciel's coding agent)
+
 - **pi-coding-agent** → `pi/pi.nix`, `pi/context.md`, `pi/AGENTS.md`
 - **ciel-personality** → `pi/context.md`, `pi/AGENTS.md`
 - **pi-extensions** → `pi/extensions/`
@@ -374,12 +385,14 @@
 - **models | hyper-charm-land | openai-completions** → `pi/pi.nix` (generated models.json)
 
 ### Containers & Virtualization
+
 - **podman** → `containers/default.nix`(both), `containers/containers.nix`(both)
 - **glance-dashboard** → `glance-dashboard.nix`, `containers/data/glance/glance.yml`(both), `glance.nix`(hm)
 - **n8n** → `containers/n8n.nix`(tempest)
 - **waydroid** → `configuration.nix`(sora)
 
 ### Networking
+
 - **tailscale** → `tailscale.nix`(both)
 - **syncthing** → `syncthing.nix`
 - **usb-tether** → `usb-tether-failover.nix`
@@ -387,6 +400,7 @@
 - **openssh** → `configuration.nix`(both)
 
 ### Multimedia
+
 - **pipewire** → `configuration.nix`(sora)
 - **mpd** → `configuration.nix`(sora)
 - **obs-studio** → `obs.nix`
@@ -394,6 +408,7 @@
 - **mpv | yt-dlp** → `yt_mpv.sh`, `qutebrowser.nix`
 
 ### Automation & Services
+
 - **auto-upgrade** → `automation.nix`
 - **garbage-collection** → `automation.nix`
 - **fstrim** → `configuration.nix`(sora)
@@ -401,10 +416,11 @@
 - **flatpak** → `configuration.nix`(sora), `persistence.nix`(sora-hm)
 
 ### User Identity
+
 - **rakki** → sora, most files
 - **tmpst** → tempest
-- **offrakki@gmail.com** → `git.nix`(both)
-- **fernandomarques1505@gmail.com** → `rbw.nix`
+- **<offrakki@gmail.com>** → `git.nix`(both)
+- **<fernandomarques1505@gmail.com>** → `rbw.nix`
 
 ---
 
@@ -477,6 +493,7 @@ hosts/tempest/home-manager/home.nix
 | Calendar/contacts/todos | `hosts/sora/home-manager/modules/calendar.nix` |
 | Opencode personality/skills | `hosts/sora/home-manager/modules/opencode/` |
 | Pi coding agent config | `hosts/sora/home-manager/modules/pi/` — this file's home |
+| Pi advisor tool | `pi/pi.nix` → `npm:@juicesharp/rpiv-advisor` (in packages); configured via `/advisor` slash command
 | Pi settings/providers | `pi/pi.nix` → `programs.pi-coding-agent.settings` |
 | Pi custom model providers | `pi/pi.nix` → `home.file models.json` (generated inline) |
 | Pi extensions | `pi/extensions/*.ts` |
