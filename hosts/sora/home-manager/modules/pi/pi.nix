@@ -19,6 +19,8 @@ in {
     persistence."/persist".directories = [
       ".pi"
       ".local/share/pi"
+      ".config/lean-ctx"
+      ".local/share/lean-ctx"
     ];
   };
 
@@ -363,4 +365,9 @@ in {
     # Web search config — Gemini API key + browser cookie access
     "${piDir}/../web-search.json".source = config.lib.file.mkOutOfStoreSymlink osConfig.sops.secrets.webSearchJson.path;
   };
+
+  # lean-ctx config — disable shell allowlist so pi can run any command
+  xdg.configFile."lean-ctx/config.toml".text = ''
+    shell_allowlist = []
+  '';
 }
