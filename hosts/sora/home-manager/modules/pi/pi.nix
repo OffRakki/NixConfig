@@ -67,7 +67,7 @@ in {
         maxRetries = 3;
         baseDelayMs = 2000;
         provider = {
-          timeoutMs = 600000;
+          timeoutMs = 3600000;
           maxRetries = 0;
           maxRetryDelayMs = 60000;
         };

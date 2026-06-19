@@ -14,122 +14,123 @@
         }
       ];
       interactiveShellInit = ''
-        # ── Tide prompt: lean style, 2-line ────────────────────
+        # ── Tide prompt: rainbow style, 2-line, powerline ──────
 
-        # Tide's fisher-based init never fires under Nix — call it manually
+        # Tide's fisher init never fires under Nix — fire it manually
         source (functions --details _tide_sub_configure)
-        _load_config lean
+        _load_config rainbow
         _tide_finish
 
-        # Now override with our custom settings
+        # Override with custom settings (set -U to beat tide configure universals)
 
-        # Prompt-level
-        set -x tide_prompt_add_newline_before true
-        set -x tide_prompt_color_frame_and_connection brblack
-        set -x tide_prompt_color_separator_same_color brblack
-        set -x tide_prompt_icon_connection " "
-        set -x tide_prompt_min_cols 34
-        set -x tide_prompt_pad_items false
-        set -x tide_prompt_transient_enabled true
+        set -U tide_prompt_add_newline_before true
+        set -U tide_prompt_color_frame_and_connection brblack
+        set -U tide_prompt_color_separator_same_color brblack
+        set -U tide_prompt_icon_connection " "
+        set -U tide_prompt_min_cols 34
+        set -U tide_prompt_transient_enabled true
 
         # Left prompt: pwd jj newline character
-        set -x tide_left_prompt_frame_enabled false
-        set -x tide_left_prompt_items "pwd jj newline character"
-        set -x tide_left_prompt_prefix ""
-        set -x tide_left_prompt_separator_diff_color " "
-        set -x tide_left_prompt_separator_same_color " "
-        set -x tide_left_prompt_suffix " "
+        set -U tide_left_prompt_frame_enabled false
+        set -U tide_left_prompt_items "pwd jj newline character"
+        set -U tide_left_prompt_prefix ""
+        set -U tide_left_prompt_separator_diff_color " "
+        set -U tide_left_prompt_separator_same_color " "
+        set -U tide_left_prompt_suffix " "
 
         # Right prompt: status cmd_duration context jobs time nix_shell
-        set -x tide_right_prompt_frame_enabled false
-        set -x tide_right_prompt_items "status cmd_duration context jobs time nix_shell"
-        set -x tide_right_prompt_prefix " "
-        set -x tide_right_prompt_separator_diff_color " "
-        set -x tide_right_prompt_separator_same_color " "
-        set -x tide_right_prompt_suffix ""
+        set -U tide_right_prompt_frame_enabled false
+        set -U tide_right_prompt_items "status cmd_duration context jobs time nix_shell"
+        set -U tide_right_prompt_prefix " "
+        set -U tide_right_prompt_separator_diff_color " "
+        set -U tide_right_prompt_separator_same_color " "
+        set -U tide_right_prompt_suffix ""
 
         # Character (prompt symbol)
-        set -x tide_character_color brgreen
-        set -x tide_character_color_failure brred
-        set -x tide_character_icon ">"
-        set -x tide_character_vi_icon_default "<"
-        set -x tide_character_vi_icon_replace "|"
-        set -x tide_character_vi_icon_visual V
+        set -U tide_character_color brgreen
+        set -U tide_character_color_failure brred
+        set -U tide_character_icon ">"
+        set -U tide_character_vi_icon_default "<"
+        set -U tide_character_vi_icon_replace "|"
+        set -U tide_character_vi_icon_visual V
 
         # Status (exit code)
-        set -x tide_status_bg_color normal
-        set -x tide_status_bg_color_failure normal
-        set -x tide_status_color green
-        set -x tide_status_color_failure red
-        set -x tide_status_icon "✔"
-        set -x tide_status_icon_failure "✘"
+        set -U tide_status_bg_color normal
+        set -U tide_status_bg_color_failure normal
+        set -U tide_status_color green
+        set -U tide_status_color_failure red
+        set -U tide_status_icon "✔"
+        set -U tide_status_icon_failure "✘"
 
         # PWD (current directory)
-        set -x tide_pwd_bg_color normal
-        set -x tide_pwd_color_anchors brcyan
-        set -x tide_pwd_color_dirs cyan
-        set -x tide_pwd_color_truncated_dirs magenta
-        set -x tide_pwd_icon ""
-        set -x tide_pwd_icon_home ""
-        set -x tide_pwd_icon_unwritable ""
-        set -x tide_pwd_markers .bzr .citc .git .hg .node-version .python-version \
+        set -U tide_pwd_bg_color normal
+        set -U tide_pwd_color_anchors brcyan
+        set -U tide_pwd_color_dirs cyan
+        set -U tide_pwd_color_truncated_dirs magenta
+        set -U tide_pwd_icon ""
+        set -U tide_pwd_icon_home ""
+        set -U tide_pwd_icon_unwritable ""
+        set -U tide_pwd_markers .bzr .citc .git .hg .node-version .python-version \
                        .ruby-version .shorten_folder_marker .svn .terraform \
                        bun.lockb Cargo.toml composer.json CVS go.mod \
                        package.json build.zig
 
         # Git
-        set -x tide_git_bg_color normal
-        set -x tide_git_bg_color_unstable normal
-        set -x tide_git_bg_color_urgent normal
-        set -x tide_git_color_branch brgreen
-        set -x tide_git_color_conflicted brred
-        set -x tide_git_color_dirty bryellow
-        set -x tide_git_color_operation brred
-        set -x tide_git_color_staged bryellow
-        set -x tide_git_color_stash brgreen
-        set -x tide_git_color_untracked brblue
-        set -x tide_git_color_upstream brgreen
-        set -x tide_git_icon ""
-        set -x tide_git_truncation_length 24
-        set -x tide_git_truncation_strategy ""
+        set -U tide_git_bg_color normal
+        set -U tide_git_bg_color_unstable normal
+        set -U tide_git_bg_color_urgent normal
+        set -U tide_git_color_branch brgreen
+        set -U tide_git_color_conflicted brred
+        set -U tide_git_color_dirty bryellow
+        set -U tide_git_color_operation brred
+        set -U tide_git_color_staged bryellow
+        set -U tide_git_color_stash brgreen
+        set -U tide_git_color_untracked brblue
+        set -U tide_git_color_upstream brgreen
+        set -U tide_git_icon ""
+        set -U tide_git_truncation_length 24
+        set -U tide_git_truncation_strategy ""
 
         # Cmd duration
-        set -x tide_cmd_duration_bg_color normal
-        set -x tide_cmd_duration_color brblack
-        set -x tide_cmd_duration_decimals 0
-        set -x tide_cmd_duration_icon ""
-        set -x tide_cmd_duration_threshold 3000
+        set -U tide_cmd_duration_bg_color normal
+        set -U tide_cmd_duration_color brblack
+        set -U tide_cmd_duration_decimals 0
+        set -U tide_cmd_duration_icon ""
+        set -U tide_cmd_duration_threshold 3000
 
         # Context (user@host)
-        set -x tide_context_always_display false
-        set -x tide_context_bg_color normal
-        set -x tide_context_color_default yellow
-        set -x tide_context_color_root bryellow
-        set -x tide_context_color_ssh yellow
-        set -x tide_context_hostname_parts 1
+        set -U tide_context_always_display false
+        set -U tide_context_bg_color normal
+        set -U tide_context_color_default yellow
+        set -U tide_context_color_root bryellow
+        set -U tide_context_color_ssh yellow
+        set -U tide_context_hostname_parts 1
 
         # Jobs (background tasks)
-        set -x tide_jobs_bg_color normal
-        set -x tide_jobs_color green
-        set -x tide_jobs_icon ""
-        set -x tide_jobs_number_threshold 1
+        set -U tide_jobs_bg_color normal
+        set -U tide_jobs_color green
+        set -U tide_jobs_icon ""
+        set -U tide_jobs_number_threshold 1
 
         # Nix shell
-        set -x tide_nix_shell_bg_color normal
-        set -x tide_nix_shell_color brblue
-        set -x tide_nix_shell_icon ""
+        set -U tide_nix_shell_bg_color normal
+        set -U tide_nix_shell_color brblue
+        set -U tide_nix_shell_icon ""
 
         # Time
-        set -x tide_time_bg_color normal
-        set -x tide_time_color brblack
-        set -x tide_time_format "%T"
+        set -U tide_time_bg_color normal
+        set -U tide_time_color brblack
+        set -U tide_time_format "%T"
 
         # Custom: jj (jujutsu)
-        set -x tide_jj_bg_color normal
-        set -x tide_jj_color brgreen
-        set -x tide_jj_icon ""
+        set -U tide_jj_bg_color normal
+        set -U tide_jj_color brgreen
+        set -U tide_jj_icon ""
 
-        # ── Fish greeting ──────────────────────────────────────
+        # Apply
+        tide reload
+
+        # ── Fish greeting / tools ──────────────────────────────
         set fish_greeting
         direnv hook fish | source
         zoxide init fish --cmd cd | source
@@ -171,15 +172,6 @@
         set -x fish_pager_color_prefix        'white' '--bold' '--underline'
         set -x fish_pager_color_progress      'brwhite' '--background=cyan'
       '';
-      # plugins = lib.optional useHelix {
-      #   name = "fish-helix";
-      #   src = pkgs.fetchFromGitHub {
-      #     owner = "sshilovsky";
-      #     repo = "fish-helix";
-      #     rev = "8a5c7999ec67ae6d70de11334aa888734b3af8d7";
-      #     hash = "sha256-04cL9/m5v0/5dkqz0tEqurOY+5sDjCB5mMKvqgpV4vM=";
-      #   };
-      # };
       shellAliases = {
         cp = "cp --archive --recursive --verbose --interactive";
         rsync = "rsync --archive --verbose --progress --inplace";
@@ -210,7 +202,6 @@
         # nix
         ncg = "nix-collect-garbage";
         nrd = "sudo nixos-rebuild switch --flake $NH_FLAKE#tempest";
-        # nhos = "nh os switch ~/Documents/nix-config";
         nixdev = "nix develop -c $SHELL";
         nix-shell = "nix-shell --command $SHELL";
 
@@ -218,10 +209,6 @@
 
         # fish
         src = "source ~/.config/fish/config.fish";
-
-        # mount-cel
-        #celmount = "simple-mtpfs --device 1 ~/mount/"
-        #celumount = "fusermount -u ~/mount/"
 
         # text editor
         v = "hx";
@@ -245,22 +232,16 @@
         cat = "bat";
       };
       functions = {
-        # Disable greeting (redundant with fastfetch)
         fish_greeting = "";
-
-        # Extract Nix package names from PATH additions
         nix-inspect = ''
           set -s PATH | grep "PATH\[.*/nix/store" | cut -d '|' -f2 | \
             grep -v -e "-man" -e "-terminfo" | \
             perl -pe 's:^/nix/store/\w{32}-([^/]*)/bin$:$1:' | sort | uniq
         '';
-
-        # Custom tide item: jujutsu VCS status
         _tide_item_jj = ''
           if not command -sq jj; or not jj root --quiet &>/dev/null
               return 1
           end
-
           set jj_status (jj log -r@ -n1 --ignore-working-copy --no-graph --color always -T '
             separate(" ",
               bookmarks.map(|x| if(
@@ -288,8 +269,6 @@
               set_color black; echo -ns ')'
           )
         '';
-
-        # Custom tide item: enhanced nix-shell indicator
         _tide_item_nix3_shell = ''
           set packages (nix-inspect)
           if test -n "$IN_NIX_SHELL"
