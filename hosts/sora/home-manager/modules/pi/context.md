@@ -72,6 +72,7 @@ something is configured, **go to NixConfig**.
 documents into `~/Projects/NixConfig/`.**
 
 This includes, but is not limited to:
+
 - Directories like `audit/`, `reports/`, `logs/`, `analysis/`
 - `.md`, `.txt`, `.json`, `.yaml`, or any other generated output files
 - Output from `nix-auditor`, code reviews, security analyses, or any subagent
@@ -113,6 +114,7 @@ This file is the canonical NixConfig index — the old
 
 **Never assume any file under `~/.config/` is "plain" or "directly managed."**
 The entire system uses Nix + impermanence. Files at `~/.config/` can be:
+
 - Symlinks to `/nix/store/` (from `xdg.configFile` or `home.file`)
 - Regular directories that exist because `home.persistence."/persist"` preserves them
 - Files written by `home.activation` scripts at build time
@@ -130,15 +132,159 @@ Before building: `jj bookmark move master --to '@' && jj git export`
 
 Never `nix flake update` — use `nix flake lock` to pin inputs.
 
-# Tool Discipline
+# Available Tools Reference
 
-Pi's built-in tools: `read`, `bash`, `edit`, `write`, `grep`, `find`, `ls` (grep and find are for search — use them).
+Every npm package declared in `pi.nix` provides tools. This is the master reference for what each package gives you and when to use which tool.
 
-When `pi-web-access` is installed: `web_search`, `code_search`, `fetch_content`, `get_search_content`.
-When `pi-subagents` is installed: use subagents via the `subagent` tool.
-When `pi-hermes-memory` is installed: use `memory_search` to find past context, `memory` to save facts.
+## Pi Built-ins (always available)
 
-Use the right tool for the job. Don't use `bash` for file reads or searches — use `read`, `grep`, `find`.
+| Tool | Purpose | Use over |
+|---|---|---|
+| `read` | Read file contents | `cat`, `head`, `tail` via bash |
+| `bash` | Execute shell commands | raw shell |
+| `edit` | Precise file edits (search-and-replace) | `sed` via bash |
+| `write` | Create or overwrite files | `echo >` via bash |
+| `grep` | Content searches | `rg`, `grep` via bash |
+| `find` | File-name pattern searches | `find`, `fd` via bash |
+| `ls` | List directories | `ls` via bash |
+
+**Rule:** Use the dedicated tool. Don't DIY with `cat`, `head`, `tail`, `sed`, `awk`, `echo` for file/stream operations when the pi tool exists.
+
+## From pi-lean-ctx (token optimization)
+
+All `ctx_*` tools route through lean-ctx for **60-90% token savings** via output compression and session cache. Prefer them over the pi built-ins in most cases.
+
+| Tool | Replaces | Why |
+|---|---|---|
+| `ctx_read` | `read` | Smart mode selection (full/map/signatures) per file type. Unchanged re-reads cost ~13 tokens. |
+| `ctx_shell` | `bash` | Compresses all shell output via 95+ patterns (git, npm, nix, cargo, docker, etc). |
+| `ctx_ls` | `ls` | Compact tree with file counts. |
+| `ctx_find` | `find` | `find` | .gitignore-aware, compact. |
+| `ctx_grep` | `grep` | `grep` | Grouped and compressed. |
+| `ctx_tree` | `ls` (deep) | Directory tree with depth control. |
+| `ctx_search` | `grep` (regex) | Regex code search, .gitignore-aware. |
+| `ctx_semantic_search` | — | Concept search (BM25+embeddings). Use when keyword `ctx_search` misses intent. |
+| `ctx_knowledge` | — | Persistent project knowledge graph (facts, patterns, gotchas). |
+| `ctx_overview` | — | Task-relevant project overview at session start. |
+| `ctx_session` | — | Cross-session memory: save/restore task state, findings, decisions. |
+| `ctx_graph` | — | Code graph: dependencies, symbol usages, impact/blast radius, Mermaid diagrams. |
+| `ctx_edit` | `edit` | Edit via search-and-replace (use when `read` is unavailable). |
+| `ctx_expand` | — | Expand archived/firewalled tool output by ID. |
+| `ctx_call` | — | Invoke advanced lean-ctx tools by category (arch, debug, memory, batch, agent, util). |
+| `lean_ctx` | — | Run lean-ctx CLI directly (gain, doctor, status, onboard, setup). |
+| `ctx_provider` | — | External context providers (GitHub, GitLab, Jira, Postgres). |
+| `ctx_compress` | — | Manual output compression control. |
+
+**Rule when to use ctx_* vs pi builtins:** Default to `ctx_shell`/`ctx_read`/`ctx_ls`/`ctx_find`/`ctx_grep` — they save tokens. Use the pi builtins (`bash`, `read`, `ls`, `find`, `grep`) only when you need raw, uncompressed output.
+
+## From pi-lens (code quality)
+
+| Tool | Purpose |
+|---|---|
+| `lsp_navigation` | Go to definition, find references, hover info, document symbols, workspace symbols, call hierarchy, rename, code actions. Use as PRIMARY for code intelligence. |
+| `lsp_diagnostics` | Get LSP errors/warnings/hints for a file or directory. Use BEFORE running builds. |
+| `lens_diagnostics` | pi-lens diagnostic state: delta (current turn warnings), all (session diagnostic for edited files), full (expensive project-wide scan). |
+| `ast_grep_search` | AST-aware code search (semantic, not text). Use for structural patterns. |
+| `ast_grep_replace` | AST-aware find-and-replace. Dry-run by default. |
+| `ast_dump` | Dump tree-sitter AST to discover node kinds for writing ast-grep rules. |
+| `preview_export` | Export rendered Markdown/LaTeX to PDF, HTML, or PNG. |
+
+**Skills from this package:** `ast-grep`, `lsp-navigation`, `write-ast-grep-rule`, `write-tree-sitter-rule`. Load the matching skill before using its tools.
+
+## From pi-web-access (external research)
+
+| Tool | Purpose |
+|---|---|
+| `web_search` | Search the web using Perplexity/Exa/Gemini. Accepts both single `query` and array `queries` (2-4 varied angles for broader coverage). |
+| `fetch_content` | Extract readable content from URLs, YouTube videos, GitHub repos, or local video files. Pass the user's question via `prompt` for video analysis. |
+| `get_search_content` | Retrieve full stored content from a previous `web_search` or `fetch_content` call by ID. |
+| `code_search` | Search for code examples, API docs, and debugging help from GitHub and Stack Overflow. |
+
+## From pi-subagents (orchestration)
+
+| Tool | Purpose |
+|---|---|
+| `subagent` | Delegate to subagents: single, chain, parallel, or async. See skill `pi-subagents` for full workflow documentation. |
+
+## From pi-intercom (cross-session)
+
+| Tool | Purpose |
+|---|---|
+| `intercom` | Send messages to or ask questions of other pi sessions on the same machine. List peers, send context, request help. |
+
+## From pi-hermes-memory (persistence)
+
+| Tool | Purpose |
+|---|---|
+| `memory` | Save durable facts (user, memory, project scopes). Proactive curation — save preferences, corrections, environment facts. |
+| `memory_search` | Search persistent memory. Use category/filter for targeted queries. |
+| `session_search` | Search past conversation sessions. |
+| `skill_manage` | Create, inspect, and update reusable procedural skills (SKILL.md files). |
+
+## From pi-mcp-adapter (external integration)
+
+| Tool | Purpose |
+|---|---|
+| `mcp` | Connect to MCP servers and call their tools. Status, connect, describe, search, execute. Gateway to databases, APIs, CI/CD. |
+
+## From pi-chrome (browser automation)
+
+| Tool | Purpose |
+|---|---|
+| (via browser skill script) | Navigate, click, fill forms, extract data, screenshot, execute JS. See the `browser` skill for full reference. |
+
+## From pi-markdown-preview (rendering)
+
+| Tool | Purpose |
+|---|---|
+| `preview_export` | Export renderized Markdown/LaTeX to PDF, HTML, or PNG artifact files. |
+
+## From rpiv-ask-user-question (clarification)
+
+| Tool | Purpose |
+|---|---|
+| `ask_user_question` | Ask the user up to 4 structured questions (2-4 options each) when requirements are ambiguous. |
+
+## From rpiv-todo (task tracking)
+
+| Tool | Purpose |
+|---|---|
+| `todo` | Manage a task list for multi-step work: create, update status, list, track dependencies. |
+
+## From @vigolium/piolium (security suite)
+
+Provides ~20+ skills under the `audit`, `code-reviewer`, `codeql`, `semgrep`, `security-threat-model`, `supply-chain-risk-auditor`, `variant-analysis`, `vuln-report` namespaces, among others. Each is a self-contained skill with its own workflow. See the individual skill files for tool usage.
+
+## Tool decision tree
+
+```
+Reading files?        → ctx_read  (preferred) or read
+Shell output?         → ctx_shell (preferred) or bash
+Editing files?        → edit (use ctx_edit if read unavailable)
+Creating files?       → write
+Code search (text)?   → ctx_grep or ctx_search
+Code search (AST)?    → ast_grep_search (load ast-grep skill first)
+File find?            → ctx_find or find
+Directory listing?    → ctx_ls or ctx_tree
+Code navigation?      → lsp_navigation
+Diagnostics?          → lsp_diagnostics or lens_diagnostics
+Web research?         → web_search / fetch_content
+Code examples?        → code_search
+Memory/search?        → memory / memory_search / session_search
+Subagent delegation?  → subagent
+Browser automation?   → load browser skill, use browser script + pi-chrome
+Task tracking?        → todo
+Ask user?             → ask_user_question
+```
+
+## Subagents available
+
+Pi has these custom subagents registered via the `subagent` tool:
+
+- **image-analyzer** — describes images (layout, text, UI elements)
+- **audio-analyzer** — analyzes audio files, transcribes EN/PT-BR
+- **pdf-reader** — converts PDFs to images+text, delegates to image-analyzer
+- **nix-auditor** — read-only audit of the NixConfig flake
 
 # Preferences
 
@@ -253,21 +399,6 @@ skill has specific details, workflows, and terminology Lucky expects.
 - **context-curation** — organizing, splitting, merging, or refactoring
   context.md and skill files. Load `context-curation` first.
 
-# Tool discipline
-
-Always call the right tool for the job:
-- **read** for reading files
-- **bash** for terminal commands (builds, git, npm, etc.)
-- **edit** for editing files
-- **write** for creating files
-- **grep** for content searches
-- **find** for file-name pattern searches
-- **ls** for listing directories
-
-Use `read` over `bash` for file reads. Use `grep` and `find` over `bash` for
-searches. Don't DIY with `cat`, `head`, `tail`, `sed`, `awk`, `echo` for
-file/stream operations when the dedicated tool exists.
-
 # SOPS-encrypted private info (private.yaml)
 
 Lucky's personal context is at: `~/Projects/NixConfig/hosts/sora/home-manager/modules/opencode/private.yaml`
@@ -280,6 +411,7 @@ Load `nix` skill for full SOPS workflow.
 
 **After ANY task that touches, reads, edits, searches, adds, removes, decrypts,
 or otherwise interacts with:**
+
 - SOPS secrets (`private.yaml` or any `.sops.*` file)
 - API tokens or keys (OpenAI, DeepSeek, Firebase, Mercado Pago, etc.)
 - Private URLs (internal services, localhost services with auth)
@@ -309,6 +441,7 @@ or otherwise interacts with:**
    private reference, make sure INDEX.md was updated (or doesn't need updating).
 
 **If ANY secret was found unencrypted or in the commit log:**
+
 - Fix the source file (encrypt via sops, remove the plaintext value)
 - Rotate the secret if it hit the remote (assume compromised)
 - Mark it as a `failure` memory so Ciel knows not to repeat the mistake

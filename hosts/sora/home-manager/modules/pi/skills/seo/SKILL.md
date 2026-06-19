@@ -26,6 +26,16 @@ As páginas de medicamentos participantes (`/medicamentos-participantes/<slug>`)
 
 ### Ferramentas de Diagnóstico
 
+Use `web_search` para pesquisar documentação do Google Search Console e artigos técnicos.
+Use `fetch_content` para extrair conteúdo de URLs de páginas concorrentes ou ferramentas.
+Use pi-chrome (via `browser.py`) para verificar renderização JS real:
+
+```bash
+browser.py '[{"action":"navigate","url":"https://cuidadospelavida.com.br/medicamentos-participantes/<slug>"},{"action":"extract"},{"action":"screenshot","path":"/tmp/seo-ssr-check.png"}]'
+```
+
+Para inspecionar o HTML estático (SSR) e comparar com o JS-renderizado:
+
 ```bash
 # Verificar HTML inicial (SSR) — sem execução JS
 webfetch https://cuidadospelavida.com.br/medicamentos-participantes/<slug>
@@ -113,6 +123,7 @@ Os dados ACF do WordPress (`acf.composicao`, `acf.posologia`, `acf.informacoes`)
 ### Métricas para Monitorar
 
 Após deploy, monitorar no Search Console por 30 dias:
+
 - Aumento de impressões para páginas que declinaram (Combfix, Clilon, Sabine)
 - Recuperação de posição para as mesmas
 - Nenhuma página deve piorar (SSR adiciona conteúdo, nunca remove)

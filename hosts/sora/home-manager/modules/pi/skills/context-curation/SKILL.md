@@ -6,12 +6,27 @@ description: Use when organizing, splitting, merging, or refactoring context.md 
 # Context & Skill Curation
 
 The opencode context system has two layers:
+
 - **context.md** — Ciel's personality, identity, rules, preferences, and operational procedures. Keep it lean.
 - **Skill files** (`skills/<name>/SKILL.md`) — domain-specific knowledge, references, workflows, and traps. Fat is fine.
+
+## Tools for curation
+
+This skill uses several tools from the installed npm packages:
+
+- **`memory`** — save durable facts broken out of context.md into skill files.
+  Use `target='failure'` with `category` to save what didn't work.
+- **`memory_search`** — search existing memories to avoid creating duplicate entries.
+  Use `category` filter for targeted searches.
+- **`session_search`** — search past conversations for context before reorganizing.
+- **`skill_manage`** — create, inspect, patch, update, and delete skill files.
+  Use `create` with structured fields (when_to_use, procedure_steps, pitfalls).
+  Use `view` before patching/updating. Use `patch` to update a specific section.
 
 ## When to split content out of context.md
 
 A section in context.md belongs in a skill file if it's:
+
 - **Domain-specific** — entirely about one tool, library, or workflow (e.g., xsettingsd, Firefox dark mode, khal)
 - **Reference-heavy** — command lists, config snippets, troubleshooting tables
 - **Self-contained** — doesn't reference Ciel's personality or Lucky's preferences for the *how*
@@ -22,6 +37,7 @@ If the section is larger than ~30 lines and is pure reference material, it shoul
 ## When to merge skills
 
 Merge two skills into one when:
+
 - Their topics heavily overlap and you find yourself loading both together
 - One skill is a subset of another (e.g., git vs jujutsu would be a bad split)
 - The merge reduces cognitive load without making the file unwieldy
@@ -31,20 +47,26 @@ Don't merge if they describe different workflows or have distinct trigger condit
 ## Creating a new skill
 
 1. Create `skills/<name>/SKILL.md` with YAML frontmatter:
+
    ```yaml
    ---
    name: <name>
    description: One-line description of when to load this skill
    ---
    ```
+
 2. Register it in `opencode.nix` under `programs.opencode.skills`:
+
    ```nix
    <name> = ./skills/<name>;
    ```
+
 3. Add a routing rule in context.md under the `### Skill routing` section:
+
    ```markdown
    - **<name>** — brief description. Load `<name>` first.
    ```
+
 4. Rebuild the Nix flake.
 
 ## Moving content from context.md to a skill

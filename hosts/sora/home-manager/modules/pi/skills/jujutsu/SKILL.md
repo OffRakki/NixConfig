@@ -9,6 +9,8 @@ Jujutsu (jj) is a Git-compatible VCS with mutable commits, automatic snapshottin
 
 If `.jj/` exists in the repo root, this is a jj repo. **Use `jj` commands, not `git`.** In a colocated repo (`.jj/` *and* `.git/`), git tools can read the state, but mutations should go through `jj` so the operation log stays consistent.
 
+**Use `ctx_shell` for all jj commands** — the output goes through lean-ctx compression, saving significant tokens on verbose `jj log` output, diff listings, and status checks. Prefer `ctx_shell` over `bash` for VCS operations.
+
 ## Critical Rules
 
 - **ALWAYS load this skill** when working in a jj repo. Every VCS operation should consult this guide first. This is non-negotiable.
@@ -61,6 +63,7 @@ Style B keeps the message in the same change you're editing, which is convenient
 ## Common Workflows
 
 ### Inspect
+
 ```bash
 jj st                # status
 jj log               # graph of recent changes
@@ -70,6 +73,7 @@ jj show <change-id>  # description + diff for a commit
 ```
 
 ### Refine the current change
+
 ```bash
 jj describe -m "better message"   # rewrite message only
 jj squash                         # fold @ into its parent (amend equivalent)
@@ -81,13 +85,16 @@ jj abandon <change-id>            # delete a commit; descendants reparent
 ```
 
 ### Split a change non-interactively
+
 `jj split -i` is interactive — don't use it. Instead:
+
 ```bash
 jj split file1.rs file2.rs           # named files become first commit; rest stays in @
 jj split 'glob:tests/**'             # by fileset pattern
 ```
 
 ### Bookmarks (branches)
+
 ```bash
 jj bookmark list
 jj bookmark create my-feature -r @       # tracks the change ID; survives rewrites of that change
@@ -96,6 +103,7 @@ jj bookmark delete my-feature
 ```
 
 ### Push and pull
+
 ```bash
 jj git fetch                              # fetch all remotes
 jj git push -b my-feature                 # push a specific bookmark
@@ -113,6 +121,7 @@ jj rebase -d main@origin                  # rebase YOUR commits (not main) onto 
 ### Address PR review
 
 Rewrite (clean history):
+
 ```bash
 jj edit <change-id>          # working copy becomes that commit
 # ... fix ...
@@ -121,6 +130,7 @@ jj git push                  # auto force-pushes the rewritten bookmark
 ```
 
 Additive (preserve review history):
+
 ```bash
 jj new <bookmark>            # new commit on top of bookmark tip
 # ... fix ...
@@ -134,6 +144,7 @@ jj git push -b <bookmark>
 jj never fails on conflict. After a `rebase`/`new`/`squash`, run `jj st` — conflicted files are listed. Open them and resolve by hand: jj's markers look like Git's but with extra sections (`%%%%%%% diff from:` / `+++++++` / `>>>>>>>`). See `references/conflicts.md` for the marker format. Do **not** use `jj resolve` (interactive). After editing, `jj st` will show the conflict cleared automatically.
 
 ### Recovery
+
 ```bash
 jj undo                      # reverse last operation
 jj op log                    # full operation history
@@ -147,6 +158,7 @@ Full mapping (including grep, bisect, fileset patterns, file restoration): `refe
 Load on demand — do not preload.
 
 Common translations:
+
 | Task | git | jj |
 |---|---|---|
 | Status | `git status` | `jj st` |
@@ -165,6 +177,7 @@ Common translations:
 Full revset language reference: `references/revsets.md`. Load on demand.
 
 Key expressions:
+
 | Expression | Meaning |
 |---|---|
 | `@` | working copy commit |
@@ -199,17 +212,20 @@ Key expressions:
 Load these references on demand (don't preload):
 
 **Language & commands**
+
 - `references/git-to-jj.md` — full Git ⇄ jj command mapping including history rewriting, stashing, worktrees, fileset patterns
 - `references/revsets.md` — complete revset language: operators, functions, string/date patterns, examples
 - `references/glossary.md` — formal definitions (change, view, head, divergent, hidden, root commit, etc.)
 
 **Topic deep-dives**
+
 - `references/bookmarks.md` — bookmark tracking, remotes, conflicted bookmarks, multiple-remote workflows (fork vs integrator)
 - `references/conflicts.md` — first-class conflicts, marker formats (jj / snapshot / git styles), long markers, missing-newline conflicts
 - `references/operation-log.md` — `jj op log`, `--at-op`, recovering files from past snapshots (the "snapshot scan" trick)
 - `references/workspaces.md` — multiple working copies, stale working copy recovery, colocated repos, ignored files
 
 **Action playbooks** — read when starting one of these tasks
+
 - `references/workflow-commit-push-pr.md` — exact step-by-step for: commit → push → open PR (with `gh`)
 - `references/workflow-new-workspace.md` — create an isolated workspace + bookmark for parallel work
 - `references/troubleshooting.md` — diagnostic protocol, problem→fix table, rebase matrix, op-log forensics. Use this whenever something has gone sideways.
