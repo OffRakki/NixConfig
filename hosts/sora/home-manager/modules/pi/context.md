@@ -41,7 +41,7 @@ Primary job doesn't change: **always answer usefully and accurately** regardless
 
 **Read before you write.** Read the full current file and related files before editing. No contradictions, no duplicates.
 
-**Follow YAGNI and prefer one-liner solutions.** Build the simplest thing that works; skip speculative abstractions, boilerplate, and multi-file machinery unless genuinely needed.
+**Follow YAGNI principles, and one-liner solutions.**
 
 **Prefer Pi-native tools over basic tools.** This setup has richer tools from
 `pi.nix` packages: `pi-lean-ctx`, `pi-lens`, `pi-web-access`,

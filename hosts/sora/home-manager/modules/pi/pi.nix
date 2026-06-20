@@ -4,10 +4,12 @@
   osConfig,
   inputs,
   ...
-}: let
+}:
+let
   cfg = config.programs.pi-coding-agent;
   piDir = cfg.configDir;
-in {
+in
+{
   # Persist pi state directories — sessions, npm packages, git clones and sets pi to offline mode (no update/telemetry)
   home = {
     sessionVariables = {
@@ -125,7 +127,8 @@ in {
         "npm:@juicesharp/rpiv-workflow"
         "npm:@juicesharp/rpiv-ask-user-question"
 
-        "git:github.com/DietrichGebert/ponytail"
+        # May not be that useful (will substitute for a line in context.md)
+        #"git:github.com/DietrichGebert/ponytail"
       ];
     };
 
@@ -141,7 +144,10 @@ in {
               id = "deepseek-v4-flash";
               name = "DeepSeek V4 Flash";
               reasoning = true;
-              input = ["text" "image"];
+              input = [
+                "text"
+                "image"
+              ];
               contextWindow = 1000000;
               maxTokens = 384000;
               cost = {
@@ -162,7 +168,7 @@ in {
               id = "deepseek-v4-pro";
               name = "DeepSeek V4 Pro";
               reasoning = true;
-              input = ["text"];
+              input = [ "text" ];
               contextWindow = 1000000;
               maxTokens = 384000;
               cost = {
@@ -194,7 +200,8 @@ in {
     "${piDir}/skills/firefly/scripts".source = ./skills/firefly/scripts;
     "${piDir}/skills/firefly/resources/auditing.md".source = ./skills/firefly/resources/auditing.md;
     "${piDir}/skills/firefly/resources/btg.md".source = ./skills/firefly/resources/btg.md;
-    "${piDir}/skills/firefly/resources/mercado-pago.md".source = ./skills/firefly/resources/mercado-pago.md;
+    "${piDir}/skills/firefly/resources/mercado-pago.md".source =
+      ./skills/firefly/resources/mercado-pago.md;
     "${piDir}/skills/firefly/resources/nubank-ofx.md".source = ./skills/firefly/resources/nubank-ofx.md;
     "${piDir}/skills/jujutsu/SKILL.md".source = ./skills/jujutsu/SKILL.md;
     "${piDir}/skills/jujutsu/references".source = ./skills/jujutsu/references;
@@ -219,10 +226,22 @@ in {
 
     # Keybindings (Helix-style)
     "${piDir}/keybindings.json".text = builtins.toJSON {
-      "tui.editor.cursorWordLeft" = ["alt+left" "alt+b"];
-      "tui.editor.cursorWordRight" = ["alt+right" "alt+f"];
-      "tui.editor.deleteWordBackward" = ["ctrl+w" "alt+backspace"];
-      "tui.editor.deleteWordForward" = ["alt+d" "alt+delete"];
+      "tui.editor.cursorWordLeft" = [
+        "alt+left"
+        "alt+b"
+      ];
+      "tui.editor.cursorWordRight" = [
+        "alt+right"
+        "alt+f"
+      ];
+      "tui.editor.deleteWordBackward" = [
+        "ctrl+w"
+        "alt+backspace"
+      ];
+      "tui.editor.deleteWordForward" = [
+        "alt+d"
+        "alt+delete"
+      ];
       "tui.input.submit" = "enter";
       "tui.input.newLine" = "shift+enter";
       "app.model.select" = "ctrl+l";
@@ -247,30 +266,38 @@ in {
 
     # Agents (subagent definitions — auto-discovered by pi-subagents)
     "${piDir}/agents/nix-auditor.md".source = ./agents/nix-auditor.md;
-    "${piDir}/agents/image-analyzer/image-analyzer.md".source = ./agents/image-analyzer/image-analyzer.md;
-    "${piDir}/agents/audio-analyzer/audio-analyzer.md".source = ./agents/audio-analyzer/audio-analyzer.md;
+    "${piDir}/agents/image-analyzer/image-analyzer.md".source =
+      ./agents/image-analyzer/image-analyzer.md;
+    "${piDir}/agents/audio-analyzer/audio-analyzer.md".source =
+      ./agents/audio-analyzer/audio-analyzer.md;
     "${piDir}/agents/pdf-reader/pdf-reader.md".source = ./agents/pdf-reader/pdf-reader.md;
 
     # Lucky's personal info appended to system prompt (out-of-store symlink to SOPS secret)
-    "${piDir}/APPEND_SYSTEM.md".source = config.lib.file.mkOutOfStoreSymlink osConfig.sops.secrets.lucky-info.path;
+    "${piDir}/APPEND_SYSTEM.md".source =
+      config.lib.file.mkOutOfStoreSymlink osConfig.sops.secrets.lucky-info.path;
 
     # SOPS-encrypted skill private data (firefly, lumis)
-    "${piDir}/skills/firefly/resources/private.md".source = config.lib.file.mkOutOfStoreSymlink osConfig.sops.secrets.skillFireflyPrivate.path;
-    "${piDir}/skills/lumis/resources/private.md".source = config.lib.file.mkOutOfStoreSymlink osConfig.sops.secrets.skillLumisPrivate.path;
+    "${piDir}/skills/firefly/resources/private.md".source =
+      config.lib.file.mkOutOfStoreSymlink osConfig.sops.secrets.skillFireflyPrivate.path;
+    "${piDir}/skills/lumis/resources/private.md".source =
+      config.lib.file.mkOutOfStoreSymlink osConfig.sops.secrets.skillLumisPrivate.path;
 
     # Web search config — Gemini API key + browser cookie access
-    "${piDir}/../web-search.json".source = config.lib.file.mkOutOfStoreSymlink osConfig.sops.secrets.webSearchJson.path;
+    "${piDir}/../web-search.json".source =
+      config.lib.file.mkOutOfStoreSymlink osConfig.sops.secrets.webSearchJson.path;
   };
 
   # lean-ctx config — disable shell allowlist so pi can run any command
-  home.activation.ensureLeanCtxConfig = let
-    configFile = pkgs.writeText "lean-ctx-config" ''
-      shell_allowlist = []
+  home.activation.ensureLeanCtxConfig =
+    let
+      configFile = pkgs.writeText "lean-ctx-config" ''
+        shell_allowlist = []
+      '';
+    in
+    ''
+      mkdir -p "$HOME/.config/lean-ctx"
+      cp -f ${configFile} "$HOME/.config/lean-ctx/config.toml"
     '';
-  in ''
-    mkdir -p "$HOME/.config/lean-ctx"
-    cp -f ${configFile} "$HOME/.config/lean-ctx/config.toml"
-  '';
 
   # Patch pi-lens to exclude Onedrive FUSE mount (prevents freeze when starting pi from ~/)
   # Onedrive is a FUSE mount via rclone; pi-lens walks into it during startup scans
