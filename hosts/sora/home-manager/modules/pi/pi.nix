@@ -98,6 +98,7 @@ in {
       };
 
       packages = [
+        "npm:@vigolium/piolium"
         "npm:pi-drawio"
         "npm:pi-intercom"
         "npm:pi-lean-ctx"
@@ -123,7 +124,8 @@ in {
         "npm:@juicesharp/rpiv-advisor"
         "npm:@juicesharp/rpiv-workflow"
         "npm:@juicesharp/rpiv-ask-user-question"
-        "npm:@vigolium/piolium"
+
+        "git:github.com/DietrichGebert/ponytail"
       ];
     };
 
