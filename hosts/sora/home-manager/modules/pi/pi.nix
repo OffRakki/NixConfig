@@ -232,7 +232,8 @@ in
           args = [
             "-y"
             "obsidian-mcp"
-            "/home/rakki/sync/geral/Obsidian"
+            "/home/rakki/sync/geral/Obsidian/Main"
+            "/home/rakki/sync/geral/Obsidian/Summaries"
           ];
           lifecycle = "lazy";
         };
