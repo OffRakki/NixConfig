@@ -224,6 +224,21 @@ in
     # Pi-specific skill
     "${piDir}/skills/nix-auditor/SKILL.md".source = ./skills/nix-auditor/SKILL.md;
 
+    # MCP servers (Pi-owned global override)
+    "${piDir}/mcp.json".text = builtins.toJSON {
+      mcpServers = {
+        obsidian = {
+          command = "npx";
+          args = [
+            "-y"
+            "obsidian-mcp"
+            "/home/rakki/sync/geral/Obsidian"
+          ];
+          lifecycle = "lazy";
+        };
+      };
+    };
+
     # Keybindings (Helix-style)
     "${piDir}/keybindings.json".text = builtins.toJSON {
       "tui.editor.cursorWordLeft" = [
