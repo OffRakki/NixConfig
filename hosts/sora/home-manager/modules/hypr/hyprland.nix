@@ -76,7 +76,7 @@ in {
             disable_splash_rendering = true,
             vrr = 0,
             mouse_move_enables_dpms = true,
-            enable_swallow = true,
+            enable_swallow = false,
             swallow_regex = "^(kitty)$",
             focus_on_activate = false,
             initial_workspace_tracking = 1,

@@ -1,5 +1,6 @@
 {pkgs, ...}: {
   home.packages = with pkgs; [
+    drawio
     crush
     gnome-sound-recorder
     quickshell
