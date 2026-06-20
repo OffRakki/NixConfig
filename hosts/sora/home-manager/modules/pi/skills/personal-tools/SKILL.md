@@ -32,8 +32,8 @@ Lucky has three vdirsyncer pairs:
 
 | Pair | Remote | Local | Type |
 |------|--------|-------|------|
-| `personal_calendar` | Google Calendar events (fernandomarques1505@gmail.com) | `~/Calendars/events/` | CalDAV |
-| `feriados` | Brazilian holidays (pt.brazilian#holiday@group.v.calendar.google.com) | `~/Calendars/feriados/` | CalDAV |
+| `personal_calendar` | Google Calendar events (<fernandomarques1505@gmail.com>) | `~/Calendars/events/` | CalDAV |
+| `feriados` | Brazilian holidays (pt.brazilian#<holiday@group.v.calendar.google.com>) | `~/Calendars/feriados/` | CalDAV |
 | `personal_contacts` | Google Contacts | `~/Contacts/` | CardDAV |
 
 vdirsyncer syncs every 30 minutes via a systemd timer. Password stored at `/run/secrets/caldavPass`.
@@ -78,7 +78,7 @@ Calendar (which rejects VTODO with 403).
   in `~/Calendars/todos/`).
 - **Important**: Always use Lucky's actual paths and names (`~/Calendars/events/`,
   `~/Calendars/feriados/`, `~/Contacts/`), not generic examples.
-- Lucky's email is offrakki@gmail.com, Google account is fernandomarques1505@gmail.com.
+- Lucky's email is <offrakki@gmail.com>, Google account is <fernandomarques1505@gmail.com>.
 
 ## Unified Agenda (keep in sync)
 
@@ -100,6 +100,7 @@ never drift apart. When you operate on any piece of Lucky's agenda:
 3. **Sync after every write** — after any local change to events or contacts,
    run `vdirsyncer sync` immediately so Google Calendar/Contacts are up to date.
    Do not wait for the 30-minute timer.
+
    ```bash
    systemctl --user start vdirsyncer
    ```
@@ -189,6 +190,7 @@ dateformat = %d/%m/%Y
 ```
 
 Per-calendar options:
+
 - **path** (mandatory): directory with `.ics` files (vdir)
 - **color**: 16 named colors, 256-color index (0-255), or 24-bit `#RRGGBB`. `auto` reads from a `color` file in the vdir. Default: `auto`
 - **priority** (int, default 10): higher = wins when coloring days
@@ -298,6 +300,7 @@ khal new -a events 15/06/2026 Conference -r weekly -g meeting   # all-day recurr
 ```
 
 Options for `khal new`:
+
 - `-a CALENDAR`: target calendar
 - `-l LOCATION`, `--location`
 - `-g CATEGORIES`, `--categories` (comma-separated)
@@ -356,24 +359,29 @@ rm ~/.cache/khal/khal.db
 ## `khal interactive` / ikhal in detail
 
 Full TUI with three panes:
+
 - **Left**: calendar browser with month view
 - **Right**: event list for selected day/range
 - **Bottom (optional)**: event detail viewer/editor
 
 Navigation flow:
+
 1. Calendar pane: arrow keys / hjkl, `v` for visual range mode, `t` for today, `n` for new event on selected day, `/` to search
 2. Tab/Enter: focus event list. `j`/`k` to move through events, Enter to view details, Enter again to edit
 3. In editor: Tab/Shift+Tab between fields, ctrl+a/ctrl+x to increment/decrement numbers (15min steps for time), meta+enter to save, esc to cancel
 
 In visual range mode:
+
 - `o`: switch to the other end of the range
 - `esc`: exit visual mode
 - `n`: create event spanning the selected range
 
 Deletion:
+
 - `d`: toggle deletion mark (D prefix). Events are actually deleted when exiting ikhal (with confirmation).
 
 ikhal exit:
+
 - `q`/`Q` or `esc` from top-level pane (press esc again to confirm).
 
 ## `khal import`
@@ -541,6 +549,7 @@ searches for literal "email:foo" in any field — the correct field is `emails:f
 ### Subcommand aliases
 
 Most subcommands have short aliases:
+
 - `khard list` = `khard ls`
 - `khard show` = `khard details`
 - `khard new` = `khard add`
@@ -616,11 +625,13 @@ khard move -a work -t personal "John Smith"  # move to personal
 ### Email integration (neomutt)
 
 Lucky's neomutt is configured to use khard for contact queries:
+
 ```neomuttrc
 query_command = "khard email --parsable '%s'"
 ```
 
 Manual usage:
+
 ```bash
 # List all email addresses (mutt query format)
 khard email Lucky
@@ -664,9 +675,10 @@ khard show --format=yaml -o john.yaml "John"
 ### Editing workflow
 
 `khard edit <name>` opens the contact in `$EDITOR`, but requires a TTY and may
-not work from within opencode. **Always try `khard show <name>` first** — it
-handles fuzzy matching and gives you everything (email, phone, notes, UID) in
-one shot. Only fall back to grep for bulk operations.
+not work from within Pi's non-interactive tool runner. **Always try
+`khard show <name>` first** — it handles fuzzy matching and gives you everything
+(email, phone, notes, UID) in one shot. Only fall back to grep for bulk
+operations.
 
 **Primary workflow (YAML round-trip):**
 
@@ -820,6 +832,7 @@ todo new [-l LIST] [-d DUE_DATE] [--start START_DATE] [--priority N]
 - `--description`: task description/notes
 
 Examples:
+
 ```bash
 todo new Buy groceries                                   # goes to "events" (default_list)
 todo new -d 15/06/2026 Buy groceries                     # due date in dd/mm/yyyy
@@ -896,6 +909,7 @@ programs.todoman = {
 ```
 
 Equivalent manual `~/.config/todoman/config.py`:
+
 ```python
 path = "~/Calendars/todos/"      # separate dir from khal's events/
 date_format = "%d/%m/%Y"
@@ -909,6 +923,7 @@ startable = False
 ### Per-list metadata
 
 Like khal, todoman supports `color` and `displayname` files in each vdir:
+
 - `~/Calendars/todos/color` → `#87CEEB` (light blue)
 - `~/Calendars/todos/displayname` → human-readable name
 
@@ -1020,7 +1035,7 @@ via `cat /run/secrets/caldavPass` in the vdirsyncer config.
 
 ### Sync notes
 
-- **Personal calendar**: Google Calendar for fernandomarques1505@gmail.com
+- **Personal calendar**: Google Calendar for <fernandomarques1505@gmail.com>
 - **Contacts**: Google Contacts for the same account
 - **Feriados**: Brazilian holidays (read-only, public Google Calendar)
 - **Conflict resolution**: For contacts, `a wins` (remote overrides local)
@@ -1115,7 +1130,7 @@ Same applies to every context: `[view]`, `[compose]`, `[compose::editor]`,
 `[compose::review]`, `[terminal]`, and global (no-section) bindings. Any
 missing context = zero bindings.
 
-Full default binds.conf source: https://raw.githubusercontent.com/rjarry/aerc/master/config/binds.conf
+Full default binds.conf source: <https://raw.githubusercontent.com/rjarry/aerc/master/config/binds.conf>
 
 ### mbsync + Gmail labels
 
@@ -1133,6 +1148,7 @@ Use `Patterns * ! "[Gmail]/All Mail"` to auto-discover all Gmail labels
 ## HTML email rendering
 
 Add `w3m` to packages and configure in `[filters]`:
+
 ```ini
 [filters]
 text/html = w3m -I UTF-8 -T text/html -cols 80 -o display_image=false -dump

@@ -16,18 +16,18 @@ Check the display server before choosing a tool:
 
 | Environment | Full screen | Focused monitor | Region | Browser page |
 |---|---|---|---|---|
-| Wayland + Hyprland | `grim` | `grim -o $(hyprctl monitors -j \| jq -r '.[] \| select(.focused) \| .name')` | `slurp \| grim -g -` | Use `browser` skill with pi-chrome |
+| Wayland + Hyprland | `grim` | `grim -o $(hyprctl monitors -j \| jq -r '.[] \| select(.focused) \| .name')` | `slurp \| grim -g -` | Use `browser` skill |
 | Wayland + wlroots | `grim` | `grim -o <output>` | `slurp \| grim -g -` | Same |
 | X11 | `import -window root` | `import -window root -crop <geo>` | `import` (click-drag) | Same |
 
-### Browser screenshots (via pi-chrome)
+### Browser screenshots
 
 When the target is a **web page** (not the desktop/app), use the `browser` skill
-with pi-chrome instead of grim. pi-chrome can capture JS-rendered content,
-full-page scrolls, and specific DOM elements:
+instead of grim. The browser helper can capture JS-rendered content, full-page
+scrolls, and specific DOM elements:
 
 ```bash
-browser.py '[{"action":"navigate","url":"https://..."},{"action":"screenshot","path":"/tmp/shot.png","full_page":true}]'
+browser.py '[{"action":"navigate","url":"https://..."},{"action":"screenshot","path":"/tmp/pi/shot.png","full_page":true}]'
 ```
 
 Pair with `image-analyzer` for visual analysis of the captured page.
@@ -37,26 +37,26 @@ Pair with `image-analyzer` for visual analysis of the captured page.
 **Full screen (Wayland):**
 
 ```bash
-nix run nixpkgs#grim -- /tmp/opencode/screenshot.png
+nix run nixpkgs#grim -- /tmp/pi/screenshot.png
 ```
 
 **Single monitor (Hyprland):**
 
 ```bash
 monitor=$(hyprctl monitors -j | jq -r '.[] | select(.focused) | .name')
-nix run nixpkgs#grim -- -o "$monitor" /tmp/opencode/screenshot.png
+nix run nixpkgs#grim -- -o "$monitor" /tmp/pi/screenshot.png
 ```
 
 **Region select (Wayland):**
 
 ```bash
-nix run nixpkgs#slurp -- | nix run nixpkgs#grim -- -g - /tmp/opencode/screenshot.png
+nix run nixpkgs#slurp -- | nix run nixpkgs#grim -- -g - /tmp/pi/screenshot.png
 ```
 
 **Full screen (X11):**
 
 ```bash
-nix run nixpkgs#imagemagick -- import -window root /tmp/opencode/screenshot.png
+nix run nixpkgs#imagemagick -- import -window root /tmp/pi/screenshot.png
 ```
 
 ### Viewing
@@ -64,7 +64,7 @@ nix run nixpkgs#imagemagick -- import -window root /tmp/opencode/screenshot.png
 Open with the default image viewer:
 
 ```bash
-handlr open /tmp/opencode/screenshot.png
+handlr open /tmp/pi/screenshot.png
 ```
 
 ### Analysis
@@ -72,7 +72,7 @@ handlr open /tmp/opencode/screenshot.png
 After taking a screenshot, use the `image-analyzer` subagent to describe the image:
 
 ```
-task(description="Analyze screenshot", prompt="...", subagent_type="image-analyzer")
+Agent(description="Analyze screenshot", prompt="...", subagent_type="image-analyzer")
 ```
 
 Note: the image-analyzer may hallucinate visual details. Treat its descriptions as approximate.

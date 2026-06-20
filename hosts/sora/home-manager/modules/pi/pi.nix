@@ -98,6 +98,7 @@ in {
       };
 
       packages = [
+        "npm:pi-drawio"
         "npm:pi-intercom"
         "npm:pi-lean-ctx"
         "npm:pi-lens"
@@ -112,6 +113,7 @@ in {
         "npm:pi-hermes-memory"
         "npm:pi-invisible-continue"
         "npm:pi-subagents"
+        "npm:@ogulcancelik/pi-sketch"
         "npm:@tintinweb/pi-subagents"
         "npm:@juicesharp/rpiv-pi"
         "npm:@juicesharp/rpiv-todo"
@@ -206,6 +208,7 @@ in {
     "${piDir}/skills/seo/SKILL.md".source = ./skills/seo/SKILL.md;
     "${piDir}/skills/context-curation/SKILL.md".source = ./skills/context-curation/SKILL.md;
     "${piDir}/skills/security-sweep/SKILL.md".source = ./skills/security-sweep/SKILL.md;
+    "${piDir}/skills/pi-tools/SKILL.md".source = ./skills/pi-tools/SKILL.md;
 
     # Pi-specific skill
     "${piDir}/skills/nix-auditor/SKILL.md".source = ./skills/nix-auditor/SKILL.md;

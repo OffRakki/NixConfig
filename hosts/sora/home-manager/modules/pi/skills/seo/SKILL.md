@@ -27,18 +27,19 @@ As páginas de medicamentos participantes (`/medicamentos-participantes/<slug>`)
 ### Ferramentas de Diagnóstico
 
 Use `web_search` para pesquisar documentação do Google Search Console e artigos técnicos.
-Use `fetch_content` para extrair conteúdo de URLs de páginas concorrentes ou ferramentas.
-Use pi-chrome (via `browser.py`) para verificar renderização JS real:
+Use `fetch_content` para extrair conteúdo de URLs de páginas concorrentes, APIs ou ferramentas.
+Use pi-chrome (via `browser.py`) para verificar renderização JS real quando o HTML inicial não basta:
 
 ```bash
-browser.py '[{"action":"navigate","url":"https://cuidadospelavida.com.br/medicamentos-participantes/<slug>"},{"action":"extract"},{"action":"screenshot","path":"/tmp/seo-ssr-check.png"}]'
+browser.py '[{"action":"navigate","url":"https://cuidadospelavida.com.br/medicamentos-participantes/<slug>"},{"action":"extract"},{"action":"screenshot","path":"/tmp/pi/seo-ssr-check.png"}]'
 ```
 
 Para inspecionar o HTML estático (SSR) e comparar com o JS-renderizado:
 
 ```bash
 # Verificar HTML inicial (SSR) — sem execução JS
-webfetch https://cuidadospelavida.com.br/medicamentos-participantes/<slug>
+# Prefer fetch_content in chat, or use a deliberate CLI fetch when raw HTML matters:
+nix shell nixpkgs#curl -c curl -L https://cuidadospelavida.com.br/medicamentos-participantes/<slug>
 
 # Verificar HTML completo — com execução JS (via Chromium headless)
 nix shell nixpkgs#chromium -c chromium --headless --no-sandbox \
@@ -64,7 +65,8 @@ if m:
 
 # Acessar conteúdo via API WordPress diretamente
 # (fonte de verdade para o conteúdo das abas)
-webfetch "https://conteudodoc.cuidadospelavida.com.br/wp-json/wp/v2/produtos?slug=<slug>"
+# Prefer fetch_content for readable extraction, or raw JSON via curl:
+nix shell nixpkgs#curl -c curl -L "https://conteudodoc.cuidadospelavida.com.br/wp-json/wp/v2/produtos?slug=<slug>"
 ```
 
 ---

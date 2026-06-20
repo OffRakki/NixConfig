@@ -5,20 +5,18 @@ description: Automate web browsers — navigate, click, fill forms, extract data
 
 ## Tooling
 
-This skill uses **pi-chrome** (installed npm package) via a Python script. The script
-launches Chromium with your real Chrome profile, using your existing authenticated
-sessions (cookies, passwords, 2FA). No Playwright, no Puppeteer — just your browser.
+This skill uses a local `scripts/browser.py` helper built on Python Playwright +
+Chromium. The `pi-chrome` package is also installed in Pi for browser-profile
+integration, but this helper's contract is the JSON action API documented below.
 
-### How pi-chrome integrates
+### How the helper behaves
 
-The `scripts/browser.py` script uses pi-chrome under the hood:
-
-- **Persistent sessions** (`--persist`): saves cookies/localStorage so logins survive
-  across invocations. Uses Chrome's actual profile directory.
+- **Persistent sessions** (`--persist`): saves cookies/localStorage as Playwright
+  storage state so logins survive across invocations.
 - **Stealth mode** (`--stealth`): anti-bot-detection (Cloudflare bypass). Overrides
   user agent, hides `navigator.webdriver`, adds plugin/WebGL mimicry.
-- **Visible mode** (`--visible`): launches a real Chrome window for captchas and
-  debugging. Chrome shows with your extensions, bookmarks, and saved passwords.
+- **Visible mode** (`--visible`): launches a real Chromium window for captchas and
+  debugging.
 
 ### Browser automation via subagent
 
@@ -28,12 +26,18 @@ For complex workflows (multi-step, conditional logic, login flows), consider usi
 ## Script
 
 The helper script lives at `scripts/browser.py` relative to this skill's root
-directory (`~/.config/opencode/skills/browser/scripts/browser.py`).
+directory. Runtime path after Home Manager activation:
+`~/.pi/agent/skills/browser/scripts/browser.py`.
 
-Run directly as an executable, it has the correct shebang.
+The Nix-managed source path is:
+`~/Projects/NixConfig/hosts/sora/home-manager/modules/pi/skills/browser/scripts/browser.py`.
+
+Run directly as an executable; it has the correct shebang. If Python reports
+`playwright.sync_api` missing, run it through Nix with the Playwright package:
 
 ```
-~/.config/opencode/skills/browser/scripts/browser.py <args>
+~/.pi/agent/skills/browser/scripts/browser.py <args>
+nix shell nixpkgs#python3Packages.playwright nixpkgs#chromium -c python3 ~/.pi/agent/skills/browser/scripts/browser.py <args>
 ```
 
 ---
@@ -75,8 +79,8 @@ Returns `data` in the result object.
 ### screenshot
 
 ```
-{"action": "screenshot", "path": "/tmp/opencode/screenshot.png"}
-{"action": "screenshot", "path": "/tmp/opencode/page.png", "full_page": true}
+{"action": "screenshot", "path": "/tmp/pi/screenshot.png"}
+{"action": "screenshot", "path": "/tmp/pi/page.png", "full_page": true}
 ```
 
 ### js (execute JavaScript)
@@ -117,7 +121,7 @@ By default, errors are collected per-step and execution continues. Set
 ### Single command
 
 ```
-~/.config/opencode/skills/browser/scripts/browser.py '[{"action":"navigate","url":"https://example.com"},{"action":"extract"}]'
+~/.pi/agent/skills/browser/scripts/browser.py '[{"action":"navigate","url":"https://example.com"},{"action":"extract"}]'
 ```
 
 ### Stealth mode (anti-bot-detection)
@@ -142,7 +146,7 @@ If a site blocks the headless browser even with `--stealth` (Cloudflare,
 captcha, etc.), **do not retry headless**. Instead:
 
 1. Take a screenshot and analyze it with `image-analyzer` to confirm the block.
-2. Send a `ciel-notify` telling Lucky what site blocked you.
+2. Send a `notify-send` notification using the project-standard Pi/Ciel format.
 3. Re-run the **same steps** with `--visible` so Lucky can handle the challenge.
 
 After Lucky completes the challenge and you see the expected page, take another
@@ -162,7 +166,7 @@ browser.py --visible [...]
 ### Persistent sessions
 
 Use `--persist` to keep cookies, localStorage, and other session state across
-invocations. State is saved to `/tmp/opencode/browser-session/` by default.
+invocations. State is saved to `/tmp/pi/browser-session/` by default.
 
 ```
 browser.py --persist '[{"action":"navigate","url":"https://example.com/login"}, ...]'
@@ -181,10 +185,10 @@ Capture a page and analyze it with the `image-analyzer` agent:
 
 ```
 # Step 1: take screenshot
-browser.py '[{"action":"navigate","url":"https://..."},{"action":"screenshot","path":"/tmp/opencode/shot.png"}]'
+browser.py '[{"action":"navigate","url":"https://..."},{"action":"screenshot","path":"/tmp/pi/shot.png"}]'
 
 # Step 2: analyze with vision
-task(description="Analyze page screenshot", prompt="Describe what you see in /tmp/opencode/shot.png", subagent_type="image-analyzer")
+Agent(description="Analyze page screenshot", prompt="Describe what you see in /tmp/pi/shot.png", subagent_type="image-analyzer")
 ```
 
 ### Login flow
@@ -209,7 +213,7 @@ password. Wrap in a Python helper to keep the secret out of context:
 ```python
 import subprocess, json, os
 
-browser = os.path.expanduser('~/.config/opencode/skills/browser/scripts/browser.py')
+browser = os.path.expanduser('~/.pi/agent/skills/browser/scripts/browser.py')
 pwd = subprocess.run(['pass', 'site.com/user'], capture_output=True, text=True).stdout.splitlines()[0]
 
 steps = [
@@ -218,7 +222,7 @@ steps = [
     {"action": "fill", "selector": "input[name=password]", "text": pwd},
     {"action": "click", "selector": 'button:has-text("Log In")'},
     {"action": "sleep", "seconds": 5},
-    {"action": "screenshot", "path": "/tmp/opencode/loggedin.png"},
+    {"action": "screenshot", "path": "/tmp/pi/loggedin.png"},
 ]
 
 subprocess.run([browser, '--stealth', '--persist', json.dumps(steps)])

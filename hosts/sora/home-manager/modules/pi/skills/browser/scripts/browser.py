@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pyright: reportMissingImports=false
 """Browser automation via Playwright + Chromium.
 
 Usage:
@@ -14,7 +15,7 @@ Actions:
   {"action": "click",     "selector": "css-selector"}
   {"action": "fill",      "selector": "css-selector", "text": "value"}
   {"action": "extract",   "selector": "css-selector"}  — omit selector for full HTML
-  {"action": "screenshot","path": "/tmp/shot.png"}      — default: /tmp/opencode/screenshot.png
+  {"action": "screenshot","path": "/tmp/shot.png"}      — default: /tmp/pi/screenshot.png
   {"action": "js",        "code": "document.title"}
   {"action": "wait",      "selector": "css-selector", "timeout": 5000}
   {"action": "sleep",     "seconds": 2}
@@ -62,7 +63,11 @@ def run_steps(steps, headless=True, session_dir=None, stealth=False):
         print(json.dumps({"error": "chromium not found"}))
         sys.exit(1)
 
-    from playwright.sync_api import sync_playwright
+    try:
+        from playwright.sync_api import sync_playwright
+    except ModuleNotFoundError:
+        print(json.dumps({"error": "python Playwright is not available; run this script in a Python environment that provides playwright.sync_api"}))
+        sys.exit(1)
 
     state_file = os.path.join(session_dir, "state.json") if session_dir else None
 
@@ -111,7 +116,7 @@ def run_steps(steps, headless=True, session_dir=None, stealth=False):
                     results.append({"action": "extract", "status": "ok", "data": data})
 
                 elif action == "screenshot":
-                    path = step.get("path", "/tmp/opencode/screenshot.png")
+                    path = step.get("path", "/tmp/pi/screenshot.png")
                     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
                     page.screenshot(path=path, full_page=step.get("full_page", False))
                     results.append({"action": "screenshot", "status": "ok", "path": path})
@@ -154,7 +159,7 @@ def main():
     parser.add_argument("--visible", action="store_true", help="Run with visible browser (not headless)")
     parser.add_argument("--stealth", action="store_true", help="Enable anti-bot-detection measures (UA override, webdriver hide, etc)")
     parser.add_argument("--persist", action="store_true", help="Persist session (cookies, localStorage) between runs")
-    parser.add_argument("--session-dir", help="Session directory (default: /tmp/opencode/browser-session)")
+    parser.add_argument("--session-dir", help="Session directory (default: /tmp/pi/browser-session)")
     args = parser.parse_args()
 
     if args.stdin:
@@ -171,7 +176,7 @@ def main():
         print(json.dumps({"error": f"invalid JSON: {e}"}))
         sys.exit(1)
 
-    session_dir = args.session_dir or "/tmp/opencode/browser-session" if args.persist else None
+    session_dir = args.session_dir or "/tmp/pi/browser-session" if args.persist else None
     results = run_steps(steps, headless=not args.visible, session_dir=session_dir, stealth=args.stealth)
     print(json.dumps(results, indent=2))
 

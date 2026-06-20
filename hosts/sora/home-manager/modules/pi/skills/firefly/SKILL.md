@@ -19,6 +19,7 @@ This skill has supporting resources — load them as needed:
 ## Quick overview
 
 Wrappers are available in PATH with the PAT path pre-injected from sops:
+
 - `firefly-expenses` — monthly budget overview
 - `firefly-api` — interactive API client exploration
 
@@ -170,6 +171,7 @@ POST /api/v1/recurrences
 ```
 
 **Key gotchas:**
+
 - `nr_of_repetitions: 0` is invalid (must be >=1). Use `repeat_until` instead for unlimited runs.
 - `repetitions` array defines when in the period: `[{"type": "monthly", "moment": "1"}]` = 1st of month.
 - **`bill_id` goes on the transaction level** (`transactions[0].bill_id`), NOT the recurrence level. Despite GET responses showing `subscription_id`, the write field is `bill_id`.
@@ -255,6 +257,7 @@ Firefly III has two separate concepts that look similar:
 **Auto-budget rollover:** Some budgets use Firefly's next-month rollover — overspending in one month reduces the next month's cap; underspending increases it. This is intentional for budgets where purchases don't fit neat monthly boundaries (every 2, 3, or 6 weeks) but average out over time. Don't interpret a single-month overage as structural overspend — look at the multi-month average instead.
 
 **Budget nature:**
+
 - Some budgets are **variable** — spending fluctuates significantly. Caps are targets, not fixed costs.
 - Some budgets are **fixed-ish** — nearly 100% recurring bills. When these show under cap mid-month, it means bills haven't hit yet, not that spending is under control.
 
@@ -263,6 +266,7 @@ See `resources/private.md` for the full budget list with IDs, caps, rollover bud
 ## Bills (passive subscription trackers)
 
 **Reading bill data from the API:**
+
 - Amount is in `amount_min`, `amount_max`, `amount_avg` (all strings). Use `amount_avg`.
 - **USD-denominated subs:** `amount_avg` stores the *foreign currency* value. Actual BRL cost = foreign amount x rate x 1.064 (IOF+spread) — varies with exchange rate. Don't trust API amounts for USD items; check actual BRL transactions instead.
 - The `skip` field means "skip N occurrences." A `weekly, skip:3` bill fires once every 4 weeks. Without understanding `skip`, the monthly cost estimate will be wildly wrong (e.g., R$ 440/week looks like R$ 1,760/mo when it's actually R$ 476.67/mo).
@@ -281,8 +285,8 @@ See `resources/private.md` for the actual subscription list with names, amounts,
 ## Category audit workflow
 
 See `resources/auditing.md` for the full workflow: fetching transactions,
-auditing against the category/budget mapping, fixing issues with `question`
-prompts, handling ambiguous rides, and cross-referencing against bank data
+auditing against the category/budget mapping, fixing issues with `ask_user` or
+`ask_user_question` prompts, handling ambiguous rides, and cross-referencing against bank data
 (Mercado Pago API, or manual statement reviews).
 
 ## OFX statement audit

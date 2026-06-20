@@ -120,6 +120,7 @@ After any work touching secrets (SOPS, API keys, private URLs, credentials), loa
 - **firefly** — Firefly III: transactions, budgets, reimbursements
 - **lumis** — MTG proxy printing: orders, supplies, tracking
 - **browser** — web automation: navigate, click, fill, extract
+- **pi-tools** — Pi runtime tools, packages, extensions, agents, prompts, and tool-routing inventory
 - **context-curation** — organizing, splitting, merging context.md and skills
 - **security-sweep** — post-secret-work verification checklist
 
