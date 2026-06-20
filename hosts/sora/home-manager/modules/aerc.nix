@@ -43,14 +43,17 @@
     {
       name = "Main";
       email = "offrakki@gmail.com";
+      patterns = ["INBOX" "Linkedin" "LumisCards" "Nota Fiscal" "NuBank" "Riot" "Spotify" "Steam" "Twitch" "[Notion]" "[Gmail]/Drafts" "[Gmail]/Important" "[Gmail]/Sent Mail" "[Gmail]/Starred"];
     }
     {
       name = "Personal";
       email = "fernandomarques1505@gmail.com";
+      patterns = ["INBOX" "Archive" "Mailspring/Snoozed" "Notes" "Personal" "Receipts" "Work" "[Gmail]/Drafts" "[Gmail]/Important" "[Gmail]/Sent Mail" "[Gmail]/Starred"];
     }
     {
       name = "Work";
       email = "fernando12.contato@gmail.com";
+      patterns = ["INBOX" "[Gmail]/Drafts" "[Gmail]/Important" "[Gmail]/Sent Mail" "[Gmail]/Starred"];
     }
   ];
 
@@ -92,12 +95,12 @@
     Channel ${a.name}
     Far :${a.name}-remote:
     Near :${a.name}-local:
-    Patterns * ! "[[]Gmail]/All Mail"
+    Patterns ${lib.concatStringsSep " " (map (p: "\"${p}\"") a.patterns)}
     ExpireUnread no
     Create Both
-    Sync All
+    Sync Pull New
     Expunge None
-    MaxMessages 50
+    MaxMessages 1000
   '';
 
   mbsyncConf = lib.concatStringsSep "\n\n" (map mkMbsyncAccount accounts);
@@ -147,8 +150,14 @@ in {
       };
       Service = {
         Type = "oneshot";
+        TimeoutStartSec = "15min";
         Environment = "SASL_PATH=${sasl2Plugins}";
-        ExecStart = "${pkgs.isync}/bin/mbsync -a";
+        ExecStart = "${pkgs.writeShellScriptBin "mbsync-serial" ''
+          set -e
+          for channel in Main Personal Work; do
+            ${pkgs.isync}/bin/mbsync -c "${config.home.homeDirectory}/.mbsyncrc" "$channel"
+          done
+        ''}/bin/mbsync-serial";
       };
     };
     timers.mbsync = {
@@ -157,7 +166,7 @@ in {
       };
       Timer = {
         OnBootSec = "2m";
-        OnUnitActiveSec = "5m";
+        OnCalendar = "*:0/5";
         Persistent = true;
       };
     };
