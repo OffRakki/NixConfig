@@ -8,7 +8,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@300;400;600&family=Sora:wght@300;400;500;600&display=swap"
       rel="stylesheet"
     />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script src="./vendor/chart.umd.min.js"></script>
     <style>
       *,
       *::before,
@@ -1608,7 +1608,8 @@
                       font-family: &quot;JetBrains Mono&quot;, monospace;
                     "
                   >
-                    IOF zerado após 30 dias corridos
+                    Estimativa simplificada: IR aplicado sobre rendimento total;
+                    IOF zerado após 30 dias corridos.
                   </div>
                 </div>
               </div>
@@ -2120,23 +2121,27 @@
       //  FORMATTERS
       // ═══════════════════════════════════════════════════════
       const fmtFull = (n) => {
-        const v = Math.max(n, 0);
+        const v = safeNum(n);
+        const sign = v < 0 ? "-" : "";
         return (
+          sign +
           "R$ " +
-          v
+          Math.abs(v)
             .toFixed(2)
             .replace(".", ",")
             .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
         );
       };
       const fmtS = (n) => {
-        const v = Math.max(n, 0);
-        if (v >= 1e9)
-          return "R$ " + (v / 1e9).toFixed(2).replace(".", ",") + "B";
-        if (v >= 1e6)
-          return "R$ " + (v / 1e6).toFixed(2).replace(".", ",") + "M";
-        if (v >= 1e3)
-          return "R$ " + (v / 1e3).toFixed(1).replace(".", ",") + "k";
+        const v = safeNum(n);
+        const sign = v < 0 ? "-" : "";
+        const abs = Math.abs(v);
+        if (abs >= 1e9)
+          return sign + "R$ " + (abs / 1e9).toFixed(2).replace(".", ",") + "B";
+        if (abs >= 1e6)
+          return sign + "R$ " + (abs / 1e6).toFixed(2).replace(".", ",") + "M";
+        if (abs >= 1e3)
+          return sign + "R$ " + (abs / 1e3).toFixed(1).replace(".", ",") + "k";
         return fmtFull(v);
       };
       const fmtPct = (n, d = 1) =>
@@ -2239,6 +2244,21 @@
       // ═══════════════════════════════════════════════════════
       //  URL SHARING
       // ═══════════════════════════════════════════════════════
+      const encodeState = (state) => {
+        const bytes = new TextEncoder().encode(JSON.stringify(state));
+        let bin = "";
+        bytes.forEach((b) => (bin += String.fromCharCode(b)));
+        return btoa(bin)
+          .replace(/\+/g, "-")
+          .replace(/\//g, "_")
+          .replace(/=+$/g, "");
+      };
+      const decodeState = (hash) => {
+        const base64 = hash.replace(/-/g, "+").replace(/_/g, "/");
+        const bin = atob(base64.padEnd(Math.ceil(base64.length / 4) * 4, "="));
+        const bytes = Uint8Array.from(bin, (ch) => ch.charCodeAt(0));
+        return JSON.parse(new TextDecoder().decode(bytes));
+      };
       function shareURL() {
         const state = {
           p: rawVal("principal"),
@@ -2254,17 +2274,9 @@
           irr: irregularContribs,
         };
         try {
-          const hash = btoa(
-            unescape(encodeURIComponent(JSON.stringify(state))),
-          );
+          const hash = encodeState(state);
           const url = location.origin + location.pathname + "#" + hash;
-          if (navigator.clipboard) {
-            navigator.clipboard
-              .writeText(url)
-              .then(() =>
-                toast("🔗 Link copiado para a área de transferência!"),
-              );
-          } else {
+          const fallbackCopy = () => {
             const ta = document.createElement("textarea");
             ta.value = url;
             document.body.appendChild(ta);
@@ -2272,6 +2284,16 @@
             document.execCommand("copy");
             document.body.removeChild(ta);
             toast("🔗 Link copiado!");
+          };
+          if (navigator.clipboard) {
+            navigator.clipboard
+              .writeText(url)
+              .then(() =>
+                toast("🔗 Link copiado para a área de transferência!"),
+              )
+              .catch(fallbackCopy);
+          } else {
+            fallbackCopy();
           }
           history.replaceState(null, "", "#" + hash);
         } catch (e) {
@@ -2281,9 +2303,7 @@
       function loadFromURL() {
         if (!location.hash || location.hash.length < 4) return;
         try {
-          const state = JSON.parse(
-            decodeURIComponent(escape(atob(location.hash.slice(1)))),
-          );
+          const state = decodeState(location.hash.slice(1));
           if (state.p !== undefined) {
             const el = document.getElementById("principal");
             el.dataset.raw = Math.max(0, safeNum(state.p));
@@ -2718,8 +2738,22 @@
           callbacks: { label: (c) => " " + fmtS(c.raw), ...extraCb },
         };
       }
+      function chartsAvailable() {
+        if (window.Chart) return true;
+        document.querySelectorAll(".chart-area").forEach((area) => {
+          if (!area.querySelector(".chart-fallback")) {
+            const msg = document.createElement("div");
+            msg.className = "empty-state chart-fallback";
+            msg.textContent =
+              "Gráficos indisponíveis: Chart.js local não carregou.";
+            area.appendChild(msg);
+          }
+        });
+        return false;
+      }
 
       function drawMain(labels, sS, cS, totalInv, months) {
+        if (!chartsAvailable()) return;
         const ctx = document.getElementById("mainChart").getContext("2d");
         if (mainChart) mainChart.destroy();
         const gold = "#c9a84c",
@@ -2834,6 +2868,7 @@
       //  CHART: SNOWBALL
       // ═══════════════════════════════════════════════════════
       function drawSnowball(labels, cS, P, PMT, months) {
+        if (!chartsAvailable()) return;
         const ctx = document.getElementById("snowballChart").getContext("2d");
         if (snowChart) snowChart.destroy();
         const capData = cS.map((_, m) => P + PMT * m + totalIrrContribs(m));
@@ -2952,13 +2987,16 @@
         const irrTotal = totalIrrContribs(months);
         const totalInv = P + PMT * months + irrTotal;
 
-        // Product definitions
+        // Product definitions. Poupança ignores TR by default; add it manually to
+        // SELIC assumptions if Lucky wants that particular bureaucratic goblin.
+        const poupancaRate =
+          selic > 8.5 ? (Math.pow(1.005, 12) - 1) * 100 : 0.7 * selic;
         const products = [
           {
             name: "Poupança",
-            rate: selic > 8.5 ? 0.7 * selic : 0.005 * 12 * 100,
+            rate: poupancaRate,
             ir: false,
-            tag: "70% SELIC",
+            tag: selic > 8.5 ? "0,5% a.m. + TR≈0" : "70% SELIC",
             color: "#6b9ce8",
           },
           {
@@ -2984,9 +3022,9 @@
           },
           {
             name: "Tesouro Selic",
-            rate: cdi - 0.1,
+            rate: Math.max(selic - 0.1, 0),
             ir: true,
-            tag: "CDI-0,1%",
+            tag: "SELIC-0,1%",
             color: "#a78bfa",
           },
         ];
@@ -3029,6 +3067,7 @@
           .join("");
 
         // Chart
+        if (!chartsAvailable()) return;
         if (prodChart) prodChart.destroy();
         const ctx = document.getElementById("productsChart").getContext("2d");
         const ax = axisStyle(),
@@ -3196,6 +3235,7 @@
         renderScenarios();
       }
       function drawScenarios() {
+        if (!chartsAvailable()) return;
         const ctx = document.getElementById("scenariosChart").getContext("2d");
         if (scenChart) scenChart.destroy();
         if (!scenarios.length) return;
@@ -3300,7 +3340,7 @@
         const step = months > 36 ? 12 : 1;
         const periods = [];
         for (let m = step; m <= months; m += step) periods.push(m);
-        if (periods.at(-1) !== months) periods.push(months);
+        if (periods[periods.length - 1] !== months) periods.push(months);
 
         const sS = buildSimple(P, PMT, rate, months),
           cS = buildCompound(P, PMT, rate, months);
