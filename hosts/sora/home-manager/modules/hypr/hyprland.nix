@@ -332,7 +332,7 @@ in {
 
         hl.window_rule({
           name = "scratchpadBorderColorFix",
-          match = { class = "^(pypr-.*|com\\.saivert\\.pwvucontrol|spotify)$" },
+          match = { class = "^(pypr-.*|com\\.saivert\\.pwvucontrol|Spotify)$" },
           border_color = "rgba(BFA16Eff) rgba(BFA16E44)",
           border_size = 2,
         })
