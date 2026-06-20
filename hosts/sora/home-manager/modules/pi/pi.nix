@@ -53,7 +53,7 @@ in {
     settings = {
       defaultProvider = "openai-codex";
       defaultModel = "gpt-5.5";
-      defaultThinkingLevel = "high";
+      defaultThinkingLevel = "low";
       theme = "gruvbox-dark-hard";
       enabledModels = [
         "gpt*"
@@ -185,23 +185,25 @@ in {
 
   # Place models, extensions, skills, prompts, themes, and APPEND_SYSTEM.md into ~/.pi/agent/
   home.file = {
-    # Extensions (notify only — providers are defined declaratively in models.json)
+    # Extensions (notify only)
     "${piDir}/extensions/notify.ts".source = ./extensions/notify.ts;
 
-    "${piDir}/skills/jujutsu/SKILL.md".source = ./skills/jujutsu/SKILL.md;
-    "${piDir}/skills/jujutsu/references".source = ./skills/jujutsu/references;
-    "${piDir}/skills/nix/SKILL.md".source = ./skills/nix/SKILL.md;
-    "${piDir}/skills/nix-refactor/SKILL.md".source = ./skills/nix-refactor/SKILL.md;
-    "${piDir}/skills/linux/SKILL.md".source = ./skills/linux/SKILL.md;
-    "${piDir}/skills/invest/SKILL.md".source = ./skills/invest/SKILL.md;
-    "${piDir}/skills/personal-tools/SKILL.md".source = ./skills/personal-tools/SKILL.md;
-    "${piDir}/skills/screenshot/SKILL.md".source = ./skills/screenshot/SKILL.md;
     "${piDir}/skills/firefly/SKILL.md".source = ./skills/firefly/SKILL.md;
     "${piDir}/skills/firefly/scripts".source = ./skills/firefly/scripts;
     "${piDir}/skills/firefly/resources/auditing.md".source = ./skills/firefly/resources/auditing.md;
     "${piDir}/skills/firefly/resources/btg.md".source = ./skills/firefly/resources/btg.md;
     "${piDir}/skills/firefly/resources/mercado-pago.md".source = ./skills/firefly/resources/mercado-pago.md;
     "${piDir}/skills/firefly/resources/nubank-ofx.md".source = ./skills/firefly/resources/nubank-ofx.md;
+    "${piDir}/skills/jujutsu/SKILL.md".source = ./skills/jujutsu/SKILL.md;
+    "${piDir}/skills/jujutsu/references".source = ./skills/jujutsu/references;
+    "${piDir}/skills/improve/SKILL.md".source = ./skills/improve/SKILL.md;
+    "${piDir}/skills/improve/references".source = ./skills/improve/references;
+    "${piDir}/skills/nix/SKILL.md".source = ./skills/nix/SKILL.md;
+    "${piDir}/skills/nix-refactor/SKILL.md".source = ./skills/nix-refactor/SKILL.md;
+    "${piDir}/skills/linux/SKILL.md".source = ./skills/linux/SKILL.md;
+    "${piDir}/skills/invest/SKILL.md".source = ./skills/invest/SKILL.md;
+    "${piDir}/skills/personal-tools/SKILL.md".source = ./skills/personal-tools/SKILL.md;
+    "${piDir}/skills/screenshot/SKILL.md".source = ./skills/screenshot/SKILL.md;
     "${piDir}/skills/lumis/SKILL.md".source = ./skills/lumis/SKILL.md;
     "${piDir}/skills/browser/SKILL.md".source = ./skills/browser/SKILL.md;
     "${piDir}/skills/browser/scripts".source = ./skills/browser/scripts;

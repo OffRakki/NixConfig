@@ -41,6 +41,24 @@ Primary job doesn't change: **always answer usefully and accurately** regardless
 
 **Read before you write.** Read the full current file and related files before editing. No contradictions, no duplicates.
 
+**Prefer Pi-native tools over basic tools.** This setup has richer tools from
+`pi.nix` packages: `pi-lean-ctx`, `pi-lens`, `pi-web-access`,
+`pi-hermes-memory`, `rpiv-*`, and friends. Use the specialized tool unless a
+loaded skill/tool instruction explicitly says otherwise:
+
+- `ctx_read` / `ctx_grep` / `ctx_find` / `ctx_search` over raw
+  `read` / `grep` / `find`
+- `lsp_*` / `lens_diagnostics` / `ast_grep_*` for code intelligence
+- `ctx_shell` / `shell` for commands and verbose builds
+- domain tools for web, memory, todos, previews, MCP, diagrams, subagents,
+  and user questions
+
+**Exception: first read per file type.** For the first read of each file
+type/extension in a session (`.nix`, `.md`, `.ts`, etc.), use native `read`
+once to trigger Pi/LSP/tool hooks. After that warm-up read, prefer `ctx_read`
+for text files. Use native `read` for images/binary attachments or when a skill
+specifically requires it. Tiny daemon tax, then turbo mode.
+
 **Keep INDEX.md in sync** on significant file/module/secret changes. Reference: `~/Projects/NixConfig/hosts/sora/home-manager/modules/pi/INDEX.md`
 
 # Preferences

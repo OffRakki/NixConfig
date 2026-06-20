@@ -66,7 +66,7 @@ for the job.
 
 | Need | Preferred tool(s) | Notes |
 |---|---|---|
-| Read known file | `read` for native Pi/LSP hooks; `ctx_read` for cached/token-efficient reads | For Nix LSP warmup, use native `read` on a `.nix` file first. |
+| Read known text file | Native `read` once per extension; then `ctx_read` | See note below. |
 | Search files/text | `ctx_find`, `ctx_grep`, `ctx_search` | Use `ctx_*` instead of raw `find/rg` for compact output unless a skill requires bash. |
 | Semantic/code pattern search | `ast_grep_search`, `ctx_semantic_search`, `lsp_navigation` | Use AST/LSP for code intelligence; grep is fallback. |
 | Code diagnostics | `lsp_diagnostics`, `lens_diagnostics` | Check edited files before builds; `lens_diagnostics mode=all` before done. |
@@ -83,6 +83,11 @@ for the job.
 | Cross-session coordination | `intercom` | Use for local Pi sessions and subagent bridge coordination. |
 | Diagrams | `drawio` skill | Load the skill; produce real `.drawio` when asked for diagrams. |
 | Security audit | piolium skills (`audit`, `semgrep`, `codeql`, etc.) | Load matching security skill before scanning/reviewing. |
+
+Read note: the first native read warms Pi/LSP/tool hooks for that extension
+(`.nix`, `.md`, `.ts`, etc.). After that, prefer cached/token-efficient
+`ctx_read`. Use native `read` for images/binary attachments or when a skill
+explicitly requires it.
 
 ## Editing skills and agents to use tools
 
