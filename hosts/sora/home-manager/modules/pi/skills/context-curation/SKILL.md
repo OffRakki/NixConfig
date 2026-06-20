@@ -12,7 +12,9 @@ The pi context system has two layers:
 
 ## Tools for curation
 
-This skill uses several tools from the installed npm packages:
+This skill uses several tools from the installed npm packages. For the full
+Pi package/tool inventory and source-of-truth paths, load the `pi-tools` skill
+instead of duplicating that inventory here.
 
 - **`memory`** — save durable facts broken out of context.md into skill files.
   Use `target='failure'` with `category` to save what didn't work.
@@ -81,6 +83,11 @@ Don't merge if they describe different workflows or have distinct trigger condit
 5. Rebuild.
 
 ## Updating context vs skills
+
+When updating skills or agents to teach them about Pi runtime tools, first load
+`pi-tools` and add only the domain-relevant tool guidance to each target file.
+Avoid copy-pasting the full inventory everywhere; stale tool docs are little
+paper cuts with a chainsaw.
 
 | Context change | File |
 |---------------|------|
