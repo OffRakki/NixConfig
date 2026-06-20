@@ -51,10 +51,14 @@ in {
     ];
 
     settings = {
-      defaultProvider = "deepseek";
-      defaultModel = "deepseek-v4-flash";
+      defaultProvider = "openai-codex";
+      defaultModel = "gpt-5.5";
       defaultThinkingLevel = "high";
       theme = "gruvbox-dark-hard";
+      enabledModels = [
+        "gpt*"
+        "deepseek*"
+      ];
 
       quietStartup = false;
       collapseChangelog = true;
@@ -123,27 +127,6 @@ in {
 
     models = {
       providers = {
-        openai = {
-          baseUrl = "https://api.openai.com/v1";
-          api = "openai-completions";
-          apiKey = "!cat ${osConfig.sops.secrets.openaiApiKey.path}";
-          models = [
-            {
-              id = "gpt-4o-mini";
-              name = "GPT-4o Mini";
-              input = ["text"];
-              contextWindow = 128000;
-              maxTokens = 16384;
-            }
-            {
-              id = "gpt-5.4-mini";
-              name = "GPT-5.4 Mini";
-              input = ["text"];
-              contextWindow = 128000;
-              maxTokens = 16384;
-            }
-          ];
-        };
         hyper = {
           baseUrl = "https://hyper.charm.land/v1";
           apiKey = "!cat ${osConfig.sops.secrets.hyperApiKey.path}";
@@ -190,111 +173,6 @@ in {
                 medium = null;
                 high = "high";
                 xhigh = "xhigh";
-              };
-            }
-            {
-              id = "gemma-4-26b-a4b-it";
-              name = "Gemma 4 26B A4B";
-              reasoning = true;
-              input = ["text"];
-              contextWindow = 256000;
-              maxTokens = 25600;
-              cost = {
-                input = 0;
-                output = 0;
-                cacheRead = 0;
-                cacheWrite = 0;
-              };
-            }
-            {
-              id = "glm-5";
-              name = "GLM-5";
-              reasoning = true;
-              input = ["text"];
-              contextWindow = 202752;
-              maxTokens = 20275;
-              cost = {
-                input = 0;
-                output = 0;
-                cacheRead = 0;
-                cacheWrite = 0;
-              };
-            }
-            {
-              id = "glm-5.1";
-              name = "GLM 5.1";
-              reasoning = true;
-              input = ["text" "image"];
-              contextWindow = 202800;
-              maxTokens = 64000;
-              cost = {
-                input = 0;
-                output = 0;
-                cacheRead = 0;
-                cacheWrite = 0;
-              };
-              thinkingLevelMap = {
-                off = null;
-                minimal = null;
-                low = "low";
-                medium = "medium";
-                high = "high";
-              };
-            }
-            {
-              id = "gpt-oss-120b";
-              name = "gpt-oss-120b";
-              reasoning = true;
-              input = ["text"];
-              contextWindow = 131072;
-              maxTokens = 13107;
-              cost = {
-                input = 0;
-                output = 0;
-                cacheRead = 0;
-                cacheWrite = 0;
-              };
-              thinkingLevelMap = {
-                off = null;
-                minimal = null;
-                low = "low";
-                medium = "medium";
-                high = "high";
-              };
-            }
-            {
-              id = "kimi-k2.5";
-              name = "Kimi K2.5";
-              reasoning = true;
-              input = ["text"];
-              contextWindow = 262144;
-              maxTokens = 26214;
-              cost = {
-                input = 0;
-                output = 0;
-                cacheRead = 0;
-                cacheWrite = 0;
-              };
-            }
-            {
-              id = "kimi-k2.6";
-              name = "Kimi K2.6";
-              reasoning = true;
-              input = ["text" "image"];
-              contextWindow = 262000;
-              maxTokens = 262000;
-              cost = {
-                input = 0;
-                output = 0;
-                cacheRead = 0;
-                cacheWrite = 0;
-              };
-              thinkingLevelMap = {
-                off = null;
-                minimal = null;
-                low = "low";
-                medium = "medium";
-                high = "high";
               };
             }
           ];
@@ -387,12 +265,24 @@ in {
     cp -f ${configFile} "$HOME/.config/lean-ctx/config.toml"
   '';
 
-  # Patch pi-powerline-footer cost display to show 4 decimal places
+  # Patch pi-lens to exclude Onedrive FUSE mount (prevents freeze when starting pi from ~/)
+  # Onedrive is a FUSE mount via rclone; pi-lens walks into it during startup scans
+  # and blocks on __fuse_simple_request, freezing the entire process.
   home.activation.patchPowerlineCostDisplay = ''
     SEG_FILE="$HOME/.pi/agent/npm/node_modules/pi-powerline-footer/segments.ts"
     if [ -f "$SEG_FILE" ]; then
       if grep -q 'cost.toFixed(2)' "$SEG_FILE"; then
         ${pkgs.gnused}/bin/sed -i 's/cost\.toFixed(2)/cost.toFixed(4)/g' "$SEG_FILE"
+      fi
+    fi
+  '';
+
+  # Patch pi-lens EXCLUDED_DIRS to skip Onedrive FUSE mount
+  home.activation.patchLensExcludedDirs = ''
+    FILE="$HOME/.pi/agent/npm/node_modules/pi-lens/dist/clients/file-utils.js"
+    if [ -f "$FILE" ]; then
+      if ! grep -q '"Onedrive"' "$FILE"; then
+        ${pkgs.gnused}/bin/sed -i '/"vendors"/a\    "Onedrive", // FUSE mount (rclone) — blocks __fuse_simple_request on startup scan' "$FILE"
       fi
     fi
   '';

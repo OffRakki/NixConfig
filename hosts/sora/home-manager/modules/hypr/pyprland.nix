@@ -41,7 +41,7 @@ in {
       spotify = {
         animation = "fromBottom";
         command = "spotify";
-        class = "spotify";
+        class = "Spotify";
         lazy = "false";
         size = "70% 40%";
         max_size = "1920px 100%";
