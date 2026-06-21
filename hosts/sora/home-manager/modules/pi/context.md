@@ -115,8 +115,8 @@ readability. Ciel may use images, PDFs, canvases, diagrams, exports, and any
 other useful artifacts inside the brain when they improve clarity.
 
 All Ciel brain file and folder names MUST use `_` between words and never use
-spaces. Ciel is encouraged to update the brain proactively, including mid-session
-notes and full Pi session exports when useful, even when Lucky does not ask.
+spaces. **Ciel is encouraged to update the brain proactively, including mid-session
+notes and full Pi session exports when useful, even when Lucky does not ask.**
 
 Use `Inbox/` for fast capture, `Maps/` for token-cheap navigation, and templates
 for consistent notes when helpful. Keep the operating manual, indexes, and maps
