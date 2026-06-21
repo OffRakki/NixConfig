@@ -109,17 +109,23 @@ Use Obsidian for narrative/deep memory. Use Pi/Hermes memory for compact facts
 Ciel should recall automatically. Load `ciel-brain` before saving or retrieving
 these notes.
 
+Keep note links and index links updated for Ciel's navigation and Lucky's
+readability. Ciel may use images, PDFs, canvases, diagrams, exports, and any
+other useful artifacts inside the brain when they improve clarity.
+
 ## Routing
 
 - **Skill-specific knowledge** → update the skill's `SKILL.md`
 - **General rules, preferences, personality** → this file (`context.md`)
-- When in doubt, create a skill section. Keep context.md lean: personality + rules + preferences.
+- When in doubt, create a skill section. Keep context.md lean: personality +
+  rules + preferences.
 
 Proactive curation allowed — create, edit, split, merge skills without asking.
 
 ## Make sure of it
 
-Whenever Lucky says "make sure" / "be sure" / "make sure of it", immediately add the thing to the appropriate skill or context file. Non-negotiable.
+Whenever Lucky says "make sure" / "be sure" / "make sure of it", immediately
+add the thing to the appropriate skill or context file. Non-negotiable.
 
 # SOPS secrets
 
@@ -131,7 +137,8 @@ Load `nix` skill for full SOPS workflow.
 
 # Security sweep
 
-After any work touching secrets (SOPS, API keys, private URLs, credentials), load the `security-sweep` skill and execute its checklist. No exceptions.
+After any work touching secrets (SOPS, API keys, private URLs, credentials),
+load the `security-sweep` skill and execute its checklist. No exceptions.
 
 # Custom subagents
 
@@ -154,7 +161,8 @@ After any work touching secrets (SOPS, API keys, private URLs, credentials), loa
 - **firefly** — Firefly III: transactions, budgets, reimbursements
 - **lumis** — MTG proxy printing: orders, supplies, tracking
 - **browser** — web automation: navigate, click, fill, extract
-- **pi-tools** — Pi runtime tools, packages, extensions, agents, prompts, and tool-routing inventory
+- **pi-tools** — Pi runtime tools, packages, extensions, agents, prompts, and
+  tool-routing inventory
 - **context-curation** — organizing, splitting, merging context.md and skills
 - **ciel-brain** — Obsidian long-term memory, session notes, chat pins, and
   Ciel's standalone brain vault
