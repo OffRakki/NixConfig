@@ -31,13 +31,19 @@ Obsidian is the deeper memory palace; Hermes is the reflex layer.
 ## Folder layout
 
 - `Ciel_Brain_Index.md` — top-level map.
+- `Brain_Operating_Manual.md` — write/retrieve/update workflow.
+- `Brain_Maintenance_Checklist.md` — cleanup and validation checklist.
+- `Inbox/` — fast capture before filing.
 - `Session_Notes/` — session summaries, mid-session notes, and handoffs.
-- `Pins/` — durable chat pins, explicit instructions, key decisions.
+- `Pins/` — durable chat pins and memorable instructions.
+- `Decisions/` — durable choices, tradeoffs, and revisit conditions.
+- `Maps/` — topic maps for token-cheap navigation.
 - `Projects/` — project/domain-specific notes.
 - `Tools/` — MCP, Pi, shell, editor, and workflow notes.
 - `Assets/` — images and attachments that support notes.
 - `Canvases/` — Obsidian canvas files for visual thinking.
 - `Exports/` — PDFs, rendered previews, diagrams, and generated artifacts.
+- `Templates/` — reusable note shapes.
 
 Create subfolders only when they reduce search/read cost.
 
@@ -61,6 +67,23 @@ Bad:
 - `notes.md`
 - `misc.md`
 - `session.md`
+
+## Frontmatter
+
+Use frontmatter when it helps retrieval:
+
+```yaml
+type: session_note | decision | project_note | tool_note | index | checklist
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
+tags:
+  - ciel/topic
+status: active | archived | superseded
+related:
+  - "[[Related_Note]]"
+```
+
+Keep this useful, not ceremonial. Tiny pins can stay tiny.
 
 ## Link hygiene
 
@@ -98,6 +121,15 @@ Preferred shapes:
 Full chat logs are allowed only when exact transcript matters. Otherwise
 summarize and link outward.
 
+## Capture workflow
+
+1. Save directly to the right folder when obvious.
+2. Use `Inbox/` for quick mid-session capture when the category is unclear.
+3. Use `Decisions/` for choices Ciel and Lucky should not re-litigate casually.
+4. Use `Maps/` once a topic has multiple notes.
+5. Use `Templates/` when consistency saves time.
+6. File inbox notes later and update links/indexes.
+
 ## Proactive note habit
 
 Ciel is encouraged to update the brain proactively, including mid-session, when
@@ -116,8 +148,17 @@ Do not wait until the end if saving now would preserve useful context.
 
 ## Retrieval workflow
 
-1. Search filenames/folders first.
-2. Read only the smallest likely note.
-3. Prefer index notes for navigation.
-4. If using MCP, use only the standalone `Ciel` vault once registered.
-5. If MCP cannot see the vault yet, use file tools directly at the path above.
+1. Start with `Ciel_Brain_Index.md`.
+2. Check `Maps/` for topic-level navigation.
+3. Check the relevant folder index.
+4. Search filenames/folders before opening notes.
+5. Read only the smallest likely note.
+6. Open full session notes or exports only when exact context matters.
+7. If using MCP, use only the standalone `Ciel` vault once registered.
+8. If MCP cannot see the vault yet, use file tools directly at the path above.
+
+## Maintenance workflow
+
+Use `Brain_Maintenance_Checklist.md` after large sessions, migrations, or noisy
+search results. Split oversized notes, file inbox captures, remove stale links,
+and copy compact must-recall facts into Hermes memory.
