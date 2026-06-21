@@ -398,6 +398,7 @@ in {
     "${piDir}/prompts/nix-rebuild.md".source = ./prompts/nix-rebuild.md;
     "${piDir}/prompts/nix-audit.md".source = ./prompts/nix-audit.md;
     "${piDir}/prompts/commit.md".source = ./prompts/commit.md;
+    "${piDir}/prompts/ponder.md".source = ./prompts/ponder.md;
 
     # Themes
     "${piDir}/themes/catppuccin-mocha.json".source = ./themes/catppuccin-mocha.json;
