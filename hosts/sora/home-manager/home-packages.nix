@@ -1,7 +1,7 @@
 {pkgs, ...}: {
   home.packages = with pkgs; [
+    codex
     drawio
-    crush
     gnome-sound-recorder
     quickshell
     kdePackages.qttools

@@ -195,6 +195,129 @@ in {
   # Place models, extensions, skills, prompts, themes, and APPEND_SYSTEM.md into ~/.pi/agent/
   home.file = {
     # Extensions (notify only)
+    ".local/bin/codex-rate-limits-cache" = {
+      executable = true;
+      text = ''
+        #!${pkgs.python3}/bin/python3
+        import json
+        import os
+        import select
+        import subprocess
+        import sys
+        import time
+        from pathlib import Path
+
+        request_init = {
+            "jsonrpc": "2.0",
+            "id": "init-1",
+            "method": "initialize",
+            "params": {
+                "clientInfo": {
+                    "name": "ciel-quota-harvester",
+                    "title": "Ciel quota harvester",
+                    "version": "0",
+                },
+                "capabilities": {
+                    "experimentalApi": True,
+                    "requestAttestation": False,
+                    "optOutNotificationMethods": [],
+                },
+            },
+        }
+        request_limits = {
+            "jsonrpc": "2.0",
+            "id": "rl-1",
+            "method": "account/rateLimits/read",
+            "params": None,
+        }
+
+        def convert(window):
+            if not window:
+                return None
+            return {
+                "usedPercent": window.get("usedPercent"),
+                "windowDurationMins": window.get("windowDurationMins"),
+                "resetsAt": window.get("resetsAt"),
+            }
+
+        def main():
+            payload = json.dumps(request_init) + "\n" + json.dumps(request_limits) + "\n"
+            proc = subprocess.Popen(
+                [os.environ.get("CODEX_BIN", "codex"), "app-server", "--stdio"],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+
+            assert proc.stdin is not None
+            assert proc.stdout is not None
+            proc.stdin.write(payload)
+            proc.stdin.flush()
+
+            poller = select.poll()
+            poller.register(proc.stdout, select.POLLIN)
+            deadline = time.time() + 45
+            result = None
+            while time.time() < deadline:
+                if not poller.poll(250):
+                    if proc.poll() is not None:
+                        break
+                    continue
+                line = proc.stdout.readline()
+                if not line:
+                    continue
+                try:
+                    msg = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if msg.get("id") == "rl-1":
+                    if "error" in msg:
+                        raise RuntimeError(json.dumps(msg["error"]))
+                    result = msg.get("result")
+                    break
+
+            proc.terminate()
+            try:
+                proc.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+
+            if result is None:
+                stderr = proc.stderr.read() if proc.stderr is not None else ""
+                raise RuntimeError("Codex rate-limit response timed out. " + stderr[-1000:])
+
+            snapshot = (result.get("rateLimitsByLimitId") or {}).get("codex") or result.get("rateLimits") or {}
+            primary = snapshot.get("primary")
+            secondary = snapshot.get("secondary")
+            cache = {
+                "updatedAt": int(time.time() * 1000),
+                "planType": snapshot.get("planType"),
+                "fiveHour": convert(primary),
+                "weekly": convert(secondary),
+                "rateLimits": {
+                    "primary": convert(primary),
+                    "secondary": convert(secondary),
+                },
+                "rateLimitsByLimitId": result.get("rateLimitsByLimitId"),
+            }
+
+            out = Path(os.environ.get("CODEX_RATE_LIMIT_CACHE", str(Path.home() / ".cache/codex-rate-limits.json")))
+            out.parent.mkdir(parents=True, exist_ok=True)
+            tmp = out.with_suffix(out.suffix + ".tmp")
+            tmp.write_text(json.dumps(cache, indent=2) + "\n")
+            tmp.replace(out)
+
+        if __name__ == "__main__":
+            try:
+                main()
+            except Exception as exc:
+                print("codex-rate-limits-cache: " + str(exc), file=sys.stderr)
+                sys.exit(1)
+      '';
+    };
+
+    # Extensions (notify only)
     "${piDir}/extensions/notify.ts".source = ./extensions/notify.ts;
 
     "${piDir}/skills/firefly/SKILL.md".source = ./skills/firefly/SKILL.md;
@@ -302,6 +425,28 @@ in {
     # Web search config — Gemini API key + browser cookie access
     "${piDir}/../web-search.json".source =
       config.lib.file.mkOutOfStoreSymlink osConfig.sops.secrets.webSearchJson.path;
+  };
+
+  systemd.user.services.codex-rate-limits-cache = {
+    Unit.Description = "Refresh Codex rate-limit cache for Pi powerline";
+    Service = {
+      Type = "oneshot";
+      ExecStart = "%h/.local/bin/codex-rate-limits-cache";
+      Environment = [
+        "PATH=%h/.local/bin:%h/.nix-profile/bin:/etc/profiles/per-user/rakki/bin:/run/current-system/sw/bin"
+      ];
+    };
+  };
+
+  systemd.user.timers.codex-rate-limits-cache = {
+    Unit.Description = "Refresh Codex rate-limit cache for Pi powerline";
+    Timer = {
+      OnBootSec = "1min";
+      OnUnitActiveSec = "5min";
+      AccuracySec = "30s";
+      Unit = "codex-rate-limits-cache.service";
+    };
+    Install.WantedBy = ["timers.target"];
   };
 
   # lean-ctx config — disable shell allowlist so pi can run any command
