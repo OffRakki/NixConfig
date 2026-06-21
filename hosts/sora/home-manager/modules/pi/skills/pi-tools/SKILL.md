@@ -45,6 +45,9 @@ Declared in `pi.nix -> programs.pi-coding-agent.settings.packages`:
 | `pi-hermes-memory` | `memory`, `memory_search`, `session_search`, `skill_manage`; durable memory and procedural skills. |
 | `pi-invisible-continue` | Invisible continuation extension; resumes agent loops without visible prompt pollution. |
 | `pi-subagents` | `subagent` tool, `/run`/chains/parallel workflows, packaged role agents/prompts. |
+| `pi-agent-browser-native` | `agent_browser` tool for agent-owned browser automation, QA/repro flows, screenshots/download artifacts; requires upstream `agent-browser` on `PATH` for actual browser runs. |
+| `@plannotator/pi-extension` | Visual plan/review annotation UI via Plannotator commands. Optional workflow UX; remove if it competes with rpiv plan/review flow. |
+| `pi-tally` | Local Pi prompt/message usage counters, `/tally` command, and optional footer tally. |
 | `@juicesharp/rpiv-pi` | `discover/research/design/plan/implement/validate/code-review/...` skills and workflow agents. |
 | `@juicesharp/rpiv-todo` | `todo` tool, live overlay task list. Use for multi-step task tracking. |
 | `@juicesharp/rpiv-args` | Skill argument interpolation (`$1`, `$ARGUMENTS`, shell substitutions) for slash-invoked skills. |
@@ -54,6 +57,10 @@ Declared in `pi.nix -> programs.pi-coding-agent.settings.packages`:
 Commented-out optional package entries currently left in `pi.nix` for easy re-enable:
 `pi-chrome`, `@ogulcancelik/pi-sketch`, `@juicesharp/rpiv-btw`,
 `@juicesharp/rpiv-i18n`, and `@juicesharp/rpiv-workflow`.
+
+Browser note: Lucky uses Firefox as the daily browser, so prefer
+`pi-agent-browser-native` for isolated/agent-owned browser automation. Only
+re-enable `pi-chrome` if Lucky wants a separate Chrome/Chromium profile bridge.
 
 ## Tool routing cheat sheet
 
