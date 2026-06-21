@@ -48,8 +48,12 @@ in {
 
     # Node is needed for npm-based pi package installs.
     # nodejs includes npm in recent nixpkgs versions.
+    # Some Pi packages ship native npm deps (e.g. node-pty), so keep the
+    # minimal node-gyp toolchain on PATH for Pi package install/reload.
     extraPackages = with pkgs; [
       nodejs
+      gnumake
+      gcc
       inputs.llm-agents.packages.${pkgs.system}.lean-ctx
     ];
 
