@@ -105,7 +105,8 @@ in {
         "npm:pi-intercom"
         "npm:pi-lean-ctx"
         "npm:pi-lens"
-        "npm:pi-chrome"
+        # Optional/disabled: browser skill currently uses local Playwright helper instead.
+        # "npm:pi-chrome"
         "npm:pi-simplify"
         "npm:pi-namespace"
         "npm:pi-ask-user"
@@ -116,14 +117,15 @@ in {
         "npm:pi-hermes-memory"
         "npm:pi-invisible-continue"
         "npm:pi-subagents"
-        "npm:@ogulcancelik/pi-sketch"
+        # Optional/disabled: rarely used extras; left here for easy re-enable.
+        # "npm:@ogulcancelik/pi-sketch"
         "npm:@juicesharp/rpiv-pi"
         "npm:@juicesharp/rpiv-todo"
         "npm:@juicesharp/rpiv-args"
-        "npm:@juicesharp/rpiv-btw"
-        "npm:@juicesharp/rpiv-i18n"
-        "npm:@juicesharp/rpiv-advisor"
-        "npm:@juicesharp/rpiv-workflow"
+        # "npm:@juicesharp/rpiv-btw"
+        # "npm:@juicesharp/rpiv-i18n"
+        # "npm:@juicesharp/rpiv-advisor"
+        # "npm:@juicesharp/rpiv-workflow"
         "npm:@juicesharp/rpiv-ask-user-question"
 
         # May not be that useful (will substitute for a line in context.md)

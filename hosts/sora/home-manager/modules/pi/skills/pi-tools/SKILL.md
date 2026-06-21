@@ -36,7 +36,6 @@ Declared in `pi.nix -> programs.pi-coding-agent.settings.packages`:
 | `pi-intercom` | `intercom` tool + skill for coordinating multiple local Pi sessions. |
 | `pi-lean-ctx` | `ctx_*`, `lean_ctx`, graph/knowledge/session/search helpers; token-efficient reads/searches/build output. |
 | `pi-lens` | LSP diagnostics/navigation plus `ast_grep_*` and `lens_diagnostics`. Primary code-intelligence layer. |
-| `pi-chrome` | Browser profile bridge package. The local `browser` skill currently uses its own Playwright helper, so verify the active browser path before assuming profile sharing. |
 | `pi-simplify` | Extension that reviews recently changed code for clarity/maintainability. |
 | `pi-namespace` | Namespaces tools/skills and may prefix tools by extension. |
 | `pi-ask-user` | `ask_user` tool and `ask-user` skill for one focused decision handshake. |
@@ -47,17 +46,16 @@ Declared in `pi.nix -> programs.pi-coding-agent.settings.packages`:
 | `pi-hermes-memory` | `memory`, `memory_search`, `session_search`, `skill_manage`; durable memory and procedural skills. |
 | `pi-invisible-continue` | Invisible continuation extension; resumes agent loops without visible prompt pollution. |
 | `pi-subagents` | `subagent` tool, `/run`/chains/parallel workflows, packaged role agents/prompts. |
-| `@ogulcancelik/pi-sketch` | Browser sketch pad package for visual sketching when available. |
-| `@tintinweb/pi-subagents` | Additional Claude-style autonomous subagent extension. Prefer the active `subagent` tool and documented project agents. |
 | `@juicesharp/rpiv-pi` | `discover/research/design/plan/implement/validate/code-review/...` skills and workflow agents. |
 | `@juicesharp/rpiv-todo` | `todo` tool, live overlay task list. Use for multi-step task tracking. |
 | `@juicesharp/rpiv-args` | Skill argument interpolation (`$1`, `$ARGUMENTS`, shell substitutions) for slash-invoked skills. |
-| `@juicesharp/rpiv-btw` | `/btw` side-question command that avoids polluting the main thread. |
-| `@juicesharp/rpiv-i18n` | Locale registry, `/languages`, and `--locale` support for rpiv skills. |
-| `@juicesharp/rpiv-advisor` | `advisor` tool for stronger-model second opinions before major work/done. |
-| `@juicesharp/rpiv-workflow` | Typed multi-stage workflow DSL. Read rpiv-workflow docs before authoring workflows. |
 | `@juicesharp/rpiv-ask-user-question` | `ask_user_question` structured questionnaire tool (2-4 options, 1-4 questions). |
 | `@vigolium/piolium` | Security audit/review skills: Semgrep, CodeQL, vuln reports, threat models, etc. |
+
+Commented-out optional package entries currently left in `pi.nix` for easy re-enable:
+`pi-chrome`, `@ogulcancelik/pi-sketch`, `@juicesharp/rpiv-btw`,
+`@juicesharp/rpiv-i18n`, `@juicesharp/rpiv-advisor`, and
+`@juicesharp/rpiv-workflow`.
 
 ## Tool routing cheat sheet
 
@@ -73,7 +71,7 @@ for the job.
 | Build/test/side effects | `ctx_shell` or `shell` | Use `ctx_shell` for verbose Nix/build output. |
 | Web research/docs | `web_search`, `code_search`, `fetch_content` | Use `queries:[...]` for broad web research; use `code_search` for API usage. |
 | URL/page/PDF/video content | `fetch_content`, then `get_search_content` if needed | For YouTube/video, pass the user question as `prompt`. |
-| Logged-in/browser UI | `browser` skill (`pi-chrome`) | Use only when JS/session/cookies/UI interaction matter. |
+| Logged-in/browser UI | `browser` skill | Uses the local Playwright helper; `pi-chrome` is currently commented out in `pi.nix`. |
 | User decision | `ask_user` or `ask_user_question` | Use `ask_user` for one focused question; `ask_user_question` for structured 1-4 question forms. |
 | Persistent memory/procedures | `memory`, `memory_search`, `session_search`, `skill_manage` | Save durable preferences/conventions; don't save temporary task state. |
 | Task list | `todo` | Exactly one in-progress task; mark completion immediately. |
