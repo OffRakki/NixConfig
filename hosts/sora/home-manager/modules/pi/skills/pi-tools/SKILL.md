@@ -22,9 +22,8 @@ read/edit the NixConfig sources instead.
 | Themes | `hosts/sora/home-manager/modules/pi/themes/*.json` |
 | Runtime package install dir | `~/.pi/agent/npm/` (read-only for source changes) |
 
-When creating a new Nix-managed skill, register it in `pi.nix` under `home.file`,
-add a routing line in `context.md` if it needs proactive loading, and update
-`INDEX.md` when the module surface changes.
+When creating a new Nix-managed skill, register it in `pi.nix` under `home.file`
+and add a routing line in `context.md` if it needs proactive loading.
 
 ## Installed Pi packages
 
