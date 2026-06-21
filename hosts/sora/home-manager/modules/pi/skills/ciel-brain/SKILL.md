@@ -35,6 +35,9 @@ Obsidian is the deeper memory palace; Hermes is the reflex layer.
 - `Pins/` — durable chat pins, explicit instructions, key decisions.
 - `Projects/` — project/domain-specific notes.
 - `Tools/` — MCP, Pi, shell, editor, and workflow notes.
+- `Assets/` — images and attachments that support notes.
+- `Canvases/` — Obsidian canvas files for visual thinking.
+- `Exports/` — PDFs, rendered previews, diagrams, and generated artifacts.
 
 Create subfolders only when they reduce search/read cost.
 
@@ -53,6 +56,29 @@ Bad:
 - `notes.md`
 - `misc.md`
 - `session.md`
+
+## Link hygiene
+
+Keep links useful for both Ciel and Lucky:
+
+- Use Obsidian `[[Wiki Links]]` where they improve navigation.
+- Update `Ciel Brain Index.md` and relevant category indexes when creating,
+  moving, renaming, or deleting notes.
+- Prefer MCP note move/rename tools when available so links stay intact.
+- If moving files directly, search for old links and update them manually.
+- Add short context around links so pages remain readable outside graph view.
+
+## Artifacts
+
+Ciel may use anything useful inside this brain: images, PDFs, canvases,
+diagrams, exports, screenshots, and generated previews.
+
+Rules:
+
+- Store supporting files in `Assets/`, `Canvases/`, or `Exports/`.
+- Use descriptive artifact names, same as Markdown notes.
+- Add or update a Markdown note explaining why an artifact exists.
+- Do not dump large artifacts without a small navigational note.
 
 ## Size rules
 
