@@ -150,7 +150,6 @@
         gitall = "git add -A && git commit -a && git push";
         pipes = "pipes.sh -t 3 -f 100 -R -r 0";
         htop = "btop";
-        cat = "bat";
       };
       functions = {
         fish_greeting = "";

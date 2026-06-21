@@ -522,7 +522,7 @@ in {
       general = {
         avatarImage = "${../../../../assets/svgs/pelucio.jpg}";
         radiusRatio = 0.75;
-        lockOnSuspend = false;
+        lockOnSuspend = true;
         showScreenCorners = false;
         forceBlackScreenCorneros = false;
         scaleRatio = 1;
