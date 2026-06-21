@@ -330,10 +330,37 @@ in {
   # Onedrive is a FUSE mount via rclone; pi-lens walks into it during startup scans
   # and blocks on __fuse_simple_request, freezing the entire process.
   home.activation.patchPowerlineCostDisplay = ''
-    SEG_FILE="$HOME/.pi/agent/npm/node_modules/pi-powerline-footer/segments.ts"
+    FOOTER_DIR="$HOME/.pi/agent/npm/node_modules/pi-powerline-footer"
+    SEG_FILE="$FOOTER_DIR/segments.ts"
+    TYPES_FILE="$FOOTER_DIR/types.ts"
+    PRESETS_FILE="$FOOTER_DIR/presets.ts"
+
     if [ -f "$SEG_FILE" ]; then
+      ${pkgs.gnused}/bin/sed -i '/^import { readFileSync, statSync } from "node:fs";$/d' "$SEG_FILE"
+
       if grep -q 'cost.toFixed(2)' "$SEG_FILE"; then
         ${pkgs.gnused}/bin/sed -i 's/cost\.toFixed(2)/cost.toFixed(4)/g' "$SEG_FILE"
+      fi
+
+      if false && ! grep -q 'codexLimitsSegment' "$SEG_FILE"; then
+        ${pkgs.perl}/bin/perl -0pi -e 's#import \{ hostname as osHostname \} from "node:os";#import { readFileSync, statSync } from "node:fs";\nimport { hostname as osHostname } from "node:os";#' "$SEG_FILE"
+        ${pkgs.perl}/bin/perl -0pi -e 's#function formatDuration\(ms: number\): string \{.*?\n\}#function formatDuration(ms: number): string {\n  const seconds = Math.floor(ms / 1000);\n  const minutes = Math.floor(seconds / 60);\n  const hours = Math.floor(minutes / 60);\n\n  if (hours > 0) return `''${hours}h''${minutes % 60}m`;\n  if (minutes > 0) return `''${minutes}m''${seconds % 60}s`;\n  return `''${seconds}s`;\n}\n\ntype CodexLimitWindow = { usedPercent?: number; resetsAt?: number | null; windowDurationMins?: number | null };\ntype CodexRateLimitCache = {\n  updatedAt?: number;\n  fiveHour?: CodexLimitWindow | null;\n  weekly?: CodexLimitWindow | null;\n  rateLimits?: { primary?: CodexLimitWindow | null; secondary?: CodexLimitWindow | null } | null;\n  rateLimitsByLimitId?: Record<string, { primary?: CodexLimitWindow | null; secondary?: CodexLimitWindow | null } | null> | null;\n};\n\nfunction normalizeCodexTimestamp(value: number | null | undefined): number | null {\n  if (!Number.isFinite(value ?? NaN)) return null;\n  return (value as number) < 100000000000 ? (value as number) * 1000 : (value as number);\n}\n\nfunction readCodexRateLimitCache(): CodexRateLimitCache | null {\n  const home = process.env.HOME || process.env.USERPROFILE;\n  if (!home) return null;\n\n  const files = [\n    `''${home}/.cache/codex-rate-limits.json`,\n    `''${home}/.codex/rate-limits.json`,\n    `''${home}/.codex/rate_limits.json`,\n  ];\n\n  for (const file of files) {\n    try {\n      const stat = statSync(file);\n      if (Date.now() - stat.mtimeMs > 15 * 60 * 1000) continue;\n      return JSON.parse(readFileSync(file, "utf8")) as CodexRateLimitCache;\n    } catch {\n      // Missing or malformed cache: hide the segment. The footer render path must stay cheap.\n    }\n  }\n\n  return null;\n}\n\nfunction findCodexWindow(cache: CodexRateLimitCache, minutes: number): CodexLimitWindow | null {\n  const candidates: Array<CodexLimitWindow | null | undefined> = [\n    minutes === 300 ? cache.fiveHour : cache.weekly,\n    cache.rateLimits?.primary,\n    cache.rateLimits?.secondary,\n  ];\n\n  for (const limits of Object.values(cache.rateLimitsByLimitId ?? {})) {\n    candidates.push(limits?.primary, limits?.secondary);\n  }\n\n  return candidates.find((window) => window?.windowDurationMins === minutes && Number.isFinite(window.usedPercent ?? NaN)) ?? null;\n}\n\nfunction formatCodexWindow(label: string, window: CodexLimitWindow | null): string | null {\n  if (!window || !Number.isFinite(window.usedPercent ?? NaN)) return null;\n\n  const used = Math.max(0, Math.min(999, window.usedPercent as number));\n  const resetAt = normalizeCodexTimestamp(window.resetsAt);\n  const reset = resetAt && resetAt > Date.now() ? `/''${formatDuration(resetAt - Date.now())}` : "";\n  return `''${label}''${used.toFixed(0)}%''${reset}`;\n}\n#s' "$SEG_FILE"
+        ${pkgs.perl}/bin/perl -0pi -e 's#const costSegment: StatusLineSegment = \{.*?\n\};#const costSegment: StatusLineSegment = {\n  id: "cost",\n  render(ctx) {\n    const { cost } = ctx.usageStats;\n    const usingSubscription = ctx.usingSubscription;\n\n    if (!cost && !usingSubscription) {\n      return { content: "", visible: false };\n    }\n\n    const costDisplay = usingSubscription ? "(sub)" : `$''${cost.toFixed(4)}`;\n    return { content: color(ctx, "cost", costDisplay), visible: true };\n  },\n};\n\nconst codexLimitsSegment: StatusLineSegment = {\n  id: "codex_limits",\n  render(ctx) {\n    if (ctx.model?.id && !ctx.model.id.startsWith("gpt")) {\n      return { content: "", visible: false };\n    }\n\n    const cache = readCodexRateLimitCache();\n    if (!cache) return { content: "", visible: false };\n\n    const fiveHour = findCodexWindow(cache, 300) ?? cache.fiveHour ?? null;\n    const weekly = findCodexWindow(cache, 10080) ?? cache.weekly ?? null;\n    const parts = [formatCodexWindow("5h ", fiveHour), formatCodexWindow("7d ", weekly)].filter(Boolean);\n    if (parts.length === 0) return { content: "", visible: false };\n\n    return { content: color(ctx, "quota", `codex ''${parts.join(" ")}`), visible: true };\n  },\n};#s' "$SEG_FILE"
+        ${pkgs.perl}/bin/perl -0pi -e 's#  cost: costSegment,\n#  cost: costSegment,\n  codex_limits: codexLimitsSegment,\n#' "$SEG_FILE"
+      fi
+    fi
+
+    if [ -f "$TYPES_FILE" ] && ! grep -q '"codex_limits"' "$TYPES_FILE"; then
+      ${pkgs.perl}/bin/perl -0pi -e 's#  \| "tokens"\n#  | "tokens"\n  | "quota"\n#' "$TYPES_FILE"
+      ${pkgs.perl}/bin/perl -0pi -e 's#  \| "cost"\n#  | "cost"\n  | "codex_limits"\n#' "$TYPES_FILE"
+    fi
+
+    if [ -f "$PRESETS_FILE" ]; then
+      if ! grep -q 'quota: "warning"' "$PRESETS_FILE"; then
+        ${pkgs.perl}/bin/perl -0pi -e 's#  cost: "warning",\n#  cost: "warning",\n  quota: "warning",\n#' "$PRESETS_FILE"
+      fi
+      if ! grep -q '"codex_limits"' "$PRESETS_FILE"; then
+        ${pkgs.perl}/bin/perl -0pi -e 's#"cache_write", "cost", "context_pct"#"cache_write", "cost", "codex_limits", "context_pct"#' "$PRESETS_FILE"
       fi
     fi
   '';
