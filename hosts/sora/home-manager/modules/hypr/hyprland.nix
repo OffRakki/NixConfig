@@ -339,8 +339,14 @@ in {
         -----------------------------------------------------------------------
 
         ------------------------------- ENV VARS -------------------------------
+        hl.env( "GTK_THEME", "catppuccin-mocha-lavender-standard+normal" )
         hl.env( "HYPRCURSOR_THEME", "catppuccin-mocha-peach-cursors" )
         hl.env( "HYPRCURSOR_SIZE", "24" )
+        hl.env( "XCURSOR_THEME", "catppuccin-mocha-peach-cursors" )
+        hl.env( "XCURSOR_SIZE", "24" )
+        hl.env( "QT_QPA_PLATFORM", "wayland;xcb" )
+        hl.env( "QT_QPA_PLATFORMTHEME", "gtk3" )
+        hl.env( "QT_STYLE_OVERRIDE", "gtk3" )
         hl.env( "XDG_CURRENT_DESKTOP", "Hyprland" )
         hl.env( "XDG_SESSION_DESKTOP", "Hyprland" )
         ----------------------------------------------------------------
@@ -352,10 +358,10 @@ in {
 
         ------------------------------- EXEC ON START -------------------------------
         hl.on("hyprland.start", function ()
-          hl.exec_cmd("sleep 2 && systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP QT_QPA_PLATFORM QT_QPA_PLATFORMTHEME")
-          hl.exec_cmd("sleep 2 && dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP QT_QPA_PLATFORM QT_QPA_PLATFORMTHEME")
-          hl.exec_cmd("sleep 3 && noctalia-shell")
-          hl.exec_cmd("sleep 2 && pkill -9 quickshell && noctalia-shell")
+          local desktop_env = "WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_DATA_DIRS GTK_THEME HYPRCURSOR_THEME HYPRCURSOR_SIZE XCURSOR_THEME XCURSOR_SIZE QT_QPA_PLATFORM QT_QPA_PLATFORMTHEME QT_STYLE_OVERRIDE"
+          hl.exec_cmd("sleep 2 && systemctl --user import-environment " .. desktop_env)
+          hl.exec_cmd("sleep 2 && dbus-update-activation-environment --systemd " .. desktop_env)
+          hl.exec_cmd("sleep 4 && systemctl --user restart xsettingsd && pkill -9 quickshell || true; sleep 1; noctalia-shell")
           hl.exec_cmd("clipse -listen")
           hl.exec_cmd("nm-applet --indicator")
           hl.exec_cmd("openrgb --startminimized")

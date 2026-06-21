@@ -1,7 +1,7 @@
 {pkgs, ...}: let
   term = "kitty";
   topMargin = 40;
-  bottomMargin = 0;
+  bottomMargin = 10;
 in {
   xdg.enable = true;
   xdg.configFile."pypr/config.toml".source = (pkgs.formats.toml {}).generate "pyprland-config" {
@@ -43,7 +43,7 @@ in {
         command = "spotify";
         class = "Spotify";
         lazy = "false";
-        size = "70% 40%";
+        size = "60% 45%";
         max_size = "1920px 100%";
         margin = bottomMargin;
         unfocus = "hide";

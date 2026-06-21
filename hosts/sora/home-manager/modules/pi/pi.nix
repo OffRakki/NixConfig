@@ -63,7 +63,7 @@ in {
         "deepseek*"
       ];
 
-      quietStartup = false;
+      quietStartup = true;
       collapseChangelog = true;
 
       compaction = {
@@ -106,8 +106,6 @@ in {
         "npm:pi-intercom"
         "npm:pi-lean-ctx"
         "npm:pi-lens"
-        # Optional/disabled: browser skill currently uses local Playwright helper instead.
-        # "npm:pi-chrome"
         "npm:pi-simplify"
         "npm:pi-namespace"
         "npm:pi-ask-user"
@@ -118,18 +116,12 @@ in {
         "npm:pi-hermes-memory"
         "npm:pi-invisible-continue"
         "npm:pi-subagents"
-        # Optional/disabled: rarely used extras; left here for easy re-enable.
-        # "npm:@ogulcancelik/pi-sketch"
         "npm:@juicesharp/rpiv-pi"
         "npm:@juicesharp/rpiv-todo"
         "npm:@juicesharp/rpiv-args"
-        # "npm:@juicesharp/rpiv-btw"
-        # "npm:@juicesharp/rpiv-i18n"
-        # "npm:@juicesharp/rpiv-workflow"
         "npm:@juicesharp/rpiv-ask-user-question"
-
-        # May not be that useful (will substitute for a line in context.md)
-        #"git:github.com/DietrichGebert/ponytail"
+        # Maybe not the needed as already have browser skill.
+        # "npm:pi-chrome"
       ];
     };
 
@@ -460,160 +452,159 @@ in {
     cp -f ${configFile} "$HOME/.config/lean-ctx/config.toml"
   '';
 
-
   # Patch pi-lens to exclude Onedrive FUSE mount (prevents freeze when starting pi from ~/)
   # Onedrive is a FUSE mount via rclone; pi-lens walks into it during startup scans
   # and blocks on __fuse_simple_request, freezing the entire process.
   home.activation.patchPowerlineCostDisplay = ''
-    FOOTER_DIR="$HOME/.pi/agent/npm/node_modules/pi-powerline-footer"
-    export SEG_FILE="$FOOTER_DIR/segments.ts"
-    export TYPES_FILE="$FOOTER_DIR/types.ts"
-    export PRESETS_FILE="$FOOTER_DIR/presets.ts"
+        FOOTER_DIR="$HOME/.pi/agent/npm/node_modules/pi-powerline-footer"
+        export SEG_FILE="$FOOTER_DIR/segments.ts"
+        export TYPES_FILE="$FOOTER_DIR/types.ts"
+        export PRESETS_FILE="$FOOTER_DIR/presets.ts"
 
-    if [ -f "$SEG_FILE" ] || [ -f "$TYPES_FILE" ] || [ -f "$PRESETS_FILE" ]; then
-      ${pkgs.python3}/bin/python3 <<'PY'
-from pathlib import Path
-import os
+        if [ -f "$SEG_FILE" ] || [ -f "$TYPES_FILE" ] || [ -f "$PRESETS_FILE" ]; then
+          ${pkgs.python3}/bin/python3 <<'PY'
+    from pathlib import Path
+    import os
 
-seg = Path(os.environ["SEG_FILE"])
-types = Path(os.environ["TYPES_FILE"])
-presets = Path(os.environ["PRESETS_FILE"])
+    seg = Path(os.environ["SEG_FILE"])
+    types = Path(os.environ["TYPES_FILE"])
+    presets = Path(os.environ["PRESETS_FILE"])
 
-if seg.exists():
-    text = seg.read_text()
-    text = text.replace("cost.toFixed(2)", "cost.toFixed(4)")
-    text = text.replace('return renderCustomSegment(id, ctx);', 'return renderCustomSegment(id as `custom:''${string}`, ctx);')
-    text = text.replace('const segment = SEGMENTS[id];', 'const segment = SEGMENTS[id as BuiltinStatusLineSegmentId];')
-    if "formatContextTokens" not in text:
-        text = text.replace(
-            """function formatDuration(ms: number): string {""",
-            """function formatContextTokens(n: number): string {
-  if (n < 1000) return n.toString();
-  if (n < 1000000) {
-    const value = n / 1000;
-    return `''${Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1)}k`;
-  }
-  const value = n / 1000000;
-  return `''${Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1)}M`;
-}
-
-function formatDuration(ms: number): string {""",
-        )
-    text = text.replace(
-        '    const text = `''${pct.toFixed(1)}%/''${formatTokens(window)}''${autoIcon}`;',
-        '    const used = Math.round((pct / 100) * window);\n    const text = `''${formatContextTokens(used)}/''${formatContextTokens(window)}''${autoIcon}`;',
-    )
-    if "codexLimitsSegment" not in text:
-        text = text.replace(
-            'import { hostname as osHostname } from "node:os";',
-            'import { readFileSync, statSync } from "node:fs";\nimport { hostname as osHostname } from "node:os";',
-        )
-        marker = "// ═══════════════════════════════════════════════════════════════════════════\n// Segment Implementations"
-        helper = """
-
-type CodexLimitWindow = { usedPercent?: number; resetsAt?: number | null; windowDurationMins?: number | null };
-type CodexRateLimitCache = {
-  fiveHour?: CodexLimitWindow | null;
-  weekly?: CodexLimitWindow | null;
-  rateLimits?: { primary?: CodexLimitWindow | null; secondary?: CodexLimitWindow | null } | null;
-  rateLimitsByLimitId?: Record<string, { primary?: CodexLimitWindow | null; secondary?: CodexLimitWindow | null } | null> | null;
-};
-
-function normalizeCodexTimestamp(value: number | null | undefined): number | null {
-  if (!Number.isFinite(value ?? NaN)) return null;
-  return (value as number) < 100000000000 ? (value as number) * 1000 : (value as number);
-}
-
-function readCodexRateLimitCache(): CodexRateLimitCache | null {
-  const home = process.env.HOME || process.env.USERPROFILE;
-  if (!home) return null;
-
-  const files = [
-    home + "/.cache/codex-rate-limits.json",
-    home + "/.codex/rate-limits.json",
-    home + "/.codex/rate_limits.json",
-  ];
-
-  for (const file of files) {
-    try {
-      const stat = statSync(file);
-      if (Date.now() - stat.mtimeMs > 15 * 60 * 1000) continue;
-      return JSON.parse(readFileSync(file, "utf8")) as CodexRateLimitCache;
-    } catch {
-      // Missing or malformed cache: hide the segment. The footer render path must stay cheap.
-    }
-  }
-
-  return null;
-}
-
-function findCodexWindow(cache: CodexRateLimitCache, minutes: number): CodexLimitWindow | null {
-  const candidates: Array<CodexLimitWindow | null | undefined> = [
-    minutes === 300 ? cache.fiveHour : cache.weekly,
-    cache.rateLimits?.primary,
-    cache.rateLimits?.secondary,
-  ];
-
-  for (const limits of Object.values(cache.rateLimitsByLimitId ?? {})) {
-    candidates.push(limits?.primary, limits?.secondary);
-  }
-
-  return candidates.find((window) => window?.windowDurationMins === minutes && Number.isFinite(window.usedPercent ?? NaN)) ?? null;
-}
-
-function formatCodexWindow(label: string, window: CodexLimitWindow | null): string | null {
-  if (!window || !Number.isFinite(window.usedPercent ?? NaN)) return null;
-
-  const used = Math.max(0, Math.min(999, window.usedPercent as number));
-  const resetAt = normalizeCodexTimestamp(window.resetsAt);
-  const reset = resetAt && resetAt > Date.now() ? "/" + formatDuration(resetAt - Date.now()) : "";
-  return label + used.toFixed(0) + "%" + reset;
-}
-"""
-        text = text.replace(marker, helper + "\n" + marker)
-        codex_segment = """
-const codexLimitsSegment: StatusLineSegment = {
-  id: "codex_limits",
-  render(ctx) {
-    if (ctx.model?.id && !ctx.model.id.startsWith("gpt")) {
-      return { content: "", visible: false };
+    if seg.exists():
+        text = seg.read_text()
+        text = text.replace("cost.toFixed(2)", "cost.toFixed(4)")
+        text = text.replace('return renderCustomSegment(id, ctx);', 'return renderCustomSegment(id as `custom:''${string}`, ctx);')
+        text = text.replace('const segment = SEGMENTS[id];', 'const segment = SEGMENTS[id as BuiltinStatusLineSegmentId];')
+        if "formatContextTokens" not in text:
+            text = text.replace(
+                """function formatDuration(ms: number): string {""",
+                """function formatContextTokens(n: number): string {
+      if (n < 1000) return n.toString();
+      if (n < 1000000) {
+        const value = n / 1000;
+        return `''${Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1)}k`;
+      }
+      const value = n / 1000000;
+      return `''${Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1)}M`;
     }
 
-    const cache = readCodexRateLimitCache();
-    if (!cache) return { content: "", visible: false };
+    function formatDuration(ms: number): string {""",
+            )
+        text = text.replace(
+            '    const text = `''${pct.toFixed(1)}%/''${formatTokens(window)}''${autoIcon}`;',
+            '    const used = Math.round((pct / 100) * window);\n    const text = `''${formatContextTokens(used)}/''${formatContextTokens(window)}''${autoIcon}`;',
+        )
+        if "codexLimitsSegment" not in text:
+            text = text.replace(
+                'import { hostname as osHostname } from "node:os";',
+                'import { readFileSync, statSync } from "node:fs";\nimport { hostname as osHostname } from "node:os";',
+            )
+            marker = "// ═══════════════════════════════════════════════════════════════════════════\n// Segment Implementations"
+            helper = """
 
-    const fiveHour = findCodexWindow(cache, 300) ?? cache.fiveHour ?? null;
-    const weekly = findCodexWindow(cache, 10080) ?? cache.weekly ?? null;
-    const parts = [formatCodexWindow("5h ", fiveHour), formatCodexWindow("7d ", weekly)].filter(Boolean);
-    if (parts.length === 0) return { content: "", visible: false };
+    type CodexLimitWindow = { usedPercent?: number; resetsAt?: number | null; windowDurationMins?: number | null };
+    type CodexRateLimitCache = {
+      fiveHour?: CodexLimitWindow | null;
+      weekly?: CodexLimitWindow | null;
+      rateLimits?: { primary?: CodexLimitWindow | null; secondary?: CodexLimitWindow | null } | null;
+      rateLimitsByLimitId?: Record<string, { primary?: CodexLimitWindow | null; secondary?: CodexLimitWindow | null } | null> | null;
+    };
 
-    return { content: color(ctx, "quota", "codex " + parts.join(" ")), visible: true };
-  },
-};
+    function normalizeCodexTimestamp(value: number | null | undefined): number | null {
+      if (!Number.isFinite(value ?? NaN)) return null;
+      return (value as number) < 100000000000 ? (value as number) * 1000 : (value as number);
+    }
 
-"""
-        text = text.replace('const contextPctSegment: StatusLineSegment = {', codex_segment + 'const contextPctSegment: StatusLineSegment = {')
-        text = text.replace("  cost: costSegment,\n", "  cost: costSegment,\n  codex_limits: codexLimitsSegment,\n")
-    seg.write_text(text)
+    function readCodexRateLimitCache(): CodexRateLimitCache | null {
+      const home = process.env.HOME || process.env.USERPROFILE;
+      if (!home) return null;
 
-if types.exists():
-    text = types.read_text()
-    text = text.replace('  | "cost"\n  | "codex_limits"\n  | "tokens"', '  | "cost"\n  | "tokens"')
-    if '| "quota"' not in text:
-        text = text.replace('  | "tokens"\n', '  | "tokens"\n  | "quota"\n')
-    if '  | "codex_limits"\n  | "context_pct"' not in text:
-        text = text.replace('  | "cost"\n  | "context_pct"', '  | "cost"\n  | "codex_limits"\n  | "context_pct"')
-    types.write_text(text)
+      const files = [
+        home + "/.cache/codex-rate-limits.json",
+        home + "/.codex/rate-limits.json",
+        home + "/.codex/rate_limits.json",
+      ];
 
-if presets.exists():
-    text = presets.read_text()
-    if 'quota: "warning"' not in text:
-        text = text.replace('  cost: "warning",\n', '  cost: "warning",\n  quota: "warning",\n')
-    if '"codex_limits"' not in text:
-        text = text.replace('"cache_write", "cost", "context_pct"', '"cache_write", "cost", "codex_limits", "context_pct"')
-    presets.write_text(text)
-PY
-    fi
+      for (const file of files) {
+        try {
+          const stat = statSync(file);
+          if (Date.now() - stat.mtimeMs > 15 * 60 * 1000) continue;
+          return JSON.parse(readFileSync(file, "utf8")) as CodexRateLimitCache;
+        } catch {
+          // Missing or malformed cache: hide the segment. The footer render path must stay cheap.
+        }
+      }
+
+      return null;
+    }
+
+    function findCodexWindow(cache: CodexRateLimitCache, minutes: number): CodexLimitWindow | null {
+      const candidates: Array<CodexLimitWindow | null | undefined> = [
+        minutes === 300 ? cache.fiveHour : cache.weekly,
+        cache.rateLimits?.primary,
+        cache.rateLimits?.secondary,
+      ];
+
+      for (const limits of Object.values(cache.rateLimitsByLimitId ?? {})) {
+        candidates.push(limits?.primary, limits?.secondary);
+      }
+
+      return candidates.find((window) => window?.windowDurationMins === minutes && Number.isFinite(window.usedPercent ?? NaN)) ?? null;
+    }
+
+    function formatCodexWindow(label: string, window: CodexLimitWindow | null): string | null {
+      if (!window || !Number.isFinite(window.usedPercent ?? NaN)) return null;
+
+      const used = Math.max(0, Math.min(999, window.usedPercent as number));
+      const resetAt = normalizeCodexTimestamp(window.resetsAt);
+      const reset = resetAt && resetAt > Date.now() ? "/" + formatDuration(resetAt - Date.now()) : "";
+      return label + used.toFixed(0) + "%" + reset;
+    }
+    """
+            text = text.replace(marker, helper + "\n" + marker)
+            codex_segment = """
+    const codexLimitsSegment: StatusLineSegment = {
+      id: "codex_limits",
+      render(ctx) {
+        if (ctx.model?.id && !ctx.model.id.startsWith("gpt")) {
+          return { content: "", visible: false };
+        }
+
+        const cache = readCodexRateLimitCache();
+        if (!cache) return { content: "", visible: false };
+
+        const fiveHour = findCodexWindow(cache, 300) ?? cache.fiveHour ?? null;
+        const weekly = findCodexWindow(cache, 10080) ?? cache.weekly ?? null;
+        const parts = [formatCodexWindow("5h ", fiveHour), formatCodexWindow("7d ", weekly)].filter(Boolean);
+        if (parts.length === 0) return { content: "", visible: false };
+
+        return { content: color(ctx, "quota", "codex " + parts.join(" ")), visible: true };
+      },
+    };
+
+    """
+            text = text.replace('const contextPctSegment: StatusLineSegment = {', codex_segment + 'const contextPctSegment: StatusLineSegment = {')
+            text = text.replace("  cost: costSegment,\n", "  cost: costSegment,\n  codex_limits: codexLimitsSegment,\n")
+        seg.write_text(text)
+
+    if types.exists():
+        text = types.read_text()
+        text = text.replace('  | "cost"\n  | "codex_limits"\n  | "tokens"', '  | "cost"\n  | "tokens"')
+        if '| "quota"' not in text:
+            text = text.replace('  | "tokens"\n', '  | "tokens"\n  | "quota"\n')
+        if '  | "codex_limits"\n  | "context_pct"' not in text:
+            text = text.replace('  | "cost"\n  | "context_pct"', '  | "cost"\n  | "codex_limits"\n  | "context_pct"')
+        types.write_text(text)
+
+    if presets.exists():
+        text = presets.read_text()
+        if 'quota: "warning"' not in text:
+            text = text.replace('  cost: "warning",\n', '  cost: "warning",\n  quota: "warning",\n')
+        if '"codex_limits"' not in text:
+            text = text.replace('"cache_write", "cost", "context_pct"', '"cache_write", "cost", "codex_limits", "context_pct"')
+        presets.write_text(text)
+    PY
+        fi
   '';
 
   # Patch pi-lens EXCLUDED_DIRS to skip Onedrive FUSE mount
