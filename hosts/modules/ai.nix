@@ -11,13 +11,13 @@
       openFirewall = true;
     };
     ollama = {
-      enable = true;
+      enable = false;
       package = pkgs.ollama-cuda;
-      loadModels = [
-        "llama3.1"
-        "deepseek-r1:8b"
-        "qwen3:14b"
-      ];
+      # loadModels = [
+      #   "llama3.1"
+      #   "deepseek-r1:8b"
+      #   "qwen3:14b"
+      # ];
       environmentVariables = {
         OLLAMA_KEEP_ALIVE = "20s";
       };
