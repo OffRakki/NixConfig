@@ -2988,7 +2988,7 @@
         const totalInv = P + PMT * months + irrTotal;
 
         // Product definitions. Poupança ignores TR by default; add it manually to
-        // SELIC assumptions if Lucky wants that particular bureaucratic goblin.
+        // SELIC assumptions if Lucky wants that particular bureaucratic wrinkle.
         const poupancaRate =
           selic > 8.5 ? (Math.pow(1.005, 12) - 1) * 100 : 0.7 * selic;
         const products = [
