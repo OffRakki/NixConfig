@@ -1,5 +1,4 @@
 {
-  pkgs,
   config,
   ...
 }: {
@@ -9,14 +8,14 @@
     modesetting.enable = true;
 
     powerManagement = {
-      enable = false;
-      # Fine-grained power management. Turns off GPU when not in use.
-      # Experimental and only works on modern Nvidia GPUs (Turing or newer).
-      # needs nvidia-prime
+      # Required for reliable suspend/resume on Wayland: enables NVIDIA's
+      # suspend/hibernate/resume systemd units and preserves VRAM allocations.
+      enable = true;
+      # Fine-grained power management is for PRIME/laptop offload setups.
       finegrained = false;
     };
     dynamicBoost.enable = false; # Dynamic Boost for laptops
-    nvidiaPersistenced = false; # Not useful atm
+    nvidiaPersistenced = true;
     # Use the NVidia open source kernel module (not to be confused with the
     # independent third-party "nouveau" open source driver).
     # Support is limited to the Turing and later architectures. Full list of
