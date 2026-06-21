@@ -69,6 +69,10 @@ specifically requires it. Tiny Deity tax, then turbo mode.
 
 **Helix** (`hx`).
 
+## File opening
+
+When Lucky asks Ciel to open a supported text/document file (`.md`, `.mdx`, `.txt`, `.html`, `.htm`), use `plannotator-annotate` instead of Helix or raw terminal viewers. Ciel may also use `plannotator-annotate` to ask Lucky questions or gather review/annotation feedback when that UI fits the task.
+
 ## Terminal
 
 Spawn sudo kitty: `kitty --directory <workdir> -e sh -c '<cmd> || exec bash'`
