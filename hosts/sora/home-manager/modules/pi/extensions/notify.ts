@@ -1,5 +1,6 @@
+// @ts-nocheck -- Pi extension types live in Pi's runtime npm tree, not this Nix source tree.
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 
 export default function (pi: ExtensionAPI) {
   pi.on("agent_end", async (_event, ctx) => {
@@ -8,8 +9,15 @@ export default function (pi: ExtensionAPI) {
       const short = session
         ? session.split("/").pop()?.replace(".jsonl", "").slice(0, 8)
         : "?";
-      execSync(
-        `notify-send --app-name="Pi" --icon=dialog-information --urgency=normal "ciel — Task complete" "session: ${short}"`,
+      execFileSync(
+        "notify-send",
+        [
+          "--app-name=Pi",
+          "--icon=dialog-information",
+          "--urgency=normal",
+          "ciel — Task complete",
+          `session: ${short}`,
+        ],
         { timeout: 3000 }
       );
     } catch {
@@ -22,8 +30,14 @@ export default function (pi: ExtensionAPI) {
     handler: async (args, ctx) => {
       const summary = args || "Done";
       try {
-        execSync(
-          `notify-send --app-name="Pi" --icon=dialog-information --urgency=normal "ciel — ${summary}"`,
+        execFileSync(
+          "notify-send",
+          [
+            "--app-name=Pi",
+            "--icon=dialog-information",
+            "--urgency=normal",
+            `ciel — ${summary}`,
+          ],
           { timeout: 3000 }
         );
       } catch {
