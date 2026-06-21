@@ -50,10 +50,14 @@ in {
     # nodejs includes npm in recent nixpkgs versions.
     # Some Pi packages ship native npm deps (e.g. node-pty), so keep the
     # minimal node-gyp toolchain on PATH for Pi package install/reload.
+    # agent-browser is the upstream binary used by pi-agent-browser-native;
+    # Chromium is the isolated automation browser it drives via CDP.
     extraPackages = with pkgs; [
       nodejs
       gnumake
       gcc
+      agent-browser
+      chromium
       inputs.llm-agents.packages.${pkgs.system}.lean-ctx
     ];
 
@@ -347,6 +351,12 @@ in {
 
     # Pi-specific skill
     "${piDir}/skills/nix-auditor/SKILL.md".source = ./skills/nix-auditor/SKILL.md;
+
+    # Browser automation config (pi-agent-browser-native)
+    ".pi/config/pi-agent-browser-native/config.json".text = builtins.toJSON {
+      version = 1;
+      browser.executablePath = "${pkgs.chromium}/bin/chromium";
+    };
 
     # MCP servers (Pi-owned global override)
     "${piDir}/mcp.json".text = builtins.toJSON {
