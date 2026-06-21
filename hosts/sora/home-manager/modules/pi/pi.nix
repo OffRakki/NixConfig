@@ -24,6 +24,7 @@ in {
       ".config/lean-ctx"
       ".local/share/lean-ctx"
       ".pi-lens"
+      ".codex"
     ];
   };
 
@@ -494,6 +495,25 @@ if seg.exists():
     text = text.replace("cost.toFixed(2)", "cost.toFixed(4)")
     text = text.replace('return renderCustomSegment(id, ctx);', 'return renderCustomSegment(id as `custom:''${string}`, ctx);')
     text = text.replace('const segment = SEGMENTS[id];', 'const segment = SEGMENTS[id as BuiltinStatusLineSegmentId];')
+    if "formatContextTokens" not in text:
+        text = text.replace(
+            """function formatDuration(ms: number): string {""",
+            """function formatContextTokens(n: number): string {
+  if (n < 1000) return n.toString();
+  if (n < 1000000) {
+    const value = n / 1000;
+    return `''${Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1)}k`;
+  }
+  const value = n / 1000000;
+  return `''${Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1)}M`;
+}
+
+function formatDuration(ms: number): string {""",
+        )
+    text = text.replace(
+        '    const text = `''${pct.toFixed(1)}%/''${formatTokens(window)}''${autoIcon}`;',
+        '    const used = Math.round((pct / 100) * window);\n    const text = `''${formatContextTokens(used)}/''${formatContextTokens(window)}''${autoIcon}`;',
+    )
     if "codexLimitsSegment" not in text:
         text = text.replace(
             'import { hostname as osHostname } from "node:os";',
