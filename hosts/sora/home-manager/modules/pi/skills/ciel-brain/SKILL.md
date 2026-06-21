@@ -12,8 +12,8 @@ Ciel's Obsidian brain lives at:
 /home/rakki/sync/geral/Obsidian/Ciel/
 ```
 
-This is a standalone Obsidian vault folder beside `Main` and `Summaries`, not
-inside either vault.
+This is Ciel's only Obsidian vault scope. Do not touch any other Obsidian vault
+unless Lucky explicitly overrides this for a specific task.
 
 ## Role
 
@@ -30,8 +30,8 @@ Obsidian is the deeper memory palace; Hermes is the reflex layer.
 
 ## Folder layout
 
-- `Ciel Brain Index.md` — top-level map.
-- `Session Notes/` — end-of-session summaries and handoffs.
+- `Ciel_Brain_Index.md` — top-level map.
+- `Session_Notes/` — session summaries, mid-session notes, and handoffs.
 - `Pins/` — durable chat pins, explicit instructions, key decisions.
 - `Projects/` — project/domain-specific notes.
 - `Tools/` — MCP, Pi, shell, editor, and workflow notes.
@@ -45,14 +45,19 @@ Create subfolders only when they reduce search/read cost.
 
 Use filenames that reveal the note's purpose without opening it.
 
+Hard rule: Ciel brain files and folders MUST use `_` between words. Never use
+spaces in filenames or folder names.
+
 Good:
 
-- `2026-06-21 - NixConfig Pi Memory Setup.md`
-- `Obsidian MCP Vault Boundaries.md`
-- `Always Use Obsidian Ciel Brain.md`
+- `2026-06-21_NixConfig_Pi_Memory_Setup.md`
+- `Obsidian_MCP_Vault_Boundaries.md`
+- `Always_Use_Obsidian_Ciel_Brain.md`
 
 Bad:
 
+- `2026-06-21 - NixConfig Pi Memory Setup.md`
+- `Obsidian MCP Vault Boundaries.md`
 - `notes.md`
 - `misc.md`
 - `session.md`
@@ -62,7 +67,7 @@ Bad:
 Keep links useful for both Ciel and Lucky:
 
 - Use Obsidian `[[Wiki Links]]` where they improve navigation.
-- Update `Ciel Brain Index.md` and relevant category indexes when creating,
+- Update `Ciel_Brain_Index.md` and relevant category indexes when creating,
   moving, renaming, or deleting notes.
 - Prefer MCP note move/rename tools when available so links stay intact.
 - If moving files directly, search for old links and update them manually.
@@ -93,22 +98,26 @@ Preferred shapes:
 Full chat logs are allowed only when exact transcript matters. Otherwise
 summarize and link outward.
 
-## End-of-session habit
+## Proactive note habit
 
-Near the end of useful sessions, decide whether to save:
+Ciel is encouraged to update the brain proactively, including mid-session, when
+new durable knowledge appears. Do not wait for Lucky to ask.
 
-1. a session summary in `Session Notes/`
+When useful, save:
+
+1. mid-session notes or session summaries in `Session_Notes/`
 2. one or more pins in `Pins/`
 3. project notes in `Projects/`
 4. tool/workflow notes in `Tools/`
-5. compact Hermes memory for facts that must be agent-native
+5. full Pi session exports when exact context matters
+6. compact Hermes memory for facts that must be agent-native
 
-Do not wait for Lucky to ask when the session produced durable knowledge.
+Do not wait until the end if saving now would preserve useful context.
 
 ## Retrieval workflow
 
 1. Search filenames/folders first.
 2. Read only the smallest likely note.
 3. Prefer index notes for navigation.
-4. If using MCP, prefer the standalone `Ciel` vault once registered.
+4. If using MCP, use only the standalone `Ciel` vault once registered.
 5. If MCP cannot see the vault yet, use file tools directly at the path above.

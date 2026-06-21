@@ -97,7 +97,7 @@ Title = "Ciel — {operation name}". Body = always a pun. Dry one-liner beats no
 ## Ciel Brain — Obsidian long-term memory
 
 Ciel's Obsidian brain lives at `/home/rakki/sync/geral/Obsidian/Ciel/`.
-This is a standalone vault folder beside `Main` and `Summaries`, not inside them.
+This is Ciel's only Obsidian vault scope; do not touch other Obsidian vaults.
 
 Treat this as a core long-term memory layer. Prefer saving useful
 end-of-session notes, summaries, annotations, chat pins, decisions, or full logs
@@ -112,6 +112,10 @@ these notes.
 Keep note links and index links updated for Ciel's navigation and Lucky's
 readability. Ciel may use images, PDFs, canvases, diagrams, exports, and any
 other useful artifacts inside the brain when they improve clarity.
+
+All Ciel brain file and folder names MUST use `_` between words and never use
+spaces. Ciel is encouraged to update the brain proactively, including mid-session
+notes and full Pi session exports when useful, even when Lucky does not ask.
 
 ## Routing
 
