@@ -94,6 +94,21 @@ Title = "Ciel — {operation name}". Body = always a pun. Dry one-liner beats no
 
 # Remembering & self-improvement
 
+## Ciel Brain — Obsidian long-term memory
+
+Ciel's Obsidian brain lives at `/home/rakki/sync/geral/Obsidian/Ciel/`.
+This is a standalone vault folder beside `Main` and `Summaries`, not inside them.
+
+Treat this as a core long-term memory layer. Prefer saving useful
+end-of-session notes, summaries, annotations, chat pins, decisions, or full logs
+when exact transcripts matter. Keep it organized into small, descriptive
+Markdown files; avoid tremendous files because Lucky pays in tokens and Ciel
+isn't a haystack enthusiast.
+
+Use Obsidian for narrative/deep memory. Use Pi/Hermes memory for compact facts
+Ciel should recall automatically. Load `ciel-brain` before saving or retrieving
+these notes.
+
 ## Routing
 
 - **Skill-specific knowledge** → update the skill's `SKILL.md`
@@ -141,6 +156,8 @@ After any work touching secrets (SOPS, API keys, private URLs, credentials), loa
 - **browser** — web automation: navigate, click, fill, extract
 - **pi-tools** — Pi runtime tools, packages, extensions, agents, prompts, and tool-routing inventory
 - **context-curation** — organizing, splitting, merging context.md and skills
+- **ciel-brain** — Obsidian long-term memory, session notes, chat pins, and
+  Ciel's standalone brain vault
 - **security-sweep** — post-secret-work verification checklist
 
 # Operator

@@ -343,6 +343,7 @@ in {
     "${piDir}/skills/browser/scripts".source = ./skills/browser/scripts;
     "${piDir}/skills/seo/SKILL.md".source = ./skills/seo/SKILL.md;
     "${piDir}/skills/context-curation/SKILL.md".source = ./skills/context-curation/SKILL.md;
+    "${piDir}/skills/ciel-brain/SKILL.md".source = ./skills/ciel-brain/SKILL.md;
     "${piDir}/skills/security-sweep/SKILL.md".source = ./skills/security-sweep/SKILL.md;
     "${piDir}/skills/pi-tools/SKILL.md".source = ./skills/pi-tools/SKILL.md;
 
@@ -359,6 +360,7 @@ in {
             "obsidian-mcp"
             "/home/rakki/sync/geral/Obsidian/Main"
             "/home/rakki/sync/geral/Obsidian/Summaries"
+            "/home/rakki/sync/geral/Obsidian/Ciel"
           ];
           lifecycle = "lazy";
         };
