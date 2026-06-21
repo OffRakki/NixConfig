@@ -4,16 +4,16 @@
   osConfig,
   inputs,
   ...
-}:
-let
+}: let
   cfg = config.programs.pi-coding-agent;
   piDir = cfg.configDir;
-in
-{
+in {
   # Persist pi state directories — sessions, npm packages, git clones and sets pi to offline mode (no update/telemetry)
   home = {
     sessionVariables = {
       PI_SKIP_VERSION_CHECK = 1;
+      PI_TELEMETRY = 0;
+      PI_CACHE_RETENTION = "long";
     };
     packages = [
       inputs.llm-agents.packages.${pkgs.system}.lean-ctx
@@ -117,7 +117,6 @@ in
         "npm:pi-invisible-continue"
         "npm:pi-subagents"
         "npm:@ogulcancelik/pi-sketch"
-        "npm:@tintinweb/pi-subagents"
         "npm:@juicesharp/rpiv-pi"
         "npm:@juicesharp/rpiv-todo"
         "npm:@juicesharp/rpiv-args"
@@ -168,7 +167,7 @@ in
               id = "deepseek-v4-pro";
               name = "DeepSeek V4 Pro";
               reasoning = true;
-              input = [ "text" ];
+              input = ["text"];
               contextWindow = 1000000;
               maxTokens = 384000;
               cost = {
@@ -304,16 +303,14 @@ in
   };
 
   # lean-ctx config — disable shell allowlist so pi can run any command
-  home.activation.ensureLeanCtxConfig =
-    let
-      configFile = pkgs.writeText "lean-ctx-config" ''
-        shell_allowlist = []
-      '';
-    in
-    ''
-      mkdir -p "$HOME/.config/lean-ctx"
-      cp -f ${configFile} "$HOME/.config/lean-ctx/config.toml"
+  home.activation.ensureLeanCtxConfig = let
+    configFile = pkgs.writeText "lean-ctx-config" ''
+      shell_allowlist = []
     '';
+  in ''
+    mkdir -p "$HOME/.config/lean-ctx"
+    cp -f ${configFile} "$HOME/.config/lean-ctx/config.toml"
+  '';
 
   # Patch pi-lens to exclude Onedrive FUSE mount (prevents freeze when starting pi from ~/)
   # Onedrive is a FUSE mount via rclone; pi-lens walks into it during startup scans
