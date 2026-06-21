@@ -69,6 +69,7 @@ in {
       enabledModels = [
         "gpt*"
         "deepseek*"
+        "qwen*"
       ];
 
       quietStartup = true;
@@ -138,6 +139,32 @@ in {
 
     models = {
       providers = {
+        ollama = {
+          baseUrl = "http://localhost:11434/v1";
+          apiKey = "ollama";
+          api = "openai-completions";
+          compat = {
+            supportsDeveloperRole = false;
+            supportsReasoningEffort = false;
+          };
+          models = [
+            {
+              id = "qwen3:14b";
+              name = "Qwen3 14B (Ollama)";
+              reasoning = true;
+              input = ["text"];
+              contextWindow = 40960;
+              maxTokens = 8192;
+              cost = {
+                input = 0;
+                output = 0;
+                cacheRead = 0;
+                cacheWrite = 0;
+              };
+            }
+          ];
+        };
+
         hyper = {
           baseUrl = "https://hyper.charm.land/v1";
           apiKey = "!cat ${osConfig.sops.secrets.hyperApiKey.path}";
