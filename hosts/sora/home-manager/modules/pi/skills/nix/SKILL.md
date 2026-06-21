@@ -27,8 +27,8 @@ idle timer resets on each file touch). On timeout, just warm again.
 
 ## File Location
 
-For simple file lookups: grep/glob directly in NixConfig.
-For complex tasks: consult INDEX.md at `hosts/sora/home-manager/modules/pi/INDEX.md`.
+Use `ctx_find`, `ctx_grep`, and targeted reads directly in NixConfig.
+Prefer source-of-truth files over generated maps or broad docs.
 
 ## Pi module changes
 
@@ -41,8 +41,7 @@ When adding a Nix-managed Pi skill or agent:
 1. Put the source under `hosts/sora/home-manager/modules/pi/skills/` or `agents/`.
 2. Add the corresponding `home.file."${piDir}/...".source = ...;` entry in `pi.nix`.
 3. Add a routing line to `context.md` if the skill should be proactively loaded.
-4. Update `INDEX.md` if the module surface changed.
-5. Build/check before claiming it is available at runtime.
+4. Build/check before claiming it is available at runtime.
 
 Load `pi-tools` for the installed package/tool inventory.
 

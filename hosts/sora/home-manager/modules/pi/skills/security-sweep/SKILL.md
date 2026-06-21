@@ -13,7 +13,7 @@ After ANY task that touches, reads, edits, searches, adds, removes, decrypts, or
 - Private files (Firefly credentials, CalDAV secrets, mail passwords)
 - Any encrypted or restricted config paths
 
-Run the five-point checklist below immediately and exhaustively.
+Run the four-point checklist below immediately and exhaustively.
 
 ## Checklist
 
@@ -38,10 +38,6 @@ rg -n '(sk-[a-zA-Z0-9]{20,}|AIza[0-9A-Za-z_-]{35}|ghp_[0-9a-zA-Z]{36}|-----BEGIN
 ```
 
 This catches the most common leak patterns. Add more patterns as needed.
-
-### 5. Re-verify INDEX.md
-
-If you added a new secret, sops file, or private reference, make sure INDEX.md was updated (or doesn't need updating).
 
 ## Remediation
 

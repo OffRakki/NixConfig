@@ -11,17 +11,10 @@ A repeatable workflow for reviewing and cleaning up a NixOS flake config.
 
 ### 1. Map the territory
 
-For simple file lookups: grep/glob directly. For complex multi-file work,
-consult INDEX.md at `hosts/sora/home-manager/modules/pi/INDEX.md`
-(from NixConfig root) for the full file listing, keyword map, and import graph.
-
-Key things the index already tells you:
-- Hosts: how many machines, their roles (desktop/server/VM)
-- Module structure: shared vs per-host modules
-- Inputs: what flakes are declared
-- Secrets: sops, age, impermanence
-- WM: Hyprland, KDE, standalone, etc.
-- State: is the repo using `jj`, `git`, or both?
+Use `ctx_find`, `ctx_grep`, `ctx_search`, and targeted reads directly from
+NixConfig source files. For import structure, start from `flake.nix`, host
+`configuration.nix`, home-manager `home.nix`, and relevant `default.nix` files.
+Do not rely on generated index files; they go stale and waste context.
 
 ### 2. Full read
 
@@ -79,6 +72,7 @@ on the same service) or conflicts (same attribute set twice).
    module (e.g. Glance dashboard YAML)
 
 When deduplicating packages between NixOS and home-manager:
+
 - **System level** (`environment.systemPackages`): packages needed before
   login, by system services, or by all users
 - **HM level** (`home.packages`): user-facing tools, GUI apps, dev tools,
@@ -94,6 +88,7 @@ When using `import` with relative paths, count `..` carefully. A common
 mistake is one level too many or too few.
 
 From `hosts/sora/nixos/containers/containers.nix`:
+
 ```
 ../../../modules/foo.nix   # correct: resolves to hosts/modules/foo.nix
 ../../../../modules/foo.nix # WRONG: resolves to modules/foo.nix (above repo root)
@@ -103,6 +98,7 @@ Count: `..` = `containers/`, `../..` = `nixos/`, `../../..` = `sora/`,
 `../../../..` = `hosts/`. So `../../../modules/` = `hosts/modules/`.
 
 The error message when you get it wrong:
+
 ```
 error: getting status of '.../source/modules/foo.nix': No such file or directory
 ```
@@ -120,6 +116,7 @@ Warnings (deprecation notices, catppuccin enrollment, etc.) are fine.
 Errors are not. Fix any evaluation errors before declaring done.
 
 Then format:
+
 ```bash
 nix run nixpkgs#alejandra .
 ```
