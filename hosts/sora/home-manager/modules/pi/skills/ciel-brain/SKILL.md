@@ -26,7 +26,7 @@ Use this vault for long-term, human-readable memory:
 - research notes and narrative context
 
 Use Pi/Hermes memory for compact facts Ciel should recall automatically.
-Obsidian is the deeper memory palace; Hermes is the reflex layer.
+Obsidian is Ciel's Divine Library/Codex/Grimoire; Hermes is the reflex layer.
 
 ## Folder layout
 
