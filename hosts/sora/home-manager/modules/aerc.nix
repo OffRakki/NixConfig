@@ -104,6 +104,95 @@
   '';
 
   mbsyncConf = lib.concatStringsSep "\n\n" (map mkMbsyncAccount accounts);
+
+  mbsyncSerial = pkgs.writeShellScriptBin "mbsync-serial" ''
+    set -euo pipefail
+
+    state_dir="$HOME/.local/state/isync"
+    backup_dir="$state_dir/backups"
+    lock_file="$state_dir/mbsync-serial.lock"
+
+    mkdir -p "$state_dir" "$backup_dir"
+    exec 9>"$lock_file"
+    ${pkgs.util-linux}/bin/flock -n 9 || {
+      echo "mbsync already running; skipping this timer tick" >&2
+      exit 0
+    }
+
+    cleanup_old_quarantines() {
+      ${pkgs.findutils}/bin/find "$backup_dir" -mindepth 1 -maxdepth 1 -mtime +30 -exec ${pkgs.coreutils}/bin/rm -rf -- {} +
+      ${pkgs.findutils}/bin/find "$state_dir" -maxdepth 1 -type f -name "*.corrupt-*" -mtime +30 -delete
+    }
+
+    quarantine_state_artifacts() {
+      local state_file="$1"
+      local stamp backup
+      stamp="$(${pkgs.coreutils}/bin/date +%Y%m%d-%H%M%S)"
+      backup="$backup_dir/$(${pkgs.coreutils}/bin/basename "$state_file").$stamp"
+      mkdir -p "$backup"
+
+      for suffix in "" .journal .new .lock; do
+        if [ -e "$state_file$suffix" ]; then
+          ${pkgs.coreutils}/bin/cp -a "$state_file$suffix" "$backup/"
+        fi
+      done
+
+      if [ -e "$state_file.journal" ]; then
+        ${pkgs.coreutils}/bin/mv "$state_file.journal" "$state_file.journal.corrupt-$stamp"
+      fi
+      ${pkgs.coreutils}/bin/rm -f "$state_file.new" "$state_file.lock"
+      echo "Quarantined isync state artifacts for $state_file; backup: $backup" >&2
+    }
+
+    preflight_channel() {
+      local channel="$1"
+      local state_file journal_size state_size
+
+      while IFS= read -r -d "" state_file; do
+        journal_size="$(${pkgs.coreutils}/bin/stat -c %s "$state_file.journal")"
+        state_size=0
+        [ -e "$state_file" ] && state_size="$(${pkgs.coreutils}/bin/stat -c %s "$state_file")"
+
+        # A journal larger than 1 MiB or 10x the committed state is not normal
+        # for these short timer syncs. Quarantine it before isync replays junk
+        # into an assertion crash loop.
+        if [ "$journal_size" -gt 1048576 ] || { [ "$state_size" -gt 0 ] && [ "$journal_size" -gt $((state_size * 10)) ]; }; then
+          quarantine_state_artifacts "$state_file"
+        fi
+      done < <(${pkgs.findutils}/bin/find "$state_dir" -maxdepth 1 -type f -name ":''${channel}-remote:*_:''${channel}-local:*.journal" -print0)
+    }
+
+    run_channel() {
+      local channel="$1"
+      local log status
+      log="$(${pkgs.coreutils}/bin/mktemp -t "mbsync-$channel.XXXXXX.log")"
+
+      preflight_channel "$channel"
+
+      set +e
+      ${pkgs.isync}/bin/mbsync -c "${config.home.homeDirectory}/.mbsyncrc" "$channel" > >(tee "$log") 2> >(tee -a "$log" >&2)
+      status=$?
+      set -e
+
+      if [ "$status" -eq 134 ] || ${pkgs.gnugrep}/bin/grep -q "cmp_srec_far\|Assertion.*au != bu" "$log"; then
+        echo "mbsync crashed on $channel; quarantining channel journals and retrying once" >&2
+        while IFS= read -r -d "" state_file; do
+          quarantine_state_artifacts "$state_file"
+        done < <(${pkgs.findutils}/bin/find "$state_dir" -maxdepth 1 -type f -name ":''${channel}-remote:*_:''${channel}-local:*" ! -name "*.journal" ! -name "*.new" ! -name "*.lock" ! -name "*.corrupt-*" -print0)
+
+        ${pkgs.isync}/bin/mbsync -c "${config.home.homeDirectory}/.mbsyncrc" "$channel"
+        return
+      fi
+
+      return "$status"
+    }
+
+    cleanup_old_quarantines
+
+    for channel in Main Personal Work; do
+      run_channel "$channel"
+    done
+  '';
 in {
   home.persistence."/persist".directories = [
     ".config/aerc"
@@ -152,12 +241,7 @@ in {
         Type = "oneshot";
         TimeoutStartSec = "15min";
         Environment = "SASL_PATH=${sasl2Plugins}";
-        ExecStart = "${pkgs.writeShellScriptBin "mbsync-serial" ''
-          set -e
-          for channel in Main Personal Work; do
-            ${pkgs.isync}/bin/mbsync -c "${config.home.homeDirectory}/.mbsyncrc" "$channel"
-          done
-        ''}/bin/mbsync-serial";
+        ExecStart = "${mbsyncSerial}/bin/mbsync-serial";
       };
     };
     timers.mbsync = {
