@@ -128,6 +128,7 @@ in {
         "npm:pi-agent-browser-native"
         "npm:@plannotator/pi-extension"
         "npm:pi-tally"
+        "npm:@ff-labs/pi-fff"
         "npm:@juicesharp/rpiv-pi"
         "npm:@juicesharp/rpiv-todo"
         "npm:@juicesharp/rpiv-args"
@@ -698,7 +699,6 @@ in {
                 "  const requestImmediateStatusRender = (options: { deferDuringTyping?: boolean } = {}) => {",
                 """  function updateTokenRate(usage: SessionAssistantUsage | null): void {
         if (!usage || usage.output <= 0 || !streamingStartedAt) {
-          currentTokenRate = null;
           return;
         }
 
@@ -713,13 +713,18 @@ in {
             "    isStreaming = false;\n    liveAssistantUsage = null;\n    currentTokenRate = null;\n    streamingStartedAt = null;\n    stashedEditorText = null;",
         )
         text = text.replace(
-            "    liveAssistantUsage = null;\n    requestImmediateStatusRender({ deferDuringTyping: false });\n  });",
             "    liveAssistantUsage = null;\n    currentTokenRate = null;\n    streamingStartedAt = null;\n    requestImmediateStatusRender({ deferDuringTyping: false });\n  });",
+            "    liveAssistantUsage = null;\n    requestImmediateStatusRender({ deferDuringTyping: false });\n  });",
         )
         text = text.replace(
-            "    isStreaming = true;\n    liveAssistantUsage = null;",
+            "    isStreaming = true;\n    liveAssistantUsage = null;\n    currentTokenRate = null;\n    streamingStartedAt = Date.now();\n    currentTokenRate = null;\n    streamingStartedAt = Date.now();",
             "    isStreaming = true;\n    liveAssistantUsage = null;\n    currentTokenRate = null;\n    streamingStartedAt = Date.now();",
         )
+        if "    isStreaming = true;\n    liveAssistantUsage = null;\n    currentTokenRate = null;\n    streamingStartedAt = Date.now();" not in text:
+            text = text.replace(
+                "    isStreaming = true;\n    liveAssistantUsage = null;",
+                "    isStreaming = true;\n    liveAssistantUsage = null;\n    currentTokenRate = null;\n    streamingStartedAt = Date.now();",
+            )
         text = text.replace(
             "      liveAssistantUsage = event.message.usage;\n      currentCtx = ctx;",
             "      liveAssistantUsage = event.message.usage;\n      updateTokenRate(liveAssistantUsage);\n      currentCtx = ctx;",
