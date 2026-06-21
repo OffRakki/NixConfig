@@ -124,7 +124,7 @@ in {
         "npm:@juicesharp/rpiv-args"
         # "npm:@juicesharp/rpiv-btw"
         # "npm:@juicesharp/rpiv-i18n"
-        # "npm:@juicesharp/rpiv-advisor"
+        "npm:@juicesharp/rpiv-advisor"
         # "npm:@juicesharp/rpiv-workflow"
         "npm:@juicesharp/rpiv-ask-user-question"
 

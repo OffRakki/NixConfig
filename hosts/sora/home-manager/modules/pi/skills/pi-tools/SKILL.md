@@ -48,13 +48,13 @@ Declared in `pi.nix -> programs.pi-coding-agent.settings.packages`:
 | `@juicesharp/rpiv-pi` | `discover/research/design/plan/implement/validate/code-review/...` skills and workflow agents. |
 | `@juicesharp/rpiv-todo` | `todo` tool, live overlay task list. Use for multi-step task tracking. |
 | `@juicesharp/rpiv-args` | Skill argument interpolation (`$1`, `$ARGUMENTS`, shell substitutions) for slash-invoked skills. |
+| `@juicesharp/rpiv-advisor` | Advisor extension for stronger-model second opinions before major work/done. |
 | `@juicesharp/rpiv-ask-user-question` | `ask_user_question` structured questionnaire tool (2-4 options, 1-4 questions). |
 | `@vigolium/piolium` | Security audit/review skills: Semgrep, CodeQL, vuln reports, threat models, etc. |
 
 Commented-out optional package entries currently left in `pi.nix` for easy re-enable:
 `pi-chrome`, `@ogulcancelik/pi-sketch`, `@juicesharp/rpiv-btw`,
-`@juicesharp/rpiv-i18n`, `@juicesharp/rpiv-advisor`, and
-`@juicesharp/rpiv-workflow`.
+`@juicesharp/rpiv-i18n`, and `@juicesharp/rpiv-workflow`.
 
 ## Tool routing cheat sheet
 
