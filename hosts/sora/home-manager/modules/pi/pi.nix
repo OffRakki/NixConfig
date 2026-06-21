@@ -125,7 +125,6 @@ in {
         "npm:@juicesharp/rpiv-args"
         # "npm:@juicesharp/rpiv-btw"
         # "npm:@juicesharp/rpiv-i18n"
-        "npm:@juicesharp/rpiv-advisor"
         # "npm:@juicesharp/rpiv-workflow"
         "npm:@juicesharp/rpiv-ask-user-question"
 
@@ -460,17 +459,6 @@ in {
     cp -f ${configFile} "$HOME/.config/lean-ctx/config.toml"
   '';
 
-  # rpiv-advisor config — declarative advisor model selection.
-  home.activation.ensureRpivAdvisorConfig = let
-    configFile = pkgs.writeText "rpiv-advisor-config" (builtins.toJSON {
-      modelKey = "openai-codex/gpt-5.5";
-      effort = "high";
-    });
-  in ''
-    mkdir -p "$HOME/.config/rpiv-advisor"
-    cp -f ${configFile} "$HOME/.config/rpiv-advisor/advisor.json"
-    chmod 600 "$HOME/.config/rpiv-advisor/advisor.json"
-  '';
 
   # Patch pi-lens to exclude Onedrive FUSE mount (prevents freeze when starting pi from ~/)
   # Onedrive is a FUSE mount via rclone; pi-lens walks into it during startup scans
