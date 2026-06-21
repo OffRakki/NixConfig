@@ -358,8 +358,6 @@ in {
           args = [
             "-y"
             "obsidian-mcp"
-            "/home/rakki/sync/geral/Obsidian/Main"
-            "/home/rakki/sync/geral/Obsidian/Summaries"
             "/home/rakki/sync/geral/Obsidian/Ciel"
           ];
           lifecycle = "lazy";
