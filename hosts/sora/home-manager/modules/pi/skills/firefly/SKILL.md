@@ -229,6 +229,7 @@ systemctl list-timers | grep firefly
 - **Reconciled transactions block API edits:** The API returns HTTP 422 for PUT on reconciled transactions. Unreconcile first via the web UI (`/transactions/edit/<group_id>` -> uncheck "Reconciled"), then edit.
 - **Multi-split PUT requires all splits + group_title:** When updating a multi-split group via PUT, send EVERY split in the `transactions[]` array and include `group_title`. Sending only the split you want to change silently removes the others.
 - **Self-transfer detection in MP imports:** The `import_mp.py` script detects self-transfers by matching the counterparty CPF (426.334.128-74) from `payer.identification.number` or `collector.identification.number`. Add known PIX keys to `SELF_PIX_KEYS` for additional matching. Transfers to the same CPF are skipped as internal movements.
+- **Fuel quantity enrichment:** When liters are missing from fuel transaction description, first check bank/MP data, receipt, or existing notes for exact quantity. If absent, ask Lucky for exact liters or effective per-liter price after discounts/promotions. If Lucky can't provide them, research plausible local price for place/date, mark result as estimate, compute `liters = total_amount / effective_price_per_liter`, then append quantity to description in existing style, e.g. `Combustível, 47,6 L` or `Etanol Comum, 51,26 L`.
 
 ## Web UI URLs
 
