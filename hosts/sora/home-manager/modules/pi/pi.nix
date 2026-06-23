@@ -4,14 +4,10 @@
   osConfig,
   inputs,
   ...
-}: let
-  cfg = config.programs.pi-coding-agent;
-  piDir = cfg.configDir;
-in {
-  # Persist pi state directories — sessions, npm packages, git clones and sets pi to offline mode (no update/telemetry)
+}: {
   home = {
     sessionVariables = {
-      PI_SKIP_VERSION_CHECK = 1;
+      PI_SKIP_VERSION_CHECK = true;
       PI_TELEMETRY = 0;
       PI_CACHE_RETENTION = "long";
     };
@@ -27,7 +23,6 @@ in {
       ".codex"
     ];
   };
-
   xdg.desktopEntries.pi-coding-agent = {
     name = "Pi";
     genericName = "AI Coding Assistant";
@@ -41,11 +36,48 @@ in {
     ];
     type = "Application";
   };
+  systemd.user.services.codex-rate-limits-cache = {
+    Unit.Description = "Refresh Codex rate-limit cache for Pi powerline";
+    Service = {
+      Type = "oneshot";
+      ExecStart = "%h/.local/bin/codex-rate-limits-cache";
+      Environment = [
+        "PATH=%h/.local/bin:%h/.nix-profile/bin:/etc/profiles/per-user/rakki/bin:/run/current-system/sw/bin"
+      ];
+    };
+  };
+  systemd.user.timers.codex-rate-limits-cache = {
+    Unit.Description = "Refresh Codex rate-limit cache for Pi powerline";
+    Timer = {
+      OnBootSec = "1min";
+      OnUnitActiveSec = "5min";
+      AccuracySec = "30s";
+      Unit = "codex-rate-limits-cache.service";
+    };
+    Install.WantedBy = ["timers.target"];
+  };
+  # lean-ctx config — disable shell allowlist so pi can run any command
+  home.activation.ensureLeanCtxConfig = let
+    configFile = pkgs.writeText "lean-ctx-config" ''
+      shell_allowlist = []
+    '';
+  in ''
+    mkdir -p "$HOME/.config/lean-ctx"
+    cp -f ${configFile} "$HOME/.config/lean-ctx/config.toml"
+  '';
+  # Patch pi-lens EXCLUDED_DIRS to skip Onedrive FUSE mount
+  home.activation.patchLensExcludedDirs = ''
+    FILE="$HOME/.pi/agent/npm/node_modules/pi-lens/dist/clients/file-utils.js"
+    if [ -f "$FILE" ]; then
+      if ! grep -q '"Onedrive"' "$FILE"; then
+        ${pkgs.gnused}/bin/sed -i '/"vendors"/a\    "Onedrive", // FUSE mount (rclone) — blocks __fuse_simple_request on startup scan' "$FILE"
+      fi
+    fi
+  '';
 
   programs.pi-coding-agent = {
     enable = true;
     context = ./context.md;
-
     # Node is needed for npm-based pi package installs.
     # nodejs includes npm in recent nixpkgs versions.
     # Some Pi packages ship native npm deps (e.g. node-pty), so keep the
@@ -60,27 +92,25 @@ in {
       chromium
       inputs.llm-agents.packages.${pkgs.system}.lean-ctx
     ];
-
     settings = {
+      enableInstallTelemtry = false;
+      enableAnalytics = false;
       defaultProvider = "openai-codex";
-      defaultModel = "gpt-5.5";
-      defaultThinkingLevel = "low";
-      theme = "gruvbox-dark-hard";
+      defaultModel = "gpt-5.4";
+      defaultThinkingLevel = "medium";
+      theme = "piolium-srcery";
       enabledModels = [
         "gpt*"
         "deepseek*"
         "qwen*"
       ];
-
       quietStartup = true;
       collapseChangelog = true;
-
       compaction = {
         enabled = true;
         reserveTokens = 16384;
         keepRecentTokens = 20000;
       };
-
       retry = {
         enabled = true;
         maxRetries = 3;
@@ -108,7 +138,6 @@ in {
       powerline = {
         preset = "nerd";
       };
-
       packages = [
         "npm:@vigolium/piolium"
         "npm:pi-drawio"
@@ -133,39 +162,11 @@ in {
         "npm:@juicesharp/rpiv-todo"
         "npm:@juicesharp/rpiv-args"
         "npm:@juicesharp/rpiv-ask-user-question"
-        # Maybe not the needed as already have browser skill.
-        # "npm:pi-chrome"
+        "git:github.com/jonjonrankin/pi-caveman"
       ];
     };
-
     models = {
       providers = {
-        ollama = {
-          baseUrl = "http://localhost:11434/v1";
-          apiKey = "ollama";
-          api = "openai-completions";
-          compat = {
-            supportsDeveloperRole = false;
-            supportsReasoningEffort = false;
-          };
-          models = [
-            {
-              id = "qwen3:14b";
-              name = "Qwen3 14B (Ollama)";
-              reasoning = true;
-              input = ["text"];
-              contextWindow = 40960;
-              maxTokens = 8192;
-              cost = {
-                input = 0;
-                output = 0;
-                cacheRead = 0;
-                cacheWrite = 0;
-              };
-            }
-          ];
-        };
-
         hyper = {
           baseUrl = "https://hyper.charm.land/v1";
           apiKey = "!cat ${osConfig.sops.secrets.hyperApiKey.path}";
@@ -222,9 +223,13 @@ in {
       };
     };
   };
-
   # Place models, extensions, skills, prompts, themes, and APPEND_SYSTEM.md into ~/.pi/agent/
   home.file = {
+    ".pi/agent/extensions".source = ./extensions;
+    ".pi/agent/skills".source = ./skills;
+    ".pi/agent/prompts".source = ./prompts;
+    ".pi/agent/themes".source = ./themes;
+    ".pi/agent/agents".source = ./agents;
     # Extensions (notify only)
     ".local/bin/codex-rate-limits-cache" = {
       executable = true;
@@ -347,39 +352,6 @@ in {
                 sys.exit(1)
       '';
     };
-
-    # Extensions (notify only)
-    "${piDir}/extensions/notify.ts".source = ./extensions/notify.ts;
-
-    "${piDir}/skills/firefly/SKILL.md".source = ./skills/firefly/SKILL.md;
-    "${piDir}/skills/firefly/scripts".source = ./skills/firefly/scripts;
-    "${piDir}/skills/firefly/resources/auditing.md".source = ./skills/firefly/resources/auditing.md;
-    "${piDir}/skills/firefly/resources/btg.md".source = ./skills/firefly/resources/btg.md;
-    "${piDir}/skills/firefly/resources/mercado-pago.md".source =
-      ./skills/firefly/resources/mercado-pago.md;
-    "${piDir}/skills/firefly/resources/nubank-ofx.md".source = ./skills/firefly/resources/nubank-ofx.md;
-    "${piDir}/skills/jujutsu/SKILL.md".source = ./skills/jujutsu/SKILL.md;
-    "${piDir}/skills/jujutsu/references".source = ./skills/jujutsu/references;
-    "${piDir}/skills/improve/SKILL.md".source = ./skills/improve/SKILL.md;
-    "${piDir}/skills/improve/references".source = ./skills/improve/references;
-    "${piDir}/skills/nix/SKILL.md".source = ./skills/nix/SKILL.md;
-    "${piDir}/skills/nix-refactor/SKILL.md".source = ./skills/nix-refactor/SKILL.md;
-    "${piDir}/skills/linux/SKILL.md".source = ./skills/linux/SKILL.md;
-    "${piDir}/skills/invest/SKILL.md".source = ./skills/invest/SKILL.md;
-    "${piDir}/skills/personal-tools/SKILL.md".source = ./skills/personal-tools/SKILL.md;
-    "${piDir}/skills/screenshot/SKILL.md".source = ./skills/screenshot/SKILL.md;
-    "${piDir}/skills/lumis/SKILL.md".source = ./skills/lumis/SKILL.md;
-    "${piDir}/skills/browser/SKILL.md".source = ./skills/browser/SKILL.md;
-    "${piDir}/skills/browser/scripts".source = ./skills/browser/scripts;
-    "${piDir}/skills/seo/SKILL.md".source = ./skills/seo/SKILL.md;
-    "${piDir}/skills/context-curation/SKILL.md".source = ./skills/context-curation/SKILL.md;
-    "${piDir}/skills/ciel-brain/SKILL.md".source = ./skills/ciel-brain/SKILL.md;
-    "${piDir}/skills/security-sweep/SKILL.md".source = ./skills/security-sweep/SKILL.md;
-    "${piDir}/skills/pi-tools/SKILL.md".source = ./skills/pi-tools/SKILL.md;
-
-    # Pi-specific skill
-    "${piDir}/skills/nix-auditor/SKILL.md".source = ./skills/nix-auditor/SKILL.md;
-
     # Browser automation config (pi-agent-browser-native)
     ".pi/config/pi-agent-browser-native/config.json".text = builtins.toJSON {
       version = 1;
@@ -387,7 +359,7 @@ in {
     };
 
     # MCP servers (Pi-owned global override)
-    "${piDir}/mcp.json".text = builtins.toJSON {
+    ".pi/agent/mcp.json".text = builtins.toJSON {
       mcpServers = {
         obsidian = {
           command = "npx";
@@ -402,7 +374,7 @@ in {
     };
 
     # Keybindings (Helix-style)
-    "${piDir}/keybindings.json".text = builtins.toJSON {
+    ".pi/agent/keybindings.json".text = builtins.toJSON {
       "tui.editor.cursorWordLeft" = [
         "alt+left"
         "alt+b"
@@ -419,8 +391,8 @@ in {
         "alt+d"
         "alt+delete"
       ];
-      "tui.input.submit" = "enter";
-      "tui.input.newLine" = "shift+enter";
+      "tui.input.submit" = "shift+enter";
+      "tui.input.newLine" = "enter";
       "app.model.select" = "ctrl+l";
       "app.model.cycleForward" = "ctrl+p";
       "app.model.cycleBackward" = "shift+ctrl+p";
@@ -429,73 +401,7 @@ in {
       "app.session.deleteNoninvasive" = "ctrl+backspace";
       "app.tools.expand" = "ctrl+o";
     };
-
-    # Prompts
-    "${piDir}/prompts/archive.md".source = ./prompts/archive.md;
-    "${piDir}/prompts/nix-rebuild.md".source = ./prompts/nix-rebuild.md;
-    "${piDir}/prompts/nix-audit.md".source = ./prompts/nix-audit.md;
-    "${piDir}/prompts/commit.md".source = ./prompts/commit.md;
-    "${piDir}/prompts/ponder.md".source = ./prompts/ponder.md;
-
-    # Themes
-    "${piDir}/themes/catppuccin-mocha.json".source = ./themes/catppuccin-mocha.json;
-    "${piDir}/themes/ciel-cursor.json".source = ./themes/ciel-cursor.json;
-    "${piDir}/themes/gruvbox-dark-hard.json".source = ./themes/gruvbox-dark-hard.json;
-
-    # Agents (subagent definitions — auto-discovered by pi-subagents)
-    "${piDir}/agents/nix-auditor.md".source = ./agents/nix-auditor.md;
-    "${piDir}/agents/image-analyzer/image-analyzer.md".source =
-      ./agents/image-analyzer/image-analyzer.md;
-    "${piDir}/agents/audio-analyzer/audio-analyzer.md".source =
-      ./agents/audio-analyzer/audio-analyzer.md;
-    "${piDir}/agents/pdf-reader/pdf-reader.md".source = ./agents/pdf-reader/pdf-reader.md;
-
-    # Lucky's personal info appended to system prompt (out-of-store symlink to SOPS secret)
-    "${piDir}/APPEND_SYSTEM.md".source =
-      config.lib.file.mkOutOfStoreSymlink osConfig.sops.secrets.lucky-info.path;
-
-    # SOPS-encrypted skill private data (firefly, lumis)
-    "${piDir}/skills/firefly/resources/private.md".source =
-      config.lib.file.mkOutOfStoreSymlink osConfig.sops.secrets.skillFireflyPrivate.path;
-    "${piDir}/skills/lumis/resources/private.md".source =
-      config.lib.file.mkOutOfStoreSymlink osConfig.sops.secrets.skillLumisPrivate.path;
-
-    # Web search config — Gemini API key + browser cookie access
-    "${piDir}/../web-search.json".source =
-      config.lib.file.mkOutOfStoreSymlink osConfig.sops.secrets.webSearchJson.path;
   };
-
-  systemd.user.services.codex-rate-limits-cache = {
-    Unit.Description = "Refresh Codex rate-limit cache for Pi powerline";
-    Service = {
-      Type = "oneshot";
-      ExecStart = "%h/.local/bin/codex-rate-limits-cache";
-      Environment = [
-        "PATH=%h/.local/bin:%h/.nix-profile/bin:/etc/profiles/per-user/rakki/bin:/run/current-system/sw/bin"
-      ];
-    };
-  };
-
-  systemd.user.timers.codex-rate-limits-cache = {
-    Unit.Description = "Refresh Codex rate-limit cache for Pi powerline";
-    Timer = {
-      OnBootSec = "1min";
-      OnUnitActiveSec = "5min";
-      AccuracySec = "30s";
-      Unit = "codex-rate-limits-cache.service";
-    };
-    Install.WantedBy = ["timers.target"];
-  };
-
-  # lean-ctx config — disable shell allowlist so pi can run any command
-  home.activation.ensureLeanCtxConfig = let
-    configFile = pkgs.writeText "lean-ctx-config" ''
-      shell_allowlist = []
-    '';
-  in ''
-    mkdir -p "$HOME/.config/lean-ctx"
-    cp -f ${configFile} "$HOME/.config/lean-ctx/config.toml"
-  '';
 
   # Patch pi-lens to exclude Onedrive FUSE mount (prevents freeze when starting pi from ~/)
   # Onedrive is a FUSE mount via rclone; pi-lens walks into it during startup scans
@@ -741,15 +647,5 @@ in {
         index.write_text(text)
     PY
         fi
-  '';
-
-  # Patch pi-lens EXCLUDED_DIRS to skip Onedrive FUSE mount
-  home.activation.patchLensExcludedDirs = ''
-    FILE="$HOME/.pi/agent/npm/node_modules/pi-lens/dist/clients/file-utils.js"
-    if [ -f "$FILE" ]; then
-      if ! grep -q '"Onedrive"' "$FILE"; then
-        ${pkgs.gnused}/bin/sed -i '/"vendors"/a\    "Onedrive", // FUSE mount (rclone) — blocks __fuse_simple_request on startup scan' "$FILE"
-      fi
-    fi
   '';
 }
