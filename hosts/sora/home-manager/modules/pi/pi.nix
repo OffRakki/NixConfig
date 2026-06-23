@@ -99,9 +99,9 @@
       defaultThinkingLevel = "medium";
       theme = "piolium-srcery";
       enabledModels = [
-        "gpt*"
+        "gpt-5.4"
+        "gpt-5.5"
         "deepseek*"
-        "qwen*"
       ];
       quietStartup = true;
       collapseChangelog = true;
