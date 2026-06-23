@@ -75,7 +75,7 @@ in {
             disable_hyprland_logo = true,
             disable_splash_rendering = true,
             vrr = 0,
-            mouse_move_enables_dpms = true,
+            mouse_move_enables_dpms = false,
             enable_swallow = false,
             swallow_regex = "^(kitty)$",
             focus_on_activate = false,
