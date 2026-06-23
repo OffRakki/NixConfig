@@ -1,5 +1,4 @@
 {
-  config,
   pkgs,
   osConfig,
   inputs,
@@ -223,14 +222,13 @@
       };
     };
   };
-  # Place models, extensions, skills, prompts, themes, and APPEND_SYSTEM.md into ~/.pi/agent/
   home.file = {
     ".pi/agent/extensions".source = ./extensions;
     ".pi/agent/skills".source = ./skills;
     ".pi/agent/prompts".source = ./prompts;
     ".pi/agent/themes".source = ./themes;
     ".pi/agent/agents".source = ./agents;
-    # Extensions (notify only)
+
     ".local/bin/codex-rate-limits-cache" = {
       executable = true;
       text = ''
@@ -375,6 +373,7 @@
 
     # Keybindings (Helix-style)
     ".pi/agent/keybindings.json".text = builtins.toJSON {
+      "app.editor.external" = "alt+e";
       "tui.editor.cursorWordLeft" = [
         "alt+left"
         "alt+b"
