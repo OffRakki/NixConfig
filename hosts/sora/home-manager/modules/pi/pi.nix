@@ -94,9 +94,9 @@
     settings = {
       enableInstallTelemtry = false;
       enableAnalytics = false;
-      defaultProvider = "openai-codex";
-      defaultModel = "gpt-5.4";
-      defaultThinkingLevel = "medium";
+      defaultProvider = "deepseek";
+      defaultModel = "deepseek-v4-flash";
+      defaultThinkingLevel = "high";
       theme = "piolium-srcery";
       enabledModels = [
         "gpt-5.4"
@@ -390,8 +390,8 @@
         "alt+d"
         "alt+delete"
       ];
-      "tui.input.submit" = "shift+enter";
-      "tui.input.newLine" = "enter";
+      "tui.input.submit" = "enter";
+      "tui.input.newLine" = "shift+enter";
       "app.model.select" = "ctrl+l";
       "app.model.cycleForward" = "ctrl+p";
       "app.model.cycleBackward" = "shift+ctrl+p";
@@ -445,16 +445,7 @@
 
     function formatDuration(ms: number): string {""",
             )
-        if "formatTokenRate" not in text:
-            text = replace_once(text,
-                """function formatDuration(ms: number): string {""",
-                """function formatTokenRate(tokensPerSecond: number): string {
-      if (tokensPerSecond < 10) return tokensPerSecond.toFixed(1);
-      return Math.round(tokensPerSecond).toString();
-    }
 
-    function formatDuration(ms: number): string {""",
-            )
         text = text.replace(
             '    const text = `''${pct.toFixed(1)}%/''${formatTokens(window)}''${autoIcon}`;',
             '    const used = Math.round((pct / 100) * window);\n    const text = `''${formatContextTokens(used)}/''${formatContextTokens(window)}''${autoIcon}`;',
@@ -550,24 +541,7 @@
     """
             text = replace_once(text, 'const contextPctSegment: StatusLineSegment = {', codex_segment + 'const contextPctSegment: StatusLineSegment = {')
             text = replace_once(text, "  cost: costSegment,\n", "  cost: costSegment,\n  codex_limits: codexLimitsSegment,\n")
-        if "tokenRateSegment" not in text:
-            token_rate_segment = """
-    const tokenRateSegment: StatusLineSegment = {
-      id: "token_rate",
-      render(ctx) {
-        const tokensPerSecond = ctx.tokenRate;
-        if (!Number.isFinite(tokensPerSecond ?? NaN) || (tokensPerSecond ?? 0) <= 0) {
-          return { content: "", visible: false };
-        }
 
-        return { content: color(ctx, "tokens", `''${formatTokenRate(tokensPerSecond as number)} tok/s`), visible: true };
-      },
-    };
-
-    """
-            text = replace_once(text, 'const costSegment: StatusLineSegment = {', token_rate_segment + 'const costSegment: StatusLineSegment = {')
-        if "  token_rate: tokenRateSegment," not in text:
-            text = replace_once(text, "  token_out: tokenOutSegment,\n", "  token_out: tokenOutSegment,\n  token_rate: tokenRateSegment,\n")
         seg.write_text(text)
 
     if types.exists():
@@ -575,12 +549,9 @@
         text = text.replace('  | "cost"\n  | "codex_limits"\n  | "tokens"', '  | "cost"\n  | "tokens"')
         if '| "quota"' not in text:
             text = text.replace('  | "tokens"\n', '  | "tokens"\n  | "quota"\n')
-        if '  | "token_rate"' not in text:
-            text = text.replace('  | "token_out"\n', '  | "token_out"\n  | "token_rate"\n')
         if '  | "codex_limits"\n  | "context_pct"' not in text:
             text = text.replace('  | "cost"\n  | "context_pct"', '  | "cost"\n  | "codex_limits"\n  | "context_pct"')
-        if '  tokenRate: number | null;' not in text:
-            text = text.replace('  sessionStartTime: number;\n', '  sessionStartTime: number;\n  tokenRate: number | null;\n')
+
         types.write_text(text)
 
     if presets.exists():
@@ -589,61 +560,9 @@
             text = text.replace('  cost: "warning",\n', '  cost: "warning",\n  quota: "warning",\n')
         if '"codex_limits"' not in text:
             text = text.replace('"cache_write", "cost", "context_pct"', '"cache_write", "cost", "codex_limits", "context_pct"')
-        text = text.replace('"token_out", "cache_read"', '"token_out", "token_rate", "cache_read"')
+        text = text.replace('"token_out", "token_rate", "cache_read"', '"token_out", "cache_read"')
         presets.write_text(text)
 
-    if index.exists():
-        text = index.read_text()
-        if "let currentTokenRate" not in text:
-            text = text.replace(
-                "  let liveAssistantUsage: SessionAssistantUsage | null = null;\n  let isStreaming = false;",
-                "  let liveAssistantUsage: SessionAssistantUsage | null = null;\n  let currentTokenRate: number | null = null;\n  let streamingStartedAt: number | null = null;\n  let isStreaming = false;",
-            )
-        if "function updateTokenRate" not in text:
-            text = text.replace(
-                "  const requestImmediateStatusRender = (options: { deferDuringTyping?: boolean } = {}) => {",
-                """  function updateTokenRate(usage: SessionAssistantUsage | null): void {
-        if (!usage || usage.output <= 0 || !streamingStartedAt) {
-          return;
-        }
-
-        const elapsedSeconds = Math.max((Date.now() - streamingStartedAt) / 1000, 0.001);
-        currentTokenRate = usage.output / elapsedSeconds;
-      }
-
-      const requestImmediateStatusRender = (options: { deferDuringTyping?: boolean } = {}) => {""",
-            )
-        text = text.replace(
-            "    isStreaming = false;\n    liveAssistantUsage = null;\n    stashedEditorText = null;",
-            "    isStreaming = false;\n    liveAssistantUsage = null;\n    currentTokenRate = null;\n    streamingStartedAt = null;\n    stashedEditorText = null;",
-        )
-        text = text.replace(
-            "    liveAssistantUsage = null;\n    currentTokenRate = null;\n    streamingStartedAt = null;\n    requestImmediateStatusRender({ deferDuringTyping: false });\n  });",
-            "    liveAssistantUsage = null;\n    requestImmediateStatusRender({ deferDuringTyping: false });\n  });",
-        )
-        text = text.replace(
-            "    isStreaming = true;\n    liveAssistantUsage = null;\n    currentTokenRate = null;\n    streamingStartedAt = Date.now();\n    currentTokenRate = null;\n    streamingStartedAt = Date.now();",
-            "    isStreaming = true;\n    liveAssistantUsage = null;\n    currentTokenRate = null;\n    streamingStartedAt = Date.now();",
-        )
-        if "    isStreaming = true;\n    liveAssistantUsage = null;\n    currentTokenRate = null;\n    streamingStartedAt = Date.now();" not in text:
-            text = text.replace(
-                "    isStreaming = true;\n    liveAssistantUsage = null;",
-                "    isStreaming = true;\n    liveAssistantUsage = null;\n    currentTokenRate = null;\n    streamingStartedAt = Date.now();",
-            )
-        text = text.replace(
-            "      liveAssistantUsage = event.message.usage;\n      currentCtx = ctx;",
-            "      liveAssistantUsage = event.message.usage;\n      updateTokenRate(liveAssistantUsage);\n      currentCtx = ctx;",
-        )
-        text = text.replace(
-            "        liveAssistantUsage = null;\n      } else if (getUsageTokenTotal(event.message.usage) > 0) {\n        liveAssistantUsage = event.message.usage;\n      }",
-            "        liveAssistantUsage = null;\n        currentTokenRate = null;\n      } else if (getUsageTokenTotal(event.message.usage) > 0) {\n        liveAssistantUsage = event.message.usage;\n        updateTokenRate(liveAssistantUsage);\n      }",
-        )
-        if "tokenRate: currentTokenRate" not in text:
-            text = text.replace(
-                "      sessionStartTime,\n      shellModeActive: bashModeActive,",
-                "      sessionStartTime,\n      tokenRate: currentTokenRate,\n      shellModeActive: bashModeActive,",
-            )
-        index.write_text(text)
     PY
         fi
   '';

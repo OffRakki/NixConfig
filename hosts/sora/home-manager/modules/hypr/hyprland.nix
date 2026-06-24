@@ -385,7 +385,7 @@ in {
         -- Natural scroll for rapoo mouse
         hl.device({
           name = "rapoo-rapoo-gaming-device",
-          natural_scroll = true,
+          natural_scroll = false,
         })
         ---------------------------------------------------------------
         ------------------------------- TOUCHPAD -------------------------------

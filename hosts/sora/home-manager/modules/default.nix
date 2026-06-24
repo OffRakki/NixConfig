@@ -17,9 +17,9 @@
     ./wofi.nix
     ./fastfetch.nix
     ./git.nix
+    ./glance.nix
     ./waybar.nix
     ./neovim.nix
-    ./starship.nix
     ./bat.nix
     ./eza.nix
     ./kitty.nix
