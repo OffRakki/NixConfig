@@ -2,102 +2,89 @@
   programs.fastfetch = {
     enable = true;
     settings = {
-      schema = "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json";
+      "$schema" = "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json";
       logo = {
-        type = "small";
+        source = "${../../../../assets/fastfetch/nixos.png}";
+        type = "kitty-direct";
+        height = 12;
+        width = 24;
         padding = {
-          top = 2;
-          left = 3;
+          top = 1;
         };
       };
       display = {
-        separator = "  ";
+        separator = " ";
       };
       modules = [
-        # System — Catppuccin Mocha Blue (#89b4fa)
         {
-          type = "os";
-          key = "▸ OS";
-          keyColor = "#89b4fa";
+          key = "╔═══════════╗";
+          type = "custom";
         }
         {
-          type = "kernel";
-          key = " ├ ";
-          keyColor = "#89b4fa";
+          key = "║ {#31} user    {#keys}║";
+          type = "title";
+          format = "{user-name}";
         }
         {
-          type = "packages";
-          format = "{nix-system} system, {nix-user} user";
-          key = " ├ 󰏖";
-          keyColor = "#89b4fa";
+          key = "║ {#32}󰇅 hname   {#keys}║";
+          type = "title";
+          format = "{host-name}";
         }
         {
-          type = "shell";
-          key = " └ ";
-          keyColor = "#89b4fa";
-        }
-        "break"
-        # Desktop — Catppuccin Mocha Mauve (#cba6f7)
-        {
-          type = "wm";
-          key = "▸ WM";
-          keyColor = "#cba6f7";
-        }
-        {
-          type = "icons";
-          key = " ├ 󰀻";
-          keyColor = "#cba6f7";
-        }
-        {
-          type = "cursor";
-          key = " ├ ";
-          keyColor = "#cba6f7";
-        }
-        {
-          type = "terminal";
-          format = "{pretty-name}";
-          key = " └ ";
-          keyColor = "#cba6f7";
-        }
-        "break"
-        # Hardware — Catppuccin Mocha Peach (#fab387)
-        {
-          type = "cpu";
-          format = "{1} ({3}) @ {7}";
-          key = "▸ HW";
-          keyColor = "#f9e2af";
-        }
-        {
-          type = "gpu";
-          key = " ├ 󰢮";
-          keyColor = "#fab387";
-        }
-        {
-          type = "memory";
-          key = " ├ ";
-          keyColor = "#fab387";
-        }
-        {
-          type = "disk";
-          key = " ├ 󰋊";
-          keyColor = "#fab387";
-        }
-        {
-          type = "display";
-          key = " └ ";
-          keyColor = "#fab387";
-        }
-        "break"
-        # Status — Catppuccin Mocha Green (#a6e3a1)
-        {
+          key = "║ {#33}󰅐 uptime  {#keys}║";
           type = "uptime";
-          key = "▸ UP";
-          keyColor = "#a6e3a1";
         }
         {
+          key = "║ {#34}{icon} distro  {#keys}║";
+          type = "os";
+        }
+        {
+          key = "║ {#35} kernel  {#keys}║";
+          type = "kernel";
+        }
+        {
+          key = "║ {#36}󰇄 desktop {#keys}║";
+          type = "de";
+        }
+        {
+          key = "║ {#31} term    {#keys}║";
+          type = "terminal";
+        }
+        {
+          key = "║ {#32} shell   {#keys}║";
+          type = "shell";
+        }
+        {
+          key = "║ {#33}󰍛 cpu     {#keys}║";
+          type = "cpu";
+          showPeCoreCount = true;
+        }
+        {
+          key = "║ {#34}󰉉 disk    {#keys}║";
+          type = "disk";
+          folders = "/";
+        }
+        {
+          key = "║ {#35} memory  {#keys}║";
+          type = "memory";
+        }
+        {
+          key = "║ {#36}󰩟 network {#keys}║";
           type = "localip";
-          key = " └ ";
-          keyColor = "#a6e3a1";
+          format = "{ipv4} ({ifname})";
+        }
+        {
+          key = "╠═══════════╣";
+          type = "custom";
+        }
+        {
+          key = "║ {#39} colors  {#keys}║";
+          type = "colors";
+          symbol = "circle";
+        }
+        {
+          key = "╚═══════════╝";
+          type = "custom";
         }
       ];
     };
