@@ -35,7 +35,7 @@
 
     # CLI utils
     aerc
-    wine64
+    wineWowPackages.full
     satty
     flatpak
     yazi
