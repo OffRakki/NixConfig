@@ -36,9 +36,11 @@ in {
   services.darkman = {
     enable = true;
     settings = {
-      usegeoclue = true;
-      lat = -22.72;
-      lng = -47.64;
+      usegeoclue = false;
+      # lat = -22.72;
+      # lng = -47.64;
+      dbusserver = true;
+      portal = true;
     };
     lightModeScripts = {
       light = common "prefer-light" lightGtk lightIcon lightCursor "0";
