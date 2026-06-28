@@ -34,6 +34,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    herdr = {
+      url = "github:ogulcancelik/herdr";
+    };
+
     # WM
     hyprland.url = "github:hyprwm/Hyprland";
     noctalia = {
