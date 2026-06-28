@@ -150,6 +150,10 @@
         gitall = "git add -A && git commit -a && git push";
         pipes = "pipes.sh -t 3 -f 100 -R -r 0";
         htop = "btop";
+        ls = "eza --group-directories-first";
+        ll = "eza -lbF --git";
+        la = "eza -lbhHigUmuSa --git";
+        lt = "eza --tree --level=2";
       };
       functions = {
         fish_greeting = "";
