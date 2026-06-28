@@ -4,6 +4,7 @@
   ...
 }: {
   environment.systemPackages = with pkgs; [
+    inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default
     inputs.kopuz.packages.${pkgs.stdenv.hostPlatform.system}.default
     # NH
     nh

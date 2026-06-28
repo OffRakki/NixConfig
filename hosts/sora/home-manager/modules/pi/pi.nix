@@ -156,6 +156,7 @@
         "npm:pi-agent-browser-native"
         "npm:@plannotator/pi-extension"
         "npm:pi-tally"
+        "npm:@weshipwork/pi-herdr"
         "npm:@ff-labs/pi-fff"
         "npm:@juicesharp/rpiv-pi"
         "npm:@juicesharp/rpiv-todo"

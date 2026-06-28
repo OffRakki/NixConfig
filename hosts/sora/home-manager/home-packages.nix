@@ -49,7 +49,7 @@ in {
 
     # CLI utils
     aerc
-    wineWowPackages.full
+    wineWow64Packages.full
     winetricks-wrapped
     satty
     flatpak
