@@ -73,9 +73,45 @@
       fi
     fi
   '';
+  # Keep ~/.pi/agent/agents mutable: rpiv-pi writes bundled agents and its manifest there.
+  # Custom agents remain Nix-sourced, but activation copies them into the writable directory.
+  home.activation.syncPiCustomAgents = ''
+    src=${./agents}
+    dst="$HOME/.pi/agent/agents"
+    manifest="$dst/.nix-managed-custom-agents"
+
+    if [ -L "$dst" ]; then
+      rm -f "$dst"
+    fi
+    mkdir -p "$dst"
+
+    tmp="$(${pkgs.coreutils}/bin/mktemp)"
+    (cd "$src" && ${pkgs.findutils}/bin/find . -type f | ${pkgs.gnused}/bin/sed 's#^\./##' | ${pkgs.coreutils}/bin/sort) > "$tmp"
+
+    if [ -f "$manifest" ]; then
+      while IFS= read -r rel; do
+        [ -n "$rel" ] || continue
+        case "$rel" in
+          /*|*..*|*//*|*\\*) continue ;;
+        esac
+        if ! ${pkgs.gnugrep}/bin/grep -Fxq "$rel" "$tmp"; then
+          rm -f "$dst/$rel"
+        fi
+      done < "$manifest"
+    fi
+
+    while IFS= read -r rel; do
+      mkdir -p "$dst/$(${pkgs.coreutils}/bin/dirname "$rel")"
+      cp -f "$src/$rel" "$dst/$rel"
+    done < "$tmp"
+
+    cp -f "$tmp" "$manifest"
+    rm -f "$tmp"
+  '';
 
   programs.pi-coding-agent = {
     enable = true;
+    package = inputs.llm-agents.packages.${pkgs.system}.pi;
     context = ./context.md;
     # Node is needed for npm-based pi package installs.
     # nodejs includes npm in recent nixpkgs versions.
@@ -154,8 +190,8 @@
         "npm:pi-invisible-continue"
         "npm:pi-subagents"
         "npm:pi-agent-browser-native"
-        "npm:@plannotator/pi-extension"
         "npm:pi-tally"
+        "npm:@plannotator/pi-extension"
         "npm:@weshipwork/pi-herdr"
         "npm:@ff-labs/pi-fff"
         "npm:@juicesharp/rpiv-pi"
@@ -228,7 +264,6 @@
     ".pi/agent/skills".source = ./skills;
     ".pi/agent/prompts".source = ./prompts;
     ".pi/agent/themes".source = ./themes;
-    ".pi/agent/agents".source = ./agents;
 
     ".local/bin/codex-rate-limits-cache" = {
       executable = true;
