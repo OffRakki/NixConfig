@@ -24,6 +24,7 @@
     ./sunshine.nix
     ./firefly.nix
     # ./mcServer.nix
+    ./ASF.nix
   ];
 
   programs.ydotool.enable = true;
