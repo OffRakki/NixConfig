@@ -1,7 +1,8 @@
-{
+{nixConfigRoot, ...}: {
   # Automatic update
   system.autoUpgrade = {
     enable = true;
+    flake = nixConfigRoot;
     dates = "weekly";
   };
 
