@@ -1,4 +1,8 @@
 {pkgs, ...}: let
+  orca-slicer-flatpak = pkgs.writeShellScriptBin "orca-slicer" ''
+    exec ${pkgs.flatpak}/bin/flatpak run com.orcaslicer.OrcaSlicer "$@"
+  '';
+
   winetricks-wrapped = pkgs.writeShellScriptBin "winetricks" ''
     # Resolve real ELF binaries from the wine wrapper's WINELOADER
     # so winetricks can detect the architecture (it reads ELF headers directly)
@@ -14,6 +18,7 @@
   '';
 in {
   home.packages = with pkgs; [
+    orca-slicer-flatpak
     codex
     drawio
     gnome-sound-recorder
