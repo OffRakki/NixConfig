@@ -3,7 +3,22 @@
   osConfig,
   inputs,
   ...
-}: {
+}: let
+  piPackage = pkgs.pi-coding-agent.overrideAttrs (finalAttrs: _: {
+    version = "0.80.6";
+    src = pkgs.fetchFromGitHub {
+      owner = "earendil-works";
+      repo = "pi";
+      tag = "v${finalAttrs.version}";
+      hash = "sha256-e/wcHruEcBAHDF5tKvwew7LXjVp0eraHh2k+QaL2sCA=";
+    };
+    npmDeps = pkgs.fetchNpmDeps {
+      name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
+      inherit (finalAttrs) src;
+      hash = "sha256-xXEOR0epZcfbXayYGyJdBiFVliamBexqA+1Sd7wlGhU=";
+    };
+  });
+in {
   home = {
     sessionVariables = {
       PI_SKIP_VERSION_CHECK = true;
@@ -64,6 +79,16 @@
     mkdir -p "$HOME/.config/lean-ctx"
     cp -f ${configFile} "$HOME/.config/lean-ctx/config.toml"
   '';
+  # Scrub bad npm dependency entries that make npm resolver spin during `pi update --extensions`.
+  home.activation.scrubPiNpmPackageJson = ''
+    pkg="$HOME/.pi/agent/npm/package.json"
+    if [ -f "$pkg" ] && ${pkgs.jq}/bin/jq -e '.dependencies | has("")' "$pkg" >/dev/null 2>&1; then
+      tmp="$(${pkgs.coreutils}/bin/mktemp)"
+      ${pkgs.jq}/bin/jq 'del(.dependencies[""])' "$pkg" > "$tmp"
+      cp -f "$tmp" "$pkg"
+      rm -f "$tmp"
+    fi
+  '';
   # Patch pi-lens EXCLUDED_DIRS to skip Onedrive FUSE mount
   home.activation.patchLensExcludedDirs = ''
     FILE="$HOME/.pi/agent/npm/node_modules/pi-lens/dist/clients/file-utils.js"
@@ -111,7 +136,7 @@
 
   programs.pi-coding-agent = {
     enable = true;
-    package = inputs.llm-agents.packages.${pkgs.system}.pi;
+    package = piPackage;
     context = ./context.md;
     # Node is needed for npm-based pi package installs.
     # nodejs includes npm in recent nixpkgs versions.
@@ -135,8 +160,8 @@
       defaultThinkingLevel = "high";
       theme = "piolium-srcery";
       enabledModels = [
-        "gpt-5.4"
         "gpt-5.5"
+        "gpt-5.6*"
         "deepseek*"
       ];
       quietStartup = true;

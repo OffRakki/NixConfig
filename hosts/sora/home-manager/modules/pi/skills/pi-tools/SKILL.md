@@ -92,6 +92,11 @@ Read note: the first native read warms Pi/LSP/tool hooks for that extension
 `ctx_read`. Use native `read` for images/binary attachments or when a skill
 explicitly requires it.
 
+Pi-update debugging note: keep repros bounded and reads surgical. Prefer
+`timeout`, `DEBUG=*`/verbose env, targeted `ctx_grep`, and source-symbol reads;
+do not read huge logs, session DBs, lockfiles, or full dependency trees unless
+a focused clue proves they matter.
+
 ## Editing skills and agents to use tools
 
 When updating a skill/agent:
