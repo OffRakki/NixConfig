@@ -153,14 +153,16 @@ in {
 
         ------------------------------- MONITORS -------------------------------
         hl.monitor({ output = "DP-1", mode = "highrr", position = "0x0", scale= 1 })
-        hl.monitor({ output = "HDMI-A-1", mode = "highres", position = "1920x0", scale= 1 })
+        hl.monitor({ output = "DP-2", mode = "highres", position = "1920x0", scale= 1 })
+        hl.monitor({ output = "HDMI-A-1", mode = "highres", position = "-1920x0", scale= 1 })
         ------------------------------------------------------------------------
 
         ------------------------------- WORKSPACE RULES -------------------------------
         hl.workspace_rule({ workspace = "1", monitor = "DP-1", persistent = true, default = true })
-        hl.workspace_rule({ workspace = "2", monitor = "HDMI-A-1", persistent = true,})
+        hl.workspace_rule({ workspace = "2", monitor = "DP-2", persistent = true,})
         hl.workspace_rule({ workspace = "3", monitor = "DP-1", persistent = true,})
         hl.workspace_rule({ workspace = "4", monitor = "DP-1", persistent = true,})
+        hl.workspace_rule({ workspace = "6", monitor = "HDMI-A-1", persistent = true,})
         -------------------------------------------------------------------------------
 
         ------------------------------- WINDOW/LAYER RULES -------------------------------
@@ -205,11 +207,11 @@ in {
           size = "monitor_w/4 monitor_h/4",
         })
 
-        --hl.window_rule({
-        --  name = "inhibit-idle-fullscreen",
-        --  match = { fullscreen = true },
-        --  idle_inhibit = "fullscreen",
-        --})
+        hl.window_rule({
+          name = "inhibit-idle-fullscreen",
+          match = { fullscreen = true },
+          idle_inhibit = "fullscreen",
+        })
 
         hl.window_rule({
           name = "firefoxBorderColorFix",
@@ -282,7 +284,7 @@ in {
           match = { initial_class = "org.telegram.desktop" },
           no_initial_focus = true,
           workspace = "2",
-          monitor = "HDMI-A-1",
+          monitor = "DP-2",
         })
 
         hl.window_rule({
@@ -290,7 +292,7 @@ in {
           match = { initial_class = "goofcord" },
           no_initial_focus = true,
           workspace = "2",
-          monitor = "HDMI-A-1",
+          monitor = "DP-2",
         })
 
         hl.window_rule({
@@ -298,7 +300,7 @@ in {
           match = { initial_class = "vesktop" },
           no_initial_focus = true,
           workspace = "2",
-          monitor = "HDMI-A-1",
+          monitor = "DP-2",
         })
 
         hl.window_rule({
