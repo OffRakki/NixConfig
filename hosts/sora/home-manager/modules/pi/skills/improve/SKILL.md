@@ -31,6 +31,11 @@ Map the territory before judging it:
 - Read `README`, `CLAUDE.md`/`AGENTS.md`, `CONTRIBUTING`, root config files (`package.json`, `pyproject.toml`, `go.mod`, etc.), CI config, and the directory structure.
 - Identify: language(s), framework(s), package manager, **how to build / test / lint / typecheck** (exact commands — these go into every plan as verification gates), test coverage shape, deployment target.
 - Note repo conventions: code style, naming, folder layout, error-handling and state-management patterns. Plans must tell the executor to *match* these, with examples.
+- When the repo configures an AI-agent runtime, inspect that surface explicitly:
+  runtime/package configuration, extensions/tools, prompts,
+  context/instructions, skills, custom subagents, orchestration scripts, and
+  whether these pieces compose safely and efficiently. Treat this as both
+  product direction and operational code, not incidental dotfiles.
 - **Ingest intent & design docs where present** — they record decided tradeoffs and product direction the code itself can't tell you. Glob for ADRs (`docs/adr/`, `docs/adrs/`, `docs/decisions/`), PRDs / specs, `CONTEXT.md` (shared domain vocabulary), `DESIGN.md` (design-system spec), and `PRODUCT.md` (product brief). Strictly additive: read what exists, no-op when absent. Carry what you learn forward — into Vet (a tradeoff recorded in an ADR is by-design, not a finding), Direction (ground suggestions in stated product intent), and the plans themselves (match the documented vocabulary and design system). Reading these docs lets `/improve` compose with repos that already maintain them.
 - Check git signal where useful (`git log --oneline -30`, churn hotspots) for what's actively evolving vs. frozen.
 
