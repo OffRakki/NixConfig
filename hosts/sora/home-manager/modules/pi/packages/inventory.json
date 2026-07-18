@@ -1,0 +1,194 @@
+{
+  "schemaVersion": 1,
+  "trustPolicy": "All entries are pinned third-party code. Extensions execute with the Pi process permissions; skills and prompts can direct tool use. Review source changes before updating a pin.",
+  "packages": [
+    {
+      "name": "@vigolium/piolium",
+      "version": "0.0.12",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["skills", "agent-instructions", "security-analysis"]
+    },
+    {
+      "name": "pi-drawio",
+      "version": "0.1.0",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "tool", "filesystem", "process"]
+    },
+    {
+      "name": "pi-intercom",
+      "version": "0.6.0",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "tool", "ipc", "sessions"]
+    },
+    {
+      "name": "pi-lean-ctx",
+      "version": "3.9.12",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "tools", "filesystem", "process", "index"]
+    },
+    {
+      "name": "pi-lens",
+      "version": "3.8.70",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "tools", "filesystem", "process", "lsp"]
+    },
+    {
+      "name": "pi-simplify",
+      "version": "0.2.3",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "filesystem", "agent-instructions"]
+    },
+    {
+      "name": "pi-namespace",
+      "version": "0.2.1",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "tool-routing"]
+    },
+    {
+      "name": "pi-ask-user",
+      "version": "0.13.0",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "tool", "ui"]
+    },
+    {
+      "name": "pi-web-access",
+      "version": "0.13.0",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "tools", "network", "filesystem"]
+    },
+    {
+      "name": "pi-mcp-adapter",
+      "version": "2.11.0",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "tool", "network", "process", "credentials"]
+    },
+    {
+      "name": "pi-markdown-preview",
+      "version": "0.10.0",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "tool", "filesystem", "process"]
+    },
+    {
+      "name": "pi-powerline-footer",
+      "version": "0.7.0",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "ui", "session-metadata"]
+    },
+    {
+      "name": "pi-hermes-memory",
+      "version": "0.8.1",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "tools", "filesystem", "memory"]
+    },
+    {
+      "name": "pi-invisible-continue",
+      "version": "0.3.4",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "session-control"]
+    },
+    {
+      "name": "pi-subagents",
+      "version": "0.34.0",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": [
+        "extension",
+        "tools",
+        "process",
+        "sessions",
+        "filesystem"
+      ]
+    },
+    {
+      "name": "pi-agent-browser-native",
+      "version": "0.2.68",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": [
+        "extension",
+        "tool",
+        "browser",
+        "network",
+        "filesystem",
+        "credentials"
+      ]
+    },
+    {
+      "name": "pi-tally",
+      "version": "0.0.11",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "filesystem", "session-metadata"]
+    },
+    {
+      "name": "@plannotator/pi-extension",
+      "version": "0.23.1",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "ui", "browser", "filesystem"]
+    },
+    {
+      "name": "@weshipwork/pi-herdr",
+      "version": "0.1.0",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "process", "network"]
+    },
+    {
+      "name": "@ff-labs/pi-fff",
+      "version": "0.10.0",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "tools", "filesystem", "index"]
+    },
+    {
+      "name": "@juicesharp/rpiv-pi",
+      "version": "1.20.0",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "skills", "agents", "filesystem", "process"]
+    },
+    {
+      "name": "@juicesharp/rpiv-todo",
+      "version": "1.20.0",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "tool", "filesystem"]
+    },
+    {
+      "name": "@juicesharp/rpiv-args",
+      "version": "1.20.0",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "process", "agent-instructions"]
+    },
+    {
+      "name": "@juicesharp/rpiv-ask-user-question",
+      "version": "1.20.0",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "tool", "ui"]
+    },
+    {
+      "name": "pi-caveman",
+      "version": "0d4c639d672b0b80afaa035f582152dcab9c6a8f",
+      "source": "github:jonjonrankin/pi-caveman",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "system-prompt", "filesystem", "ui"]
+    }
+  ]
+}

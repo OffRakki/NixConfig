@@ -13,21 +13,29 @@ read/edit the NixConfig sources instead.
 
 | Thing | Source path |
 |---|---|
-| Pi settings/packages/models | `hosts/sora/home-manager/modules/pi/pi.nix` |
+| Pi settings/models | `hosts/sora/home-manager/modules/pi/pi.nix` |
+| Nix-built package closure | `hosts/sora/home-manager/modules/pi/packages/` |
+| Package trust/capability inventory | `hosts/sora/home-manager/modules/pi/packages/inventory.json` |
 | Ciel context | `hosts/sora/home-manager/modules/pi/context.md` |
 | User skills | `hosts/sora/home-manager/modules/pi/skills/<name>/SKILL.md` |
 | Custom agents | `hosts/sora/home-manager/modules/pi/agents/**.md` |
 | Custom extensions | `hosts/sora/home-manager/modules/pi/extensions/*.ts` |
 | Prompt templates | `hosts/sora/home-manager/modules/pi/prompts/*.md` |
 | Themes | `hosts/sora/home-manager/modules/pi/themes/*.json` |
-| Runtime package install dir | `~/.pi/agent/npm/` (read-only for source changes) |
+| Legacy runtime package cache | `~/.pi/agent/npm/` (not source of truth; never edit) |
 
 When creating a new Nix-managed skill, register it in `pi.nix` under `home.file`
 and add a routing line in `context.md` if it needs proactive loading.
 
 ## Installed Pi packages
 
-Declared in `pi.nix -> programs.pi-coding-agent.settings.packages`:
+All third-party packages are fully Nix-built from the exact dependency closure
+in `packages/package-lock.json`. `packages/default.nix` exposes immutable store
+paths to `pi.nix -> programs.pi-coding-agent.settings.packages`; Pi's mutable
+npm/git installer is not the source of truth. Capability and trust metadata
+lives in `packages/inventory.json`.
+
+Active packages:
 
 | Package | Provides / use when |
 |---|---|
@@ -54,9 +62,20 @@ Declared in `pi.nix -> programs.pi-coding-agent.settings.packages`:
 | `@juicesharp/rpiv-ask-user-question` | `ask_user_question` structured questionnaire tool (2-4 options, 1-4 questions). |
 | `@vigolium/piolium` | Security audit/review skills: Semgrep, CodeQL, vuln reports, threat models, etc. |
 
-Commented-out optional package entries currently left in `pi.nix` for easy re-enable:
-`pi-chrome`, `@ogulcancelik/pi-sketch`, `@juicesharp/rpiv-btw`,
-`@juicesharp/rpiv-i18n`, and `@juicesharp/rpiv-workflow`.
+Peer-only rpiv packages may exist inside the Nix closure without being active
+Pi package roots; `packages/default.nix` owns that distinction.
+
+### Updating a package pin
+
+1. Review upstream changes and update the exact version in `packages/package.json`.
+2. Run `npm install --package-lock-only --ignore-scripts --legacy-peer-deps`
+   inside `packages/`.
+3. Update the matching inventory version/capabilities when needed.
+4. Set `npmDepsHash = pkgs.lib.fakeHash`, build `npmClosure`, then replace the
+   fake hash with Nix's reported hash.
+5. Build the Sora configuration and load every resulting package path through
+   Pi before applying. Do not use `pi update --extensions`; activation would
+   drift from the Nix closure.
 
 Browser note: Lucky uses Firefox as the daily browser, so prefer
 `pi-agent-browser-native` for isolated/agent-owned browser automation. Only
