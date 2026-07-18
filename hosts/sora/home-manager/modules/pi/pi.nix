@@ -192,6 +192,14 @@ in {
       powerline = {
         preset = "nerd";
       };
+      # Empty jump bindings suppress powerline's scroll-away navigation card.
+      powerlineShortcuts = {
+        jumpChatBottom = null;
+        jumpPreviousUserMessage = null;
+        jumpNextUserMessage = null;
+        jumpPreviousLlmMessage = null;
+        jumpNextLlmMessage = null;
+      };
       packages = piPackages.paths;
     };
     models = {
