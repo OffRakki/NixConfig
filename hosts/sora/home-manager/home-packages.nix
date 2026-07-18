@@ -18,6 +18,7 @@
   '';
 in {
   home.packages = with pkgs; [
+    viddy
     orca-slicer-flatpak
     codex
     drawio

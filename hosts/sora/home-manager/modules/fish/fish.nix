@@ -124,6 +124,7 @@
         fgrep = "fgrep --color=always";
       };
       shellAbbrs = {
+        watch = "viddy";
         jjs = "jj split -r";
         jjm = "jj b m master --to";
         jjd = "jj describe -r";
