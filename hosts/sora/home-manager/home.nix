@@ -3,10 +3,10 @@
   lib,
   osConfig,
   pkgs,
-  nixConfigRoot,
   ...
 }: {
   imports = [
+    ../../home-manager/profiles/base.nix
     inputs.catppuccin.homeModules.catppuccin
     inputs.noctalia.homeModules.default
     inputs.spicetify-nix.homeManagerModules.spicetify
@@ -19,8 +19,6 @@
     ./persistence.nix
     ./onedrive.nix
   ];
-
-  programs.home-manager.enable = true;
 
   home.activation.installBambuFlatpaks = lib.hm.dag.entryAfter ["writeBoundary"] ''
     export XDG_DATA_HOME="''${XDG_DATA_HOME:-$HOME/.local/share}"
@@ -36,20 +34,11 @@
     username = "rakki";
     homeDirectory = "/home/rakki";
     sessionVariables = {
-      NH_FLAKE = nixConfigRoot;
       OPENCODE_SERVER_PASSWORD = "$(cat ${osConfig.sops.secrets.opencodeServerPass.path})";
       OPENCODE_SERVER_USERNAME = "rakki";
       SOPS_AGE_KEY_FILE = "$HOME/sync/sops/age/keys.txt";
     };
-    persistence."/persist".directories = [
-      "Documents"
-      "Downloads"
-      "Pictures"
-      "Projects"
-      "Videos"
-      ".local/bin"
-      ".local/share/nix" # trusted settings and repl history
-    ];
+    persistence."/persist".directories = ["Projects"];
   };
 
   xdg = {
@@ -129,14 +118,4 @@
       };
     };
   };
-
-  # Enable home-manager
-
-  # Nicely reload system units when changing configs
-  systemd.user = {
-    startServices = "sd-switch";
-  };
-
-  # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
-  home.stateVersion = "25.05";
 }

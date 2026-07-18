@@ -9,19 +9,15 @@
     ./mako.nix
     ./clipnotify.nix
     ./swayosd.nix
-    ./jujutsu.nix
     ./zed.nix
     ./alacritty.nix
     ./helix.nix
     ./calendar.nix
     ./wofi.nix
     ./fastfetch.nix
-    ./git.nix
     ./glance.nix
     ./waybar.nix
     ./neovim.nix
-    ./bat.nix
-    ./eza.nix
     ./kitty.nix
     ./qutebrowser.nix
     ./aerc.nix
