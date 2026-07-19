@@ -149,9 +149,9 @@ in {
     settings = {
       enableInstallTelemtry = false;
       enableAnalytics = false;
-      defaultProvider = "deepseek";
-      defaultModel = "deepseek-v4-flash";
-      defaultThinkingLevel = "high";
+      defaultProvider = "openai-codex";
+      defaultModel = "gpt-5.6-sol";
+      defaultThinkingLevel = "medium";
       theme = "piolium-srcery";
       enabledModels = [
         "gpt-5.5"
