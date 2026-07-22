@@ -14,7 +14,9 @@
       # PenEcho targets newer Codex flags; 0.137 rejects unknown --disable values.
       substituteInPlace codex-cli.js \
         --replace-fail '"browser_use_full_cdp_access", ' "" \
-        --replace-fail '"code_mode_host", ' ""
+        --replace-fail '"code_mode_host", ' "" \
+        --replace-fail '    "-c", "orchestrator.skills.enabled=false",' "" \
+        --replace-fail '    "-c", "orchestrator.mcp.enabled=false",' ""
     '';
     dontNpmBuild = true;
 
