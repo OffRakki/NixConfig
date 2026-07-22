@@ -10,6 +10,12 @@
       hash = "sha256-yDSM8+mq/8/ZGXHaZ6Had+7hEBrCOyQvNbgVHGBdSFQ=";
     };
     npmDepsHash = "sha256-t9VoxA5caqz7zNzO1AZJhOPdOQ8/KPhTKl7QYQddEK0=";
+    postPatch = ''
+      # PenEcho targets newer Codex flags; 0.137 rejects unknown --disable values.
+      substituteInPlace codex-cli.js \
+        --replace-fail '"browser_use_full_cdp_access", ' "" \
+        --replace-fail '"code_mode_host", ' ""
+    '';
     dontNpmBuild = true;
 
     nativeBuildInputs = [pkgs.makeWrapper];
