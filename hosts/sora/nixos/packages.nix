@@ -64,7 +64,6 @@
     android-tools
     marksman
     bitwarden-cli
-    libreoffice-fresh
     rclone
     rclone-browser
     gpu-screen-recorder
