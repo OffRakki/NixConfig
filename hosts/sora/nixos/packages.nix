@@ -10,6 +10,7 @@
     nh
     nix-output-monitor
     nvd
+    icu
 
     whisper-cpp
 
