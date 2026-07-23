@@ -207,6 +207,13 @@ in {
           size = "monitor_w/4 monitor_h/4",
         })
 
+        hl.window_rule ({
+          name = "Write-Email",
+          match = {initial_title = "Write.*"},
+          float = true,
+          size = "monitor_w/2 monitor_h/2",
+        })
+
         hl.window_rule({
           name = "inhibit-idle-fullscreen",
           match = { fullscreen = true },

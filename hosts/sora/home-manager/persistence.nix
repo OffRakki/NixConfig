@@ -6,6 +6,7 @@
     ".steam"
     ".factorio"
     ".runelite"
+    ".thunderbird"
     ".local/share/waydroid"
     ".local/share/flatpak"
     ".local/share/containers"
