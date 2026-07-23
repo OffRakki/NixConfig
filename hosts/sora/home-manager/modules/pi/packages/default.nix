@@ -57,7 +57,7 @@
     '';
   };
   cavemanRev = "0d4c639d672b0b80afaa035f582152dcab9c6a8f";
-  caveman = pkgs.fetchFromGitHub {
+  _caveman = pkgs.fetchFromGitHub {
     owner = "jonjonrankin";
     repo = "pi-caveman";
     rev = cavemanRev;
@@ -79,5 +79,8 @@ in
   assert (builtins.head inventoryCaveman).source == "github:jonjonrankin/pi-caveman";
   assert (builtins.head inventoryCaveman).version == cavemanRev; {
     inherit inventory npmClosure;
-    paths = map (name: "${npmClosure}/node_modules/${name}") activeNpmPackages ++ [caveman];
+    paths =
+      map (name: "${npmClosure}/node_modules/${name}") activeNpmPackages
+      # ++ [_caveman]
+      ;
   }
