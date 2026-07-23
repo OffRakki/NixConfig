@@ -484,7 +484,7 @@ in {
         clipboardWatchTextCommand = "wl-paste --type text --watch cliphist store";
         clipboardWatchImageCommand = "wl-paste --type image --watch cliphist store";
         position = "top_left";
-        pinnedApps = ["pi-coding-agent" "firefox"];
+        pinnedApps = ["pi-coding-agent" "firefox" "thunderbird"];
         useApp2Unit = false;
         sortByMostUsed = true;
         terminalCommand = "kitty -e";
