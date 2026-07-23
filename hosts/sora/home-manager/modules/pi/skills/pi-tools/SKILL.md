@@ -39,6 +39,7 @@ Active packages:
 
 | Package | Provides / use when |
 |---|---|
+| `@dietrichgebert/ponytail` | YAGNI-focused extension and skills for simpler implementations, reviews, audits, debt, and gain analysis. |
 | `pi-drawio` | `drawio` skill for native draw.io diagrams and exports. |
 | `pi-intercom` | `intercom` tool + skill for coordinating multiple local Pi sessions. |
 | `pi-lean-ctx` | `ctx_*`, `lean_ctx`, graph/knowledge/session/search helpers; token-efficient reads/searches/build output. |

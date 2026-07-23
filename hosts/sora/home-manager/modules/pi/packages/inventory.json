@@ -3,6 +3,13 @@
   "trustPolicy": "All entries are pinned third-party code. Extensions execute with the Pi process permissions; skills and prompts can direct tool use. Review source changes before updating a pin.",
   "packages": [
     {
+      "name": "@dietrichgebert/ponytail",
+      "version": "4.8.4",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "skills", "agent-instructions"]
+    },
+    {
       "name": "@vigolium/piolium",
       "version": "0.0.12",
       "source": "npm",

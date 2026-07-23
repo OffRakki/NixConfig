@@ -4,6 +4,7 @@
   "private": true,
   "description": "Nix-built Pi package closure",
   "dependencies": {
+    "@dietrichgebert/ponytail": "4.8.4",
     "@ff-labs/pi-fff": "0.10.0",
     "@juicesharp/rpiv-advisor": "1.20.0",
     "@juicesharp/rpiv-args": "1.20.0",
@@ -13,11 +14,12 @@
     "@juicesharp/rpiv-todo": "1.20.0",
     "@juicesharp/rpiv-web-tools": "1.20.0",
     "@juicesharp/rpiv-workflow": "1.20.0",
+    "@plannotator/pi-extension": "0.23.1",
     "@standard-schema/spec": "1.1.0",
     "@tintinweb/pi-subagents": "0.10.3",
-    "@plannotator/pi-extension": "0.23.1",
     "@vigolium/piolium": "0.0.12",
     "@weshipwork/pi-herdr": "0.1.0",
+    "jiti": "2.7.0",
     "pi-agent-browser-native": "0.2.68",
     "pi-ask-user": "0.13.0",
     "pi-drawio": "0.1.0",
@@ -36,7 +38,6 @@
     "pi-web-access": "0.13.0",
     "react": "19.2.7",
     "react-dom": "19.2.7",
-    "jiti": "2.7.0",
     "typebox": "1.2.16",
     "yaml": "2.8.1"
   }
