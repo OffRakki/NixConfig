@@ -186,7 +186,6 @@ in {
     dysk
     zenith-nvidia
     tmux
-    bitwarden-desktop
     pyprland
     wallust
     wlogout
