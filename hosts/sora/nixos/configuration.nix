@@ -36,6 +36,26 @@
     overlays = [
       inputs.nix-minecraft.overlay
       (final: prev: {
+        codex = prev.stdenvNoCC.mkDerivation {
+          pname = "codex";
+          version = "0.145.0";
+          dontUnpack = true;
+
+          src = prev.fetchzip {
+            url = "https://github.com/openai/codex/releases/download/rust-v0.145.0/codex-x86_64-unknown-linux-musl.tar.gz";
+            hash = "sha256-sTVj6s5TduyHGIZKqadzm2mBDtWEBbx909vptPCusTk=";
+            stripRoot = false;
+          };
+
+          installPhase = ''
+            install -Dm755 "$src/codex-x86_64-unknown-linux-musl" "$out/bin/codex"
+          '';
+
+          meta = prev.codex.meta // {
+            platforms = ["x86_64-linux"];
+          };
+        };
+
         openldap = prev.openldap.overrideAttrs (_: {
           doCheck = false;
         });
