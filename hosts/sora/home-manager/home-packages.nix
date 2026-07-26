@@ -8,7 +8,7 @@
       hash = "sha256-2q5TLfwHIx2uAvzjcaZrUObB70ypSnBbs7XyuZaCXuc=";
     };
 
-    nativeBuildInputs = [pkgs.autoPatchelfHook];
+    nativeBuildInputs = [pkgs.autoPatchelfHook pkgs.makeWrapper];
     buildInputs = with pkgs; [
       alsa-lib
       fontconfig
@@ -29,7 +29,8 @@
       runHook preInstall
       mkdir -p "$out/lib/ABDownloadManager" "$out/bin" "$out/share/applications" "$out/share/pixmaps"
       cp -r . "$out/lib/ABDownloadManager"
-      ln -s "$out/lib/ABDownloadManager/bin/ABDownloadManager" "$out/bin/ABDownloadManager"
+      makeWrapper "$out/lib/ABDownloadManager/bin/ABDownloadManager" "$out/bin/ABDownloadManager" \
+        --prefix LD_LIBRARY_PATH : ${pkgs.lib.makeLibraryPath [pkgs.fontconfig]}
       ln -s "$out/lib/ABDownloadManager/bin/ABDownloadManagerCli" "$out/bin/ABDownloadManagerCli"
       ln -s "$out/lib/ABDownloadManager/bin/ABDownloadManagerNativeMessagingHost" "$out/bin/ABDownloadManagerNativeMessagingHost"
       ln -s "$out/lib/ABDownloadManager/lib/ABDownloadManager.png" "$out/share/pixmaps/ab-download-manager.png"
