@@ -88,8 +88,9 @@ Wayland — `wl-paste -l` to check, then `wl-copy`. Load `linux` skill.
 ## Version Control
 
 `.jj/` → `jj` exclusively. Load `jujutsu` skill.
-Commit descriptions should sound natural and use first-person English, such as
-`I removed X` or `I made Y better`.
+Commit descriptions should sound natural and use past tense with an implied
+first-person subject but no `I`, such as `Removed X`, `Made this better`,
+`Added those packages`, or `Changed X, Y, and Z to this`.
 End of answer: `jj describe -m "..."` then `jj new` to keep `@` fresh.
 
 ## Notifications
