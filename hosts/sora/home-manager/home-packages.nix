@@ -116,7 +116,6 @@
 in {
   home.packages = with pkgs; [
     ab-download-manager
-    thunderbird
     viddy
     orca-slicer-flatpak
     penecho
