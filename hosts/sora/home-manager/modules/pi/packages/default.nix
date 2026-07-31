@@ -10,7 +10,6 @@
     "@juicesharp/rpiv-ask-user-question"
     "@juicesharp/rpiv-pi"
     "@juicesharp/rpiv-todo"
-    "@plannotator/pi-extension"
     "@vigolium/piolium"
     "@weshipwork/pi-herdr"
     "pi-agent-browser-native"
@@ -34,7 +33,7 @@
     pname = package.name;
     inherit (package) version;
     src = ./.;
-    npmDepsHash = "sha256-vVtcTtpqFOCfvonoQrr6W4ZA8eUSCB06Fof5OtLucMQ=";
+    npmDepsHash = "sha256-UhKAY2DYOVvw6SODmy8wAuoM+8h572ri8Q1FYL82yOY=";
     npmFlags = ["--legacy-peer-deps"];
     dontNpmBuild = true;
     installPhase = ''

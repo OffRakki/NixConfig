@@ -14,7 +14,6 @@
     "@juicesharp/rpiv-todo": "1.20.0",
     "@juicesharp/rpiv-web-tools": "1.20.0",
     "@juicesharp/rpiv-workflow": "1.20.0",
-    "@plannotator/pi-extension": "0.23.1",
     "@standard-schema/spec": "1.1.0",
     "@tintinweb/pi-subagents": "0.10.3",
     "@vigolium/piolium": "0.0.12",

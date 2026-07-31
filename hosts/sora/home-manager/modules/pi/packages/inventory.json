@@ -142,13 +142,6 @@
       "capabilities": ["extension", "filesystem", "session-metadata"]
     },
     {
-      "name": "@plannotator/pi-extension",
-      "version": "0.23.1",
-      "source": "npm",
-      "trust": "pinned-third-party",
-      "capabilities": ["extension", "ui", "browser", "filesystem"]
-    },
-    {
       "name": "@weshipwork/pi-herdr",
       "version": "0.1.0",
       "source": "npm",

@@ -55,7 +55,6 @@ Active packages:
 | `pi-invisible-continue` | Invisible continuation extension; resumes agent loops without visible prompt pollution. |
 | `pi-subagents` | `subagent` tool, `/run`/chains/parallel workflows, packaged role agents/prompts. |
 | `pi-agent-browser-native` | `agent_browser` tool for agent-owned browser automation, QA/repro flows, screenshots/download artifacts; requires upstream `agent-browser` on `PATH` for actual browser runs. |
-| `@plannotator/pi-extension` | Visual plan/review annotation UI via Plannotator commands. Optional workflow UX; remove if it competes with rpiv plan/review flow. |
 | `pi-tally` | Local Pi prompt/message usage counters, `/tally` command, and optional footer tally. |
 | `@juicesharp/rpiv-pi` | `discover/research/design/plan/implement/validate/code-review/...` skills and workflow agents. |
 | `@juicesharp/rpiv-todo` | `todo` tool, live overlay task list. Use for multi-step task tracking. |
