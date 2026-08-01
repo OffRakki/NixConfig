@@ -21,8 +21,6 @@
     ".config/dconf"
     ".config/OpenRGB"
     ".cache/nix-index"
-    ".cache/floorp"
-    ".floorp"
     {
       directory = ".ssh";
       mode = "0700";

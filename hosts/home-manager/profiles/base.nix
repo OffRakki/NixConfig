@@ -11,6 +11,7 @@
       "Downloads"
       "Pictures"
       "Videos"
+      "Projects"
       ".local/bin"
       ".local/share/nix"
     ];
