@@ -5,6 +5,8 @@
 }: let
   spicePkgs = inputs.spicetify-nix.legacyPackages.${pkgs.stdenv.hostPlatform.system};
 in {
+  home.persistence."/persist".directories = [".config/spotify"];
+
   programs.spicetify = {
     enable = true;
     theme = spicePkgs.themes.catppuccin;

@@ -7,6 +7,11 @@
   #   "x-scheme-handler/qute" = [ "org.qutebrowser.qutebrowser.desktop" ];
   # };
 
+  home.persistence."/persist".directories = [
+    ".config/qutebrowser"
+    ".local/share/qutebrowser"
+  ];
+
   programs.qutebrowser = {
     enable = true;
     loadAutoconfig = true;
