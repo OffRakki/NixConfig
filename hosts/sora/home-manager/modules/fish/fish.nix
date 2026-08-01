@@ -87,7 +87,13 @@
         set fish_cursor_visual      block
 
         bind ctrl-backspace backward-kill-word
+        bind ctrl-delete kill-word
+        bind ctrl-left prevd-or-backward-word
+        bind ctrl-right nextd-or-forward-word
         bind alt-backspace backward-kill-token
+        bind alt-delete kill-token
+        bind alt-left backward-token
+        bind alt-right forward-token
 
         # Use terminal colors
         set -x fish_color_autosuggestion      BE9F6E
