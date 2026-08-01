@@ -60,7 +60,6 @@ Active packages:
 | `@juicesharp/rpiv-todo` | `todo` tool, live overlay task list. Use for multi-step task tracking. |
 | `@juicesharp/rpiv-args` | Skill argument interpolation (`$1`, `$ARGUMENTS`, shell substitutions) for slash-invoked skills. |
 | `@juicesharp/rpiv-ask-user-question` | `ask_user_question` structured questionnaire tool (2-4 options, 1-4 questions). |
-| `@vigolium/piolium` | Security audit/review skills: Semgrep, CodeQL, vuln reports, threat models, etc. |
 
 Peer-only rpiv packages may exist inside the Nix closure without being active
 Pi package roots; `packages/default.nix` owns that distinction.
@@ -104,7 +103,6 @@ for the job.
 | Markdown/LaTeX previews | `preview_export` | Export same-turn content by passing `markdown`, not `last_assistant`. |
 | Cross-session coordination | `intercom` | Use for local Pi sessions and subagent bridge coordination. |
 | Diagrams | `drawio` skill | Load the skill; produce real `.drawio` when asked for diagrams. |
-| Security audit | piolium skills (`audit`, `semgrep`, `codeql`, etc.) | Load matching security skill before scanning/reviewing. |
 
 Read note: the first native read warms Pi/LSP/tool hooks for that extension
 (`.nix`, `.md`, `.ts`, etc.). After that, prefer cached/token-efficient

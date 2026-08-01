@@ -16,7 +16,6 @@
     "@juicesharp/rpiv-workflow": "1.20.0",
     "@standard-schema/spec": "1.1.0",
     "@tintinweb/pi-subagents": "0.10.3",
-    "@vigolium/piolium": "0.0.12",
     "@weshipwork/pi-herdr": "0.1.0",
     "jiti": "2.7.0",
     "pi-agent-browser-native": "0.2.68",

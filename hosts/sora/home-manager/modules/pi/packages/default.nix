@@ -10,7 +10,6 @@
     "@juicesharp/rpiv-ask-user-question"
     "@juicesharp/rpiv-pi"
     "@juicesharp/rpiv-todo"
-    "@vigolium/piolium"
     "@weshipwork/pi-herdr"
     "pi-agent-browser-native"
     "pi-ask-user"
@@ -33,7 +32,7 @@
     pname = package.name;
     inherit (package) version;
     src = ./.;
-    npmDepsHash = "sha256-UhKAY2DYOVvw6SODmy8wAuoM+8h572ri8Q1FYL82yOY=";
+    npmDepsHash = "sha256-1caF4bFkeASQyR84G0536OIJLI9lCe8wndbBxMaHbHY=";
     npmFlags = ["--legacy-peer-deps"];
     dontNpmBuild = true;
     installPhase = ''

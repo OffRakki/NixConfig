@@ -10,13 +10,6 @@
       "capabilities": ["extension", "skills", "agent-instructions"]
     },
     {
-      "name": "@vigolium/piolium",
-      "version": "0.0.12",
-      "source": "npm",
-      "trust": "pinned-third-party",
-      "capabilities": ["skills", "agent-instructions", "security-analysis"]
-    },
-    {
       "name": "pi-drawio",
       "version": "0.1.0",
       "source": "npm",
