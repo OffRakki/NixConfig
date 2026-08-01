@@ -1,24 +1,19 @@
 {...}: {
-  xdg.configFile = {
-    "mozilla/firefox/Rakki/chrome/userChrome.css".text = ''
-      #TabsToolbar { visibility: collapse !important; }
-      #sidebar-panel-header {display: none;}
-      #sidebar-header {display: none;}
-    '';
-    "mozilla/firefox/Rakki/user.js".text = ''
-      pref("widget.content.allow-gtk-dark-theme", true);
-      pref("layout.css.prefers-color-scheme.content", 2);
-    '';
-    "mozilla/firefox/profiles.ini".text = ''
-      [Profile0]
-      Name=Rakki
-      IsRelative=1
-      Path=Rakki
-      Default=1
-
-      [General]
-      StartWithLastProfile=1
-      Version=2
-    '';
+  programs.firefox = {
+    enable = true;
+    configPath = ".config/mozilla/firefox";
+    profiles = {
+      Rakki = {
+        settings = {
+          "widget.content.allow-gtk-dark-theme" = true;
+          "layout.css.prefers-color-scheme.content" = 2;
+        };
+        userChrome = ''
+          #TabsToolbar { visibility: collapse !important; }
+          #sidebar-panel-header { display: none; }
+          #sidebar-header { display: none; }
+        '';
+      };
+    };
   };
 }

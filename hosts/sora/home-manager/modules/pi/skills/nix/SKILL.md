@@ -30,6 +30,11 @@ idle timer resets on each file touch). On timeout, just warm again.
 Use `ctx_find`, `ctx_grep`, and targeted reads directly in NixConfig.
 Prefer source-of-truth files over generated maps or broad docs.
 
+## Nix style
+
+Keep configuration YAGNI-minimal and group shared attribute prefixes into
+nested blocks instead of repeating dotted assignments.
+
 ## Pi module changes
 
 Pi packages, custom extensions, skills, prompts, themes, custom agents, and model

@@ -208,7 +208,6 @@ in {
     nmap
     netcat
     rofi
-    firefox
     starship
     btop
     waybar-mpris
