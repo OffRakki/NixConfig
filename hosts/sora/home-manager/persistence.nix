@@ -5,6 +5,7 @@
     ".nv"
     ".factorio"
     ".runelite"
+    ".local/share/BeamNG"
     ".local/share/waydroid"
     ".local/share/flatpak"
     ".local/share/containers"
