@@ -1,4 +1,9 @@
 {pkgs, ...}: {
+  home.persistence."/persist".directories = [
+    ".local/share/fish"
+    ".local/share/zoxide"
+  ];
+
   programs = {
     fish = {
       enable = true;

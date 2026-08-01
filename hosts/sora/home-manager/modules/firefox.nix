@@ -1,4 +1,6 @@
 {...}: {
+  home.persistence."/persist".directories = [".config/mozilla"];
+
   programs.firefox = {
     enable = true;
     configPath = ".config/mozilla/firefox";

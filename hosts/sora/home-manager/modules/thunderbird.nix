@@ -1,4 +1,6 @@
 {...}: {
+  home.persistence."/persist".directories = [".thunderbird"];
+
   accounts.email.accounts."me@lrd.rs" = {
     address = "me@lrd.rs";
     userName = "me@lrd.rs";

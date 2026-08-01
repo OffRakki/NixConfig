@@ -16,6 +16,7 @@
 in {
   programs.noctalia-shell.package = patchedNoctaliaShell;
   home.persistence."/persist".directories = [
+    ".config/noctalia"
     ".cache/noctalia"
     ".cache/noctalia-qs"
   ];
