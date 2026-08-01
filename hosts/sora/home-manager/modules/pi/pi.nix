@@ -152,7 +152,7 @@ in {
       defaultProvider = "openai-codex";
       defaultModel = "gpt-5.6-sol";
       defaultThinkingLevel = "medium";
-      theme = "piolium-srcery";
+      theme = "ciel-cursor";
       enabledModels = [
         "gpt-5.5"
         "gpt-5.6*"
