@@ -86,6 +86,9 @@
         set fish_cursor_replace_one underscore blink
         set fish_cursor_visual      block
 
+        bind ctrl-backspace backward-kill-word
+        bind alt-backspace backward-kill-token
+
         # Use terminal colors
         set -x fish_color_autosuggestion      BE9F6E
         set -x fish_color_cancel              -r
