@@ -36,6 +36,16 @@
     overlays = [
       inputs.nix-minecraft.overlay
       (_: prev: {
+        flatpak = prev.flatpak.overrideAttrs (old: {
+          patches =
+            (old.patches or [])
+            ++ [
+              (prev.fetchurl {
+                url = "https://github.com/flatpak/flatpak/pull/6721.patch";
+                hash = "sha256-1isR99NvPgTUB2q2/1N1cNieDIfZ67Y7+8xlu8FPsF0=";
+              })
+            ];
+        });
         openldap = prev.openldap.overrideAttrs (_: {
           doCheck = false;
         });
