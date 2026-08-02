@@ -83,6 +83,10 @@
     languagePacks = ["pt-BR"];
     profiles."ywbct64a.default" = {
       isDefault = true;
+      accountsOrder = [
+        "me@lrd.rs"
+        "fruteiralab@lrd.rs"
+      ];
       settings = {
         "extensions.activeThemeID" = "seoul-dark@mkirc.themes.thunderbird.net";
         "extensions.filtaquilla.removeFlagged.enabled" = true;
