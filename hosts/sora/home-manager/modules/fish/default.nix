@@ -1,6 +1,3 @@
 {
-  imports = [
-    ./fish.nix
-    # ./hist-merge.fish
-  ];
+  imports = [./fish.nix];
 }

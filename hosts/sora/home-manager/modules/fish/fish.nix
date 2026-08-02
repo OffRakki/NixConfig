@@ -1,4 +1,4 @@
-{pkgs, ...}: {
+{lib, pkgs, ...}: {
   home.persistence."/persist".directories = [
     ".local/share/fish"
     ".local/share/zoxide"
@@ -172,6 +172,7 @@
       };
       functions = {
         fish_greeting = "";
+        up-or-search = lib.readFile ./hist-merge.fish;
         nix-inspect = ''
           set -s PATH | grep "PATH\[.*/nix/store" | cut -d '|' -f2 | \
             grep -v -e "-man" -e "-terminfo" | \
