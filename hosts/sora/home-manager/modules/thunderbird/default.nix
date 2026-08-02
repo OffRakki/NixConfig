@@ -81,7 +81,7 @@
   programs.thunderbird = {
     enable = true;
     languagePacks = ["pt-BR"];
-    profiles."ywbct64a.default" = {
+    profiles.rakki = {
       isDefault = true;
       accountsOrder = [
         "me@lrd.rs"
