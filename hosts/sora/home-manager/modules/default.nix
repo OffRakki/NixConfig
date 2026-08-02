@@ -29,6 +29,6 @@
     ./spicetify.nix
     ./mangohud.nix
     ./firefox.nix
-    ./thunderbird.nix
+    ./thunderbird
   ];
 }
