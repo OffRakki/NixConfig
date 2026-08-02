@@ -27,7 +27,10 @@
     chmod u+w "$XDG_DATA_HOME/flatpak/exports/share/icons/hicolor/index.theme" 2>/dev/null || true
 
     ${pkgs.flatpak}/bin/flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-    ${pkgs.flatpak}/bin/flatpak install --user --noninteractive -y flathub com.bambulab.BambuStudio com.orcaslicer.OrcaSlicer
+    ${pkgs.flatpak}/bin/flatpak install --user --noninteractive -y flathub \
+      com.bambulab.BambuStudio \
+      com.orcaslicer.OrcaSlicer \
+      "org.freedesktop.Platform.GL.nvidia-${lib.replaceStrings ["."] ["-"] osConfig.hardware.nvidia.package.version}//1.4"
   '';
 
   home = {
