@@ -13,9 +13,8 @@ set -l lineno (commandline -L)
 
 switch $lineno
     case 1
-        commandline -f history-search-backward
-        # Here we go
         history merge
+        commandline -f history-search-backward
     case '*'
         commandline -f up-line
 end
