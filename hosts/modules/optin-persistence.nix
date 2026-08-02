@@ -13,6 +13,7 @@
       ];
       directories = [
         "/var/lib/systemd"
+        "/var/lib/bluetooth"
         "/var/lib/nixos"
         "/var/lib/tailscale"
         "/var/lib/containers"
