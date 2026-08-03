@@ -64,7 +64,6 @@
     # Fix for wireless keyboard's FN keys not working properly
     extraModprobeConfig = ''
       options hid_apple fnmode=0
-      options bluetooth disable_ertm=1
     '';
     plymouth = {
       enable = true;
@@ -133,10 +132,7 @@
       enable = true;
       powerOnBoot = true;
       settings = {
-        General = {
-          Enable = "Source,Sink,Media,Socket";
-          Experimental = false;
-        };
+        General.Experimental = false;
       };
     };
     i2c.enable = true;
