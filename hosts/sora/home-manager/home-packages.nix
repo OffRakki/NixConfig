@@ -115,6 +115,7 @@
   '';
 in {
   home.packages = with pkgs; [
+    shiru
     ab-download-manager
     viddy
     orca-slicer-flatpak
