@@ -8,6 +8,7 @@
     extraCompatPackages = with pkgs; [
       catppuccin-cursors.mochaPeach
       proton-ge-bin
+      dwproton-bin
     ];
   };
   programs.gamescope = {
