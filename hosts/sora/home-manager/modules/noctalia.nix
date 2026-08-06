@@ -192,7 +192,7 @@ in {
         ];
       };
       bar = {
-        position = "top";
+        position = "left";
         density = "compact";
         showOutline = false;
         showCapsule = false;
@@ -200,7 +200,7 @@ in {
         capsuleColorKey = "none";
         widgetSpacing = 6;
         contentPadding = 2;
-        fontScale = 1;
+        fontScale = 1.5;
         backgroundOpacity = 0.93;
         useSeparateOpacity = false;
         floating = true;
