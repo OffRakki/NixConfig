@@ -74,7 +74,7 @@ in {
           misc = {
             disable_hyprland_logo = true,
             disable_splash_rendering = true,
-            vrr = 0,
+            vrr = 1,
             mouse_move_enables_dpms = false,
             enable_swallow = false,
             swallow_regex = "^(kitty)$",
@@ -159,7 +159,7 @@ in {
 
         ------------------------------- WORKSPACE RULES -------------------------------
         hl.workspace_rule({ workspace = "1", monitor = "DP-1", persistent = true, default = true })
-        hl.workspace_rule({ workspace = "2", monitor = "DP-1", persistent = true,})
+        hl.workspace_rule({ workspace = "2", monitor = "DP-2", persistent = true,})
         hl.workspace_rule({ workspace = "3", monitor = "DP-1", persistent = true,})
         hl.workspace_rule({ workspace = "4", monitor = "DP-1", persistent = true,})
         hl.workspace_rule({ workspace = "6", monitor = "HDMI-A-1", persistent = true,})
@@ -362,7 +362,13 @@ in {
 
         ------------------------------- LAYOUTS -------------------------------
         hl.config({ master = { new_status = "slave", new_on_top = true, orientation = "right", mfact = 0.5 } })
-        hl.config({ scrolling = {follow_focus = true, focus_fit_method = 1, fullscreen_on_one_column = true, column_width = 0.5 } })
+        hl.config({ scrolling = {
+          follow_focus = true,
+          focus_fit_method = 1,
+          fullscreen_on_one_column = true,
+          explicit_column_widths = "0.333, 0.5, 0.667",
+          column_width = 0.333,
+        } })
         -----------------------------------------------------------------------
 
         ------------------------------- EXEC ON START -------------------------------
@@ -481,12 +487,11 @@ in {
         hl.bind("${mod} + I",                   hl.dsp.window.pin({ action = "toggle" }))
         hl.bind("Print",                        hl.dsp.exec_cmd("${hyprshot} -z --clipboard-only -m region --freeze"))
         hl.bind("CTRL + Print",                 hl.dsp.exec_cmd("${hyprshot} -z --clipboard-only -m output --freeze"))
-        hl.bind("${mod} + L",                   hl.dsp.exec_cmd("${lock}"))
+        hl.bind("${mod} + ALT + L",             hl.dsp.exec_cmd("${lock}"))
         -- "${mod} + SHIFT + D",                hl.dsp.exec_cmd("pkill wofi || wofi --show drun -G --insensitive" -- Main Menu))
         hl.bind("${mod} + D",                   hl.dsp.exec_cmd("noctalia-shell ipc call launcher toggle"))
         hl.bind("${mod} + ALT + D",             hl.dsp.exec_cmd("pkill wofi || wofi --show run -G --insensitive")) -- Main Menu
         hl.bind("${mod} + V",                   hl.dsp.exec_cmd("pkill clipse & ${terminal} --class middleFloat -e clipse"))
-        hl.bind("${mod} + SHIFT + Q",           hl.dsp.window.kill)
         hl.bind("${mod} + A",                   hl.dsp.exec_cmd("pkill wofi || true && ags -t 'overview'"))
         hl.bind("${mod} + RETURN",              hl.dsp.exec_cmd("${terminal}")) -- terminal
         hl.bind("${mod} + ALT + C",             hl.dsp.exec_cmd("pkill qalc & ${terminal} --class middleFloat -e qalc")) -- calculator (qalculate)
@@ -540,16 +545,29 @@ in {
           -- Move active window to workspace and DON'T follow
           hl.bind("${mod} + CTRL + "  .. key, hl.dsp.window.move({ workspace = i, follow = false }))
         end
-        -- Move focus with arrow keys
+        -- Move focus with Vim keys or arrow keys
+        hl.bind("${mod} + H",     hl.dsp.layout("focus l"))
+        hl.bind("${mod} + L",     hl.dsp.layout("focus r"))
+        hl.bind("${mod} + K",     hl.dsp.layout("focus u"))
+        hl.bind("${mod} + J",     hl.dsp.layout("focus d"))
         hl.bind("${mod} + left",  hl.dsp.layout("focus l"))
         hl.bind("${mod} + right", hl.dsp.layout("focus r"))
         hl.bind("${mod} + up",    hl.dsp.layout("focus u"))
         hl.bind("${mod} + down",  hl.dsp.layout("focus d"))
-        -- Move windows with arrow keys
+
+        -- Move windows with Vim keys or arrow keys
+        hl.bind("${mod} + SHIFT + H",     hl.dsp.window.move({ direction = "l"}))
+        hl.bind("${mod} + SHIFT + L",     hl.dsp.window.move({ direction = "r"}))
+        hl.bind("${mod} + SHIFT + K",     hl.dsp.window.move({ direction = "u"}))
+        hl.bind("${mod} + SHIFT + J",     hl.dsp.window.move({ direction = "d"}))
         hl.bind("${mod} + SHIFT + left",  hl.dsp.window.move({ direction = "l"}))
         hl.bind("${mod} + SHIFT + right", hl.dsp.window.move({ direction = "r"}))
         hl.bind("${mod} + SHIFT + up",    hl.dsp.window.move({ direction = "u"}))
         hl.bind("${mod} + SHIFT + down",  hl.dsp.window.move({ direction = "d"}))
+
+        -- Cycle scrolling column widths
+        hl.bind("${mod} + CTRL + H", hl.dsp.layout("colresize -conf"))
+        hl.bind("${mod} + CTRL + L", hl.dsp.layout("colresize +conf"))
 
         -- Intake/expel windows from/to right column (scrolling layout)
         hl.bind("${mod} + bracketleft", function()
