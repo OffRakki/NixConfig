@@ -366,7 +366,6 @@ in {
           follow_focus = true,
           focus_fit_method = 1,
           fullscreen_on_one_column = true,
-          explicit_column_widths = "0.333, 0.5, 0.667",
           column_width = 0.333,
         } })
         -----------------------------------------------------------------------
@@ -565,9 +564,9 @@ in {
         hl.bind("${mod} + SHIFT + up",    hl.dsp.window.move({ direction = "u"}))
         hl.bind("${mod} + SHIFT + down",  hl.dsp.window.move({ direction = "d"}))
 
-        -- Cycle scrolling column widths
-        hl.bind("${mod} + CTRL + H", hl.dsp.layout("colresize -conf"))
-        hl.bind("${mod} + CTRL + L", hl.dsp.layout("colresize +conf"))
+        -- Resize scrolling columns incrementally
+        hl.bind("${mod} + CTRL + H", hl.dsp.layout("colresize -0.05"), { repeating = true })
+        hl.bind("${mod} + CTRL + L", hl.dsp.layout("colresize +0.05"), { repeating = true })
 
         -- Intake/expel windows from/to right column (scrolling layout)
         hl.bind("${mod} + bracketleft", function()
