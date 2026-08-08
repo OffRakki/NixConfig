@@ -9,7 +9,7 @@
     shellIntegration.enableFishIntegration = true;
     enableGitIntegration = true;
     font.name = "JetBrainsMono Nerd Font";
-    font.size = 10;
+    font.size = 12;
     settings = {
       cursor_shape = "block";
       cursor_shape_unfocused = "hollow";

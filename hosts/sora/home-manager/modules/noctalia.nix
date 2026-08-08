@@ -553,7 +553,7 @@ in {
         clockFormat = "hh\nmm";
         passwordChars = true;
         lockScreenMonitors = ["DP-1"];
-        lockScreenBlur = 0.8;
+        lockScreenBlur = 1;
         lockScreenTint = 0.1;
         keybinds = {
           keyUp = ["Up"];

@@ -159,9 +159,10 @@ in {
 
         ------------------------------- WORKSPACE RULES -------------------------------
         hl.workspace_rule({ workspace = "1", monitor = "DP-1", persistent = true, default = true })
-        hl.workspace_rule({ workspace = "2", monitor = "DP-2", persistent = true,})
+        hl.workspace_rule({ workspace = "2", monitor = "DP-1", persistent = true,})
         hl.workspace_rule({ workspace = "3", monitor = "DP-1", persistent = true,})
         hl.workspace_rule({ workspace = "4", monitor = "DP-1", persistent = true,})
+        hl.workspace_rule({ workspace = "5", monitor = "DP-2", persistent = true,})
         hl.workspace_rule({ workspace = "6", monitor = "HDMI-A-1", persistent = true,})
         -------------------------------------------------------------------------------
 
@@ -245,7 +246,7 @@ in {
           match = { initial_class = "org.prismlauncher.PrismLauncher" },
           no_initial_focus = true,
           workspace = "4",
-          monitor = "DP-1",
+          -- monitor = "DP-1",
         })
 
         hl.window_rule({
@@ -254,7 +255,7 @@ in {
           no_initial_focus = true,
           -- tile = true, -- Popups become glitchy with this on
           workspace = "4",
-          monitor = "DP-1",
+          -- monitor = "DP-1",
         })
 
         hl.window_rule({
@@ -262,7 +263,7 @@ in {
           match = { initial_title = "Steam Settings" },
           float = true,
           workspace = "4",
-          monitor = "DP-1",
+          -- monitor = "DP-1",
         })
 
         hl.window_rule({
@@ -273,7 +274,7 @@ in {
           no_initial_focus = true,
           -- tile = true,
           workspace = "3",
-          monitor = "DP-1",
+          -- monitor = "DP-1",
         })
 
         hl.window_rule({
@@ -283,7 +284,7 @@ in {
           no_initial_focus = true,
           tile = true,
           workspace = "3",
-          monitor = "DP-1",
+          -- monitor = "DP-1",
         })
 
         hl.window_rule({
@@ -291,7 +292,7 @@ in {
           match = { initial_class = "org.telegram.desktop" },
           no_initial_focus = true,
           workspace = "2",
-          monitor = "DP-2",
+          -- -- monitor = "DP-2",
         })
 
         hl.window_rule({
@@ -299,7 +300,7 @@ in {
           match = { initial_class = "goofcord" },
           no_initial_focus = true,
           workspace = "2",
-          monitor = "DP-2",
+          -- monitor = "DP-2",
         })
 
         hl.window_rule({
@@ -307,7 +308,7 @@ in {
           match = { initial_class = "vesktop" },
           no_initial_focus = true,
           workspace = "2",
-          monitor = "DP-2",
+          -- monitor = "DP-2",
         })
 
         hl.window_rule({
@@ -315,7 +316,7 @@ in {
           match = { class = "firefox" },
           opacity = "2 2 2",
           workspace = "1",
-          monitor = "DP-1",
+          -- monitor = "DP-1",
         })
 
         hl.window_rule({
