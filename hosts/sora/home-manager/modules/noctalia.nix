@@ -445,7 +445,7 @@ in {
         monitorDirectories = [];
         enableMultiMonitorDirectories = false;
         generateColors = true;
-        setWallpaperOnAllMonitors = true;
+        setWallpaperOnAllMonitors = false;
         showHiddenFiles = false;
         viewMode = "single";
         fillMode = "crop";
