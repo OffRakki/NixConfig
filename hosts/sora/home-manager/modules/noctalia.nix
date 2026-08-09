@@ -336,7 +336,16 @@ in {
         rightClickAction = "controlCenter";
         rightClickFollowMouse = true;
         rightClickCommand = "";
-        screenOverrides = [];
+        screenOverrides = [
+          {
+            name = "DP-1";
+            position = "left";
+          }
+          {
+            name = "DP-2";
+            position = "bottom";
+          }
+        ];
       };
 
       notifications = {
