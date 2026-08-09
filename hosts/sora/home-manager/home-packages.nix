@@ -36,6 +36,8 @@
     portfolio
     wealthfolio
 
+    scrcpy
+
     # Langs
     nil
 
