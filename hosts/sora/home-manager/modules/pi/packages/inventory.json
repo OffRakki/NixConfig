@@ -142,13 +142,6 @@
       "capabilities": ["extension", "process", "network"]
     },
     {
-      "name": "@ff-labs/pi-fff",
-      "version": "0.10.0",
-      "source": "npm",
-      "trust": "pinned-third-party",
-      "capabilities": ["extension", "tools", "filesystem", "index"]
-    },
-    {
       "name": "@juicesharp/rpiv-pi",
       "version": "1.20.0",
       "source": "npm",

@@ -5,7 +5,6 @@
   "description": "Nix-built Pi package closure",
   "dependencies": {
     "@dietrichgebert/ponytail": "4.8.4",
-    "@ff-labs/pi-fff": "0.10.0",
     "@juicesharp/rpiv-advisor": "1.20.0",
     "@juicesharp/rpiv-args": "1.20.0",
     "@juicesharp/rpiv-ask-user-question": "1.20.0",

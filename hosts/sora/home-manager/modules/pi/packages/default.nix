@@ -5,7 +5,6 @@
   package = builtins.fromJSON (builtins.readFile ./package.json);
   activeNpmPackages = [
     "@dietrichgebert/ponytail"
-    "@ff-labs/pi-fff"
     "@juicesharp/rpiv-args"
     "@juicesharp/rpiv-ask-user-question"
     "@juicesharp/rpiv-pi"
@@ -32,7 +31,7 @@
     pname = package.name;
     inherit (package) version;
     src = ./.;
-    npmDepsHash = "sha256-1caF4bFkeASQyR84G0536OIJLI9lCe8wndbBxMaHbHY=";
+    npmDepsHash = "sha256-T9Vk64+oxpnjeB64HD2CwC2JP5etMdwQ94ti79ry75I=";
     npmFlags = ["--legacy-peer-deps"];
     dontNpmBuild = true;
     installPhase = ''
