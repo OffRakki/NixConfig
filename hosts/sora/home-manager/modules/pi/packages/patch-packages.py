@@ -70,7 +70,6 @@ function formatDuration(ms: number): string {""",
         helper = """
 type CodexLimitWindow = { usedPercent?: number; resetsAt?: number | null; windowDurationMins?: number | null };
 type CodexRateLimitCache = {
-  fiveHour?: CodexLimitWindow | null;
   weekly?: CodexLimitWindow | null;
   rateLimits?: { primary?: CodexLimitWindow | null; secondary?: CodexLimitWindow | null } | null;
   rateLimitsByLimitId?: Record<string, { primary?: CodexLimitWindow | null; secondary?: CodexLimitWindow | null } | null> | null;
@@ -106,7 +105,7 @@ function readCodexRateLimitCache(): CodexRateLimitCache | null {
 
 function findCodexWindow(cache: CodexRateLimitCache, minutes: number): CodexLimitWindow | null {
   const candidates: Array<CodexLimitWindow | null | undefined> = [
-    minutes === 300 ? cache.fiveHour : cache.weekly,
+    cache.weekly,
     cache.rateLimits?.primary,
     cache.rateLimits?.secondary,
   ];
@@ -139,12 +138,11 @@ const codexLimitsSegment: StatusLineSegment = {
     const cache = readCodexRateLimitCache();
     if (!cache) return { content: "", visible: false };
 
-    const fiveHour = findCodexWindow(cache, 300) ?? cache.fiveHour ?? null;
     const weekly = findCodexWindow(cache, 10080) ?? cache.weekly ?? null;
-    const parts = [formatCodexWindow("5h ", fiveHour), formatCodexWindow("7d ", weekly)].filter(Boolean);
-    if (parts.length === 0) return { content: "", visible: false };
+    const content = formatCodexWindow("7d ", weekly);
+    if (!content) return { content: "", visible: false };
 
-    return { content: color(ctx, "quota", "codex " + parts.join(" ")), visible: true };
+    return { content: color(ctx, "quota", "codex " + content), visible: true };
   },
 };
 
