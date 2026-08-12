@@ -55,6 +55,13 @@
       email = "fernando12.contato@gmail.com";
       patterns = ["INBOX" "[Gmail]/Drafts" "[Gmail]/Important" "[Gmail]/Sent Mail" "[Gmail]/Starred"];
     }
+    {
+      name = "Locaweb";
+      email = "me@lrd.rs";
+      host = "email-ssl.com.br";
+      passwordCmd = "${pkgs.coreutils}/bin/cat ${config.home.homeDirectory}/pass.env";
+      patterns = ["*"];
+    }
   ];
 
   encode = email: builtins.replaceStrings ["@"] ["%40"] email;
@@ -62,11 +69,13 @@
   maildir = email: "${mailRoot}/${safe email}";
 
   # Generate aerc accounts.conf
-  mkAccount = a: ''
+  mkAccount = a: let
+    passwordCmd = a.passwordCmd or "${aercTokenRefresh}/bin/aerc-token-refresh ${tokenDir}/${a.email}";
+  in ''
     [${a.name}]
     source = maildir://${maildir a.email}
-    outgoing = smtps+xoauth2://${encode a.email}@smtp.gmail.com:465
-    outgoing-cred-cmd = ${aercTokenRefresh}/bin/aerc-token-refresh ${tokenDir}/${a.email}
+    outgoing = smtps${lib.optionalString (!(a ? passwordCmd)) "+xoauth2"}://${encode a.email}@${a.host or "smtp.gmail.com"}:465
+    outgoing-cred-cmd = ${passwordCmd}
     from = ${a.email}
     copy-to = true
     default = INBOX
@@ -75,13 +84,15 @@
   accountsConf = lib.concatStringsSep "\n\n" (map mkAccount accounts);
 
   # Generate mbsyncrc
-  mkMbsyncAccount = a: ''
+  mkMbsyncAccount = a: let
+    passwordCmd = a.passwordCmd or "${aercTokenRefresh}/bin/aerc-token-refresh ${tokenDir}/${a.email}";
+  in ''
     IMAPAccount ${a.name}
-    Host imap.gmail.com
+    Host ${a.host or "imap.gmail.com"}
     Port 993
     User ${a.email}
-    PassCmd "${aercTokenRefresh}/bin/aerc-token-refresh ${tokenDir}/${a.email}"
-    AuthMechs XOAUTH2
+    PassCmd "${passwordCmd}"
+    AuthMechs ${if a ? passwordCmd then "LOGIN" else "XOAUTH2"}
     TLSType IMAPS
 
     IMAPStore ${a.name}-remote
@@ -189,7 +200,7 @@
 
     cleanup_old_quarantines
 
-    for channel in Main Personal Work; do
+    for channel in ${lib.concatStringsSep " " (map (a: a.name) accounts)}; do
       run_channel "$channel"
     done
   '';
