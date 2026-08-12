@@ -56,7 +56,7 @@
       patterns = ["INBOX" "[Gmail]/Drafts" "[Gmail]/Important" "[Gmail]/Sent Mail" "[Gmail]/Starred"];
     }
     {
-      name = "Locaweb";
+      name = "me@lrs.rs";
       email = "me@lrd.rs";
       host = "email-ssl.com.br";
       passwordCmd = "${pkgs.coreutils}/bin/cat ${config.home.homeDirectory}/pass.env";
@@ -92,7 +92,11 @@
     Port 993
     User ${a.email}
     PassCmd "${passwordCmd}"
-    AuthMechs ${if a ? passwordCmd then "LOGIN" else "XOAUTH2"}
+    AuthMechs ${
+      if a ? passwordCmd
+      then "LOGIN"
+      else "XOAUTH2"
+    }
     TLSType IMAPS
 
     IMAPStore ${a.name}-remote
