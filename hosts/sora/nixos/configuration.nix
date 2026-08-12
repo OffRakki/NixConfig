@@ -23,7 +23,7 @@
     ./kdeconnect.nix
     ./sunshine.nix
     ./firefly.nix
-    # ./mcServer.nix
+    ./mcServer.nix
     ./ASF.nix
   ];
 

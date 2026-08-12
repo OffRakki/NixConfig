@@ -1,30 +1,22 @@
 {
+  lib,
   pkgs,
-  inputs,
   ...
 }: {
   services.minecraft-servers = {
     enable = true;
     eula = true;
     openFirewall = true;
+    dataDir = "/home/rakki/Games";
+    user = "rakki";
+    group = "users";
 
-    servers.forge = {
+    servers.MineServer = {
       enable = true;
-      package = inputs.nix-minecraft.packages.${pkgs.stdenv.hostPlatform.system}.neoforge-1_20_1;
-      jvmOpts = "-Xmx3G -Xms2G";
-
-      serverProperties = {
-        server-port = 25565;
-        gamemode = "survival";
-        motd = "ablubleh";
-        enable-rcon = true;
-        "rcon.password" = "123123";
-      };
-      symlinks = {
-        "mods" = /home/rakki/mcServer/mods;
-        "config" = /home/rakki/mcServer/config;
-        "defaultconfigs" = /home/rakki/mcServer/defaultconfigs;
-      };
+      package = pkgs.minecraftServers.neoforge-1_21_1-21_1_235;
+      jvmOpts = "-Xms8G -Xmx8G";
     };
   };
+
+  systemd.services.minecraft-server-MineServer.serviceConfig.ProtectHome = lib.mkForce false;
 }
