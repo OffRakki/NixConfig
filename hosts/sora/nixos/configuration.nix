@@ -366,6 +366,8 @@
         # Opinionated: forbid root login through SSH.
         PermitRootLogin = "no";
         PasswordAuthentication = true;
+        X11Forwarding = true;
+        X11UseLocalhost = true;
       };
       hostKeys = [
         {

@@ -1,4 +1,8 @@
-{lib, pkgs, ...}: {
+{
+  lib,
+  pkgs,
+  ...
+}: {
   home.persistence."/persist".directories = [
     ".local/share/fish"
     ".local/share/zoxide"
@@ -29,6 +33,14 @@
         # Override only what we want to change from rainbow defaults:
         # Left: custom items, transient, character
         # Right: slimmed-down tool list
+        if set -q SSH_CONNECTION DISPLAY
+          set -gx QT_QPA_PLATFORM xcb
+          set -gx GDK_BACKEND x11
+          set -e MOZ_ENABLE_WAYLAND
+          set -e NIXOS_OZONE_WL
+          set -e CLUTTER_BACKEND
+          set -e EGL_PLATFORM
+        end
 
         set -U tide_prompt_transient_enabled true
 
