@@ -14,7 +14,7 @@
     servers.MineServer = {
       enable = true;
       package = pkgs.minecraftServers.neoforge-1_21_1-21_1_235;
-      jvmOpts = "-Xms12G -Xmx12G";
+      jvmOpts = "-Xms8G -Xmx8G";
     };
   };
 
