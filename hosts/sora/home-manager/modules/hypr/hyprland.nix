@@ -16,7 +16,7 @@
   qalc = "${lib.getExe pkgs.qalculate-gtk}";
   slurp = "${lib.getExe pkgs.slurp}";
   hyprshot = "${lib.getExe pkgs.hyprshot}";
-  lock = "touch /tmp/session.lock && noctalia-shell ipc call lockScreen lock";
+  lock = lib.getExe pkgs.hyprlock;
 in {
   imports = [];
 
@@ -380,7 +380,7 @@ in {
           hl.exec_cmd("clipse -listen")
           hl.exec_cmd("nm-applet --indicator")
           hl.exec_cmd("openrgb --startminimized")
-          hl.exec_cmd("sleep 10 && touch /tmp/session.lock && noctalia-shell ipc call lockScreen lock")
+          hl.exec_cmd("sleep 10 && ${lock}")
           hl.exec_cmd("ags")
           hl.exec_cmd("blueman-applet")
           hl.exec_cmd("pypr")
