@@ -2,7 +2,8 @@
   imports = [
     ./pi
     ./obs.nix
-    ./steam.nix
+    ./steam/steam.nix
+    ./steam/millennium.nix
     ./fish
     ./hypr
     ./rbw.nix
