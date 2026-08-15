@@ -2,78 +2,47 @@
   home.persistence."/persist".directories = [".thunderbird"];
 
   accounts.email.accounts = {
-    "me@lrd.rs" = {
-      address = "me@lrd.rs";
-      userName = "me@lrd.rs";
-      realName = "Fernando Marques";
-      primary = true;
-      signature = {
-        showSignature = "append";
-        text = "Atenciosamente,\nFernando Marques.";
+    "me@lrd.rs".thunderbird = {
+      enable = true;
+      settings = id: {
+        "mail.server.server_${id}.directory-rel" = "[ProfD]ImapMail/email-ssl.com.br";
+        "mail.server.server_${id}.namespace.personal" = ''"INBOX."'';
       };
-      imap = {
-        host = "email-ssl.com.br";
-        port = 993;
-      };
-      smtp = {
-        host = "email-ssl.com.br";
-        port = 465;
-      };
-      thunderbird = {
-        enable = true;
-        settings = id: {
-          "mail.server.server_${id}.directory-rel" = "[ProfD]ImapMail/email-ssl.com.br";
-          "mail.server.server_${id}.namespace.personal" = ''"INBOX."'';
-        };
-        perIdentitySettings = id: {
-          "mail.identity.id_${id}.draft_folder" = "mailbox://nobody@Local%20Folders/Drafts";
-          "mail.identity.id_${id}.fcc_folder" = "imap://me%40lrd.rs@email-ssl.com.br/Sent";
-          "mail.identity.id_${id}.reply_on_top" = 1;
-          "mail.identity.id_${id}.sig_bottom" = false;
-          "mail.identity.id_${id}.stationery_folder" = "imap://me%40lrd.rs@email-ssl.com.br/Templates";
-        };
+      perIdentitySettings = id: {
+        "mail.identity.id_${id}.draft_folder" = "mailbox://nobody@Local%20Folders/Drafts";
+        "mail.identity.id_${id}.fcc_folder" = "imap://me%40lrd.rs@email-ssl.com.br/Sent";
+        "mail.identity.id_${id}.reply_on_top" = 1;
+        "mail.identity.id_${id}.sig_bottom" = false;
+        "mail.identity.id_${id}.stationery_folder" = "imap://me%40lrd.rs@email-ssl.com.br/Templates";
       };
     };
 
-    "fruteiralab@lrd.rs" = {
-      address = "fruteiralab@lrd.rs";
-      userName = "fruteiralab@lrd.rs";
-      realName = "Fruteira Lab";
-      imap = {
-        host = "email-ssl.com.br";
-        port = 993;
+    "fruteiralab@lrd.rs".thunderbird = {
+      enable = true;
+      settings = id: {
+        "mail.server.server_${id}.check_new_mail" = true;
+        "mail.server.server_${id}.directory-rel" = "[ProfD]ImapMail/email-ssl.com-3.br";
+        "mail.server.server_${id}.max_cached_connections" = 5;
+        "mail.server.server_${id}.moveTargetMode" = 1;
+        "mail.server.server_${id}.namespace.personal" = ''"INBOX."'';
+        "mail.server.server_${id}.spamActionTargetAccount" = "imap://fruteiralab%40lrd.rs@email-ssl.com.br";
+        "mail.server.server_${id}.spamActionTargetFolder" = "imap://fruteiralab%40lrd.rs@email-ssl.com.br/INBOX/Mala_Direta";
+        "mail.server.server_${id}.storeContractID" = "@mozilla.org/msgstore/berkeleystore;1";
+        "mail.server.server_${id}.timeout" = 29;
+        "mail.server.server_${id}.trash_folder_name" = "INBOX/lixo";
       };
-      smtp = {
-        host = "email-ssl.com.br";
-        port = 465;
-      };
-      thunderbird = {
-        enable = true;
-        settings = id: {
-          "mail.server.server_${id}.check_new_mail" = true;
-          "mail.server.server_${id}.directory-rel" = "[ProfD]ImapMail/email-ssl.com-3.br";
-          "mail.server.server_${id}.max_cached_connections" = 5;
-          "mail.server.server_${id}.moveTargetMode" = 1;
-          "mail.server.server_${id}.namespace.personal" = ''"INBOX."'';
-          "mail.server.server_${id}.spamActionTargetAccount" = "imap://fruteiralab%40lrd.rs@email-ssl.com.br";
-          "mail.server.server_${id}.spamActionTargetFolder" = "imap://fruteiralab%40lrd.rs@email-ssl.com.br/INBOX/Mala_Direta";
-          "mail.server.server_${id}.storeContractID" = "@mozilla.org/msgstore/berkeleystore;1";
-          "mail.server.server_${id}.timeout" = 29;
-          "mail.server.server_${id}.trash_folder_name" = "INBOX/lixo";
-        };
-        perIdentitySettings = id: {
-          "mail.identity.id_${id}.attach_signature" = true;
-          "mail.identity.id_${id}.draft_folder" = "imap://fruteiralab%40lrd.rs@email-ssl.com.br/Drafts";
-          "mail.identity.id_${id}.drafts_folder_picker_mode" = "0";
-          "mail.identity.id_${id}.fcc_folder" = "imap://fruteiralab%40lrd.rs@email-ssl.com.br/Sent";
-          "mail.identity.id_${id}.fcc_folder_picker_mode" = "0";
-          "mail.identity.id_${id}.htmlSigFormat" = false;
-          "mail.identity.id_${id}.reply_on_top" = 1;
-          "mail.identity.id_${id}.sig_bottom" = false;
-          "mail.identity.id_${id}.sig_file" = "${./fruteira_assinatura.html}";
-          "mail.identity.id_${id}.stationery_folder" = "imap://fruteiralab%40lrd.rs@email-ssl.com.br/Templates";
-          "mail.identity.id_${id}.tmpl_folder_picker_mode" = "0";
-        };
+      perIdentitySettings = id: {
+        "mail.identity.id_${id}.attach_signature" = true;
+        "mail.identity.id_${id}.draft_folder" = "imap://fruteiralab%40lrd.rs@email-ssl.com.br/Drafts";
+        "mail.identity.id_${id}.drafts_folder_picker_mode" = "0";
+        "mail.identity.id_${id}.fcc_folder" = "imap://fruteiralab%40lrd.rs@email-ssl.com.br/Sent";
+        "mail.identity.id_${id}.fcc_folder_picker_mode" = "0";
+        "mail.identity.id_${id}.htmlSigFormat" = false;
+        "mail.identity.id_${id}.reply_on_top" = 1;
+        "mail.identity.id_${id}.sig_bottom" = false;
+        "mail.identity.id_${id}.sig_file" = "${./fruteira_assinatura.html}";
+        "mail.identity.id_${id}.stationery_folder" = "imap://fruteiralab%40lrd.rs@email-ssl.com.br/Templates";
+        "mail.identity.id_${id}.tmpl_folder_picker_mode" = "0";
       };
     };
   };
