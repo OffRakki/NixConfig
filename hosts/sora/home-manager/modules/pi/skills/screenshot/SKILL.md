@@ -22,15 +22,10 @@ Check the display server before choosing a tool:
 
 ### Browser screenshots
 
-When the target is a **web page** (not the desktop/app), use the `browser` skill
-instead of grim. The browser helper can capture JS-rendered content, full-page
-scrolls, and specific DOM elements:
-
-```bash
-browser.py '[{"action":"navigate","url":"https://..."},{"action":"screenshot","path":"/tmp/pi/shot.png","full_page":true}]'
-```
-
-Pair with `image-analyzer` for visual analysis of the captured page.
+When the target is a **web page** (not the desktop/app), load the `browser`
+skill and use `agent_browser` instead of grim. It can capture JavaScript-rendered
+content and full-page screenshots. Pair the result with the `image-analyzer`
+subagent when visual analysis is needed.
 
 ### Recipes
 
@@ -71,8 +66,6 @@ handlr open /tmp/pi/screenshot.png
 
 After taking a screenshot, use the `image-analyzer` subagent to describe the image:
 
-```
-Agent(description="Analyze screenshot", prompt="...", subagent_type="image-analyzer")
-```
+Use `subagent` with the configured `image-analyzer` agent and pass the image path.
 
 Note: the image-analyzer may hallucinate visual details. Treat its descriptions as approximate.

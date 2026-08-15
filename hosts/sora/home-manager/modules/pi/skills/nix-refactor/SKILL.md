@@ -11,8 +11,8 @@ A repeatable workflow for reviewing and cleaning up a NixOS flake config.
 
 ### 1. Map the territory
 
-Use `ctx_find`, `ctx_grep`, `ctx_search`, and targeted reads directly from
-NixConfig source files. For import structure, start from `flake.nix`, host
+Use `read` and bounded `bash` searches directly against NixConfig source files.
+For import structure, start from `flake.nix`, host
 `configuration.nix`, home-manager `home.nix`, and relevant `default.nix` files.
 Do not rely on generated index files; they go stale and waste context.
 

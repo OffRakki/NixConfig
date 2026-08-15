@@ -25,8 +25,8 @@ Use this vault for long-term, human-readable memory:
 - tool quirks and workflows
 - research notes and narrative context
 
-Use Pi/Hermes memory for compact facts Ciel should recall automatically.
-Obsidian is Ciel's Divine Library/Codex/Grimoire; Hermes is the reflex layer.
+Keep compact global rules in `context.md` and domain workflows in skills.
+Use Obsidian for durable narrative memory that does not belong in either.
 
 ## Folder layout
 
@@ -142,7 +142,7 @@ When useful, save:
 3. project notes in `Projects/`
 4. tool/workflow notes in `Tools/`
 5. full Pi session exports when exact context matters
-6. compact Hermes memory for facts that must be agent-native
+6. compact context or skill updates for facts that must be agent-native
 
 Do not wait until the end if saving now would preserve useful context.
 
@@ -161,4 +161,4 @@ Do not wait until the end if saving now would preserve useful context.
 
 Use `Brain_Maintenance_Checklist.md` after large sessions, migrations, or noisy
 search results. Split oversized notes, file inbox captures, remove stale links,
-and copy compact must-recall facts into Hermes memory.
+and route compact must-recall facts into `context.md` or the relevant skill.

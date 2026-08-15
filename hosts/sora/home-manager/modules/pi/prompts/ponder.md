@@ -22,7 +22,7 @@ Optional focus or scope: `${ARGUMENTS:-whole session}`.
    - useful implementation details that future Ciel should not rediscover
    - open threads worth revisiting later
 3. Decide where each item belongs:
-   - **Hermes/Pi memory** for compact facts Ciel should recall automatically.
+   - **Context or a domain skill** for compact facts Ciel must recall automatically.
    - **Ciel Obsidian brain** for narrative context, session notes, decisions,
      pins, maps, project notes, tool notes, or future revisit ideas.
    - **Existing brain note update** when the information belongs with an
@@ -35,8 +35,8 @@ Optional focus or scope: `${ARGUMENTS:-whole session}`.
 6. Update relevant indexes/links whenever creating or moving notes.
 7. Prefer small focused notes over giant logs. Save full session exports only
    when exact transcript-level context will matter.
-8. If a reusable workflow emerged, consider whether `skill_manage` is more
-   appropriate than a normal note.
+8. If a reusable workflow emerged, update or create the relevant Nix-managed
+   skill instead of burying it in a normal note.
 9. If nothing deserves saving, say so explicitly and explain why in one or two
    sentences.
 
@@ -45,7 +45,7 @@ Optional focus or scope: `${ARGUMENTS:-whole session}`.
 Report concisely:
 
 - **Key points:** what mattered from the session.
-- **Memory actions:** Hermes memories added/updated, or `none`.
+- **Context/skill actions:** source instructions added/updated, or `none`.
 - **Brain actions:** Obsidian notes created/updated, or `none`.
 - **Existing notes touched:** paths, if any.
 - **Deferred ideas/open threads:** what should be revisited later, if any.

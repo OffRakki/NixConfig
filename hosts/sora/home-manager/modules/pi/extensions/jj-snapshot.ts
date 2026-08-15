@@ -8,15 +8,7 @@ import type {
 } from "@earendil-works/pi-coding-agent";
 
 const snapshotTimeoutMs = 30_000;
-const mutatingTools = new Set([
-	"ast_grep_replace",
-	"bash",
-	"ctx_edit",
-	"ctx_shell",
-	"edit",
-	"shell",
-	"write",
-]);
+const mutatingTools = new Set(["bash", "edit", "write"]);
 
 function findJjRepository(cwd: string): string | undefined {
 	let directory = cwd;

@@ -5,30 +5,9 @@ description: Use when working with NixOS rebuilds, Nix package management, and f
 
 # Nix
 
-Ciel can also use `ctx_shell` for nix commands — output goes through lean-ctx
-compression, saving tokens on verbose build output.
-
-## LSP Warm-up
-
-At session start (or after 240s idle timeout), pi-lens shows "LSP Inactive" in
-the footer because no LSP server is connected. To warm up `nixd`:
-
-1. Use the native `read` tool (not `ctx_read`) on a `.nix` file:
-   `read("/home/rakki/Projects/NixConfig/flake.nix", {limit: 5})`
-2. This fires a `tool_call` event, which pi-lens hooks to spawn `nixd`
-3. The footer flips to `LSP Active (N)` within ~150ms
-
-`ctx_*` tools (`ctx_read`, `ctx_shell`, etc.) route through MCP and skip pi's
-native `tool_call` event — they do NOT trigger LSP warm-up. Always warm with
-the native `read` tool first.
-
-After warm-up, `ctx_read` works fine while the server stays alive (the 240s
-idle timer resets on each file touch). On timeout, just warm again.
-
-## File Location
-
-Use `ctx_find`, `ctx_grep`, and targeted reads directly in NixConfig.
-Prefer source-of-truth files over generated maps or broad docs.
+Use `read` for source files and `bash` for bounded search, evaluation, and
+build commands. Prefer NixConfig source files over runtime outputs, generated
+maps, or broad logs.
 
 ## Nix style
 
@@ -44,9 +23,11 @@ paths under `~/.pi/agent/` update only after Home Manager activation.
 When adding a Nix-managed Pi skill or agent:
 
 1. Put the source under `hosts/sora/home-manager/modules/pi/skills/` or `agents/`.
-2. Add the corresponding `home.file."${piDir}/...".source = ...;` entry in `pi.nix`.
-3. Add a routing line to `context.md` if the skill should be proactively loaded.
-4. Build/check before claiming it is available at runtime.
+2. Add a routing line to `context.md` only if it should be proactively loaded.
+3. Build/check before claiming it is available at runtime.
+
+`pi.nix` already exposes the whole skills directory and synchronizes custom
+agents; do not add per-item `home.file` entries.
 
 Load `pi-tools` for the installed package/tool inventory.
 

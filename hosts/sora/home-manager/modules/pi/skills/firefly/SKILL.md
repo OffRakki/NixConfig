@@ -286,8 +286,8 @@ See `resources/private.md` for the actual subscription list with names, amounts,
 ## Category audit workflow
 
 See `resources/auditing.md` for the full workflow: fetching transactions,
-auditing against the category/budget mapping, fixing issues with `ask_user` or
-`ask_user_question` prompts, handling ambiguous rides, and cross-referencing against bank data
+auditing against the category/budget mapping, fixing issues with `ask_user_question`, handling ambiguous rides, and
+cross-referencing against bank data
 (Mercado Pago API, or manual statement reviews).
 
 ## OFX statement audit

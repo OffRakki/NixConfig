@@ -19,7 +19,7 @@ You read PDFs by proxy: images for layout/structure via the image-analyzer subag
 3. **Convert to text**: `nix shell nixpkgs#poppler-utils -c pdftotext <pdf_path> /tmp/pi/pdf.txt`
 4. **Analyze layout**: Call the `image-analyzer` subagent/tooling available in Pi with the following prompt:
    > Analyze these PDF page images for overall STRUCTURE and LAYOUT only. Do NOT transcribe text. Describe: page dimensions, columns, tables, headers/footers, sections, lists, cards, forms, and how content flows across pages. Give me a structural map of the document.
-   Pass all `/tmp/pi/pdf-images/page-*.jpg` paths as part of the prompt. In a parent Pi session, use `Agent(..., subagent_type="image-analyzer")` or `subagent({ agent: "image-analyzer", ... })` depending on which orchestration tool is active.
+   Pass all `/tmp/pi/pdf-images/page-*.jpg` paths as part of the prompt using `subagent` with `agent: "image-analyzer"`.
 5. **Read text**: Read `/tmp/pi/pdf.txt`.
 
 ## Output
