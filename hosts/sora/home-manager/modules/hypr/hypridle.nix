@@ -4,6 +4,8 @@
     settings = {
       general = {
         lock_cmd = "pidof hyprlock || hyprlock";
+        on_lock_cmd = "systemd-run --user --collect --unit=hypridle-dpms-off --on-active=1m hyprctl dispatch \"hl.dsp.dpms({ action = 'disable' })\"";
+        on_unlock_cmd = "systemctl --user stop hypridle-dpms-off.timer 2>/dev/null; hyprctl dispatch \"hl.dsp.dpms({ action = 'enable' })\"";
         before_sleep_cmd = "loginctl lock-session";
         after_sleep_cmd = "hyprctl dispatch \"hl.dsp.dpms({ action = 'enable' })\"";
       };
@@ -11,11 +13,6 @@
         {
           timeout = 300;
           on-timeout = "loginctl lock-session";
-        }
-        {
-          timeout = 360;
-          on-timeout = "hyprctl dispatch \"hl.dsp.dpms({ action = 'disable' })\"";
-          on-resume = "hyprctl dispatch \"hl.dsp.dpms({ action = 'enable' })\"";
         }
       ];
     };
