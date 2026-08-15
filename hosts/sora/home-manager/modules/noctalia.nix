@@ -99,6 +99,7 @@ in {
         powerOptions = [
           {
             action = "lock";
+            command = "${lib.getExe pkgs.hyprlock}";
             enabled = true;
             keybind = "1";
           }
@@ -437,7 +438,7 @@ in {
         wallpaperChange = "";
         darkModeChange = "";
         screenLock = "";
-        screenUnlock = "rm -f /tmp/session.lock";
+        screenUnlock = "";
         performanceModeEnabled = "";
         performanceModeDisabled = "";
         startup = "";
@@ -519,7 +520,7 @@ in {
         suspendTimeout = 0;
         fadeDuration = 1;
         screenOffCommand = "hyprctl dispatch \"hl.dsp.dpms({ action = 'disable' })\"";
-        lockCommand = "[ -f /tmp/session.lock ] && hyprctl dispatch \"hl.dsp.dpms({ action = 'disable' })\" || (touch /tmp/session.lock && loginctl lock-session)";
+        lockCommand = "${lib.getExe pkgs.hyprlock}";
         suspendCommand = "";
         resumeScreenOffCommand = "hyprctl dispatch \"hl.dsp.dpms({ action = 'enable' })\"";
         resumeLockCommand = "";
