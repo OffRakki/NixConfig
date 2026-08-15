@@ -513,20 +513,7 @@ in {
         overviewLayer = false;
         density = "comfortable";
       };
-      idle = {
-        enabled = true;
-        screenOffTimeout = 360;
-        lockTimeout = 300;
-        suspendTimeout = 0;
-        fadeDuration = 1;
-        screenOffCommand = "hyprctl dispatch \"hl.dsp.dpms({ action = 'disable' })\"";
-        lockCommand = "${lib.getExe pkgs.hyprlock}";
-        suspendCommand = "";
-        resumeScreenOffCommand = "hyprctl dispatch \"hl.dsp.dpms({ action = 'enable' })\"";
-        resumeLockCommand = "";
-        resumeSuspendCommand = "";
-        customCommands = "[]";
-      };
+      idle.enabled = false;
       lockscreen = {
         backgroundSource = "screenshot";
       };
