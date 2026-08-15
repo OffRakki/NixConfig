@@ -40,18 +40,14 @@ Active packages:
 | Package | Provides / use when |
 |---|---|
 | `@dietrichgebert/ponytail` | YAGNI-focused extension and skills for simpler implementations, reviews, audits, debt, and gain analysis. |
-| `pi-drawio` | `drawio` skill for native draw.io diagrams and exports. |
 | `pi-intercom` | `intercom` tool + skill for coordinating multiple local Pi sessions. |
 | `pi-lean-ctx` | `ctx_*`, `lean_ctx`, graph/knowledge/session/search helpers; token-efficient reads/searches/build output. |
 | `pi-lens` | LSP diagnostics/navigation plus `ast_grep_*` and `lens_diagnostics`. Primary code-intelligence layer. |
 | `pi-simplify` | Extension that reviews recently changed code for clarity/maintainability. |
 | `pi-namespace` | Namespaces tools/skills and may prefix tools by extension. |
-| `pi-ask-user` | `ask_user` tool and `ask-user` skill for one focused decision handshake. |
 | `pi-web-access` | `web_search`, `code_search`, `fetch_content`, `get_search_content`, and `librarian` skill. |
-| `pi-mcp-adapter` | `mcp` gateway for MCP servers/tools. |
 | `pi-markdown-preview` | `preview_export` for Markdown/LaTeX/file -> PDF/HTML/PNG artifacts. |
 | `pi-powerline-footer` | Powerline footer/status UI. Preset is `nerd`. |
-| `pi-hermes-memory` | `memory`, `memory_search`, `session_search`, `skill_manage`; durable memory and procedural skills. |
 | `pi-invisible-continue` | Invisible continuation extension; resumes agent loops without visible prompt pollution. |
 | `pi-subagents` | `subagent` tool, `/run`/chains/parallel workflows, packaged role agents/prompts. |
 | `pi-agent-browser-native` | `agent_browser` tool for agent-owned browser automation, QA/repro flows, screenshots/download artifacts; requires upstream `agent-browser` on `PATH` for actual browser runs. |
@@ -95,14 +91,11 @@ for the job.
 | Web research/docs | `web_search`, `code_search`, `fetch_content` | Use `queries:[...]` for broad web research; use `code_search` for API usage. |
 | URL/page/PDF/video content | `fetch_content`, then `get_search_content` if needed | For YouTube/video, pass the user question as `prompt`. |
 | Logged-in/browser UI | `browser` skill | Uses the local Playwright helper; `pi-chrome` is currently commented out in `pi.nix`. |
-| User decision | `ask_user` or `ask_user_question` | Use `ask_user` for one focused question; `ask_user_question` for structured 1-4 question forms. |
-| Persistent memory/procedures | `memory`, `memory_search`, `session_search`, `skill_manage` | Save durable preferences/conventions; don't save temporary task state. |
+| User decision | `ask_user_question` | Use structured forms with 1-4 focused questions. |
 | Task list | `todo` | Exactly one in-progress task; mark completion immediately. |
 | Subagents | `subagent` / `Agent` | Prefer async/read-only fanout; keep writes single-threaded. |
-| MCP servers | `mcp` | Discover/list/describe before calling unfamiliar MCP tools. |
 | Markdown/LaTeX previews | `preview_export` | Export same-turn content by passing `markdown`, not `last_assistant`. |
 | Cross-session coordination | `intercom` | Use for local Pi sessions and subagent bridge coordination. |
-| Diagrams | `drawio` skill | Load the skill; produce real `.drawio` when asked for diagrams. |
 
 Read note: the first native read warms Pi/LSP/tool hooks for that extension
 (`.nix`, `.md`, `.ts`, etc.). After that, prefer cached/token-efficient
