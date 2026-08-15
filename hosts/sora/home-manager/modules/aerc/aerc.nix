@@ -39,86 +39,70 @@
     print(json.loads(resp.read())["access_token"])
   '';
 
-  accounts = [
-    {
-      name = "Main";
-      email = "offrakki@gmail.com";
-      patterns = ["INBOX" "Linkedin" "LumisCards" "Nota Fiscal" "NuBank" "Riot" "Spotify" "Steam" "Twitch" "[Notion]" "[Gmail]/Drafts" "[Gmail]/Important" "[Gmail]/Sent Mail" "[Gmail]/Starred"];
-    }
-    {
-      name = "Personal";
-      email = "fernandomarques1505@gmail.com";
-      patterns = ["INBOX" "Archive" "Mailspring/Snoozed" "Notes" "Personal" "Receipts" "Work" "[Gmail]/Drafts" "[Gmail]/Important" "[Gmail]/Sent Mail" "[Gmail]/Starred"];
-    }
-    {
-      name = "Work";
-      email = "fernando12.contato@gmail.com";
-      patterns = ["INBOX" "[Gmail]/Drafts" "[Gmail]/Important" "[Gmail]/Sent Mail" "[Gmail]/Starred"];
-    }
-    {
-      name = "me@lrs.rs";
-      email = "me@lrd.rs";
-      host = "email-ssl.com.br";
-      passwordCmd = "${pkgs.coreutils}/bin/cat ${config.home.homeDirectory}/pass.env";
-      patterns = ["*"];
-    }
-  ];
-
-  encode = email: builtins.replaceStrings ["@"] ["%40"] email;
   safe = email: builtins.replaceStrings ["@"] ["-at-"] email;
-  maildir = email: "${mailRoot}/${safe email}";
 
-  # Generate aerc accounts.conf
-  mkAccount = a: let
-    passwordCmd = a.passwordCmd or "${aercTokenRefresh}/bin/aerc-token-refresh ${tokenDir}/${a.email}";
-  in ''
-    [${a.name}]
-    source = maildir://${maildir a.email}
-    outgoing = smtps${lib.optionalString (!(a ? passwordCmd)) "+xoauth2"}://${encode a.email}@${a.host or "smtp.gmail.com"}:465
-    outgoing-cred-cmd = ${passwordCmd}
-    from = ${a.email}
-    copy-to = true
-    default = INBOX
-  '';
+  mbsyncConfig = authMechs: patterns: {
+    enable = true;
+    inherit patterns;
+    subFolders = "Verbatim";
+    create = "both";
+    extraConfig = {
+      account.AuthMechs = authMechs;
+      channel = {
+        ExpireUnread = false;
+        MaxMessages = 1000;
+        Sync = ["Pull" "New"];
+      };
+    };
+  };
 
-  accountsConf = lib.concatStringsSep "\n\n" (map mkAccount accounts);
+  mkGmailAccount = email: patterns: {
+    address = email;
+    realName = "Fernando Marques";
+    flavor = "gmail.com";
+    passwordCommand = [
+      "${aercTokenRefresh}/bin/aerc-token-refresh"
+      "${tokenDir}/${email}"
+    ];
+    folders = {
+      inbox = "INBOX";
+      sent = null;
+      drafts = null;
+    };
+    maildir.path = safe email;
+    aerc = {
+      enable = true;
+      smtpAuth = "xoauth2";
+      extraAccounts."copy-to" = true;
+    };
+    mbsync = mbsyncConfig "XOAUTH2" patterns;
+  };
 
-  # Generate mbsyncrc
-  mkMbsyncAccount = a: let
-    passwordCmd = a.passwordCmd or "${aercTokenRefresh}/bin/aerc-token-refresh ${tokenDir}/${a.email}";
-  in ''
-    IMAPAccount ${a.name}
-    Host ${a.host or "imap.gmail.com"}
-    Port 993
-    User ${a.email}
-    PassCmd "${passwordCmd}"
-    AuthMechs ${
-      if a ? passwordCmd
-      then "LOGIN"
-      else "XOAUTH2"
-    }
-    TLSType IMAPS
+  emailAccounts = {
+    Main = mkGmailAccount "offrakki@gmail.com" ["INBOX" "Linkedin" "LumisCards" "Nota Fiscal" "NuBank" "Riot" "Spotify" "Steam" "Twitch" "[Notion]" "[Gmail]/Drafts" "[Gmail]/Important" "[Gmail]/Sent Mail" "[Gmail]/Starred"];
+    Personal = mkGmailAccount "fernandomarques1505@gmail.com" ["INBOX" "Archive" "Mailspring/Snoozed" "Notes" "Personal" "Receipts" "Work" "[Gmail]/Drafts" "[Gmail]/Important" "[Gmail]/Sent Mail" "[Gmail]/Starred"];
+    Work = mkGmailAccount "fernando12.contato@gmail.com" ["INBOX" "[Gmail]/Drafts" "[Gmail]/Important" "[Gmail]/Sent Mail" "[Gmail]/Starred"];
+    "me@lrd.rs" = {
+      passwordCommand = [
+        "${pkgs.coreutils}/bin/cat"
+        "${config.home.homeDirectory}/pass.env"
+      ];
+      folders = {
+        inbox = "INBOX";
+        sent = null;
+        drafts = null;
+      };
+      maildir.path = safe "me@lrd.rs";
+      aerc = {
+        enable = true;
+        smtpAuth = "login";
+        extraAccounts."copy-to" = true;
+      };
+      mbsync = mbsyncConfig "LOGIN" ["*"];
+    };
+  };
 
-    IMAPStore ${a.name}-remote
-    Account ${a.name}
-
-    MaildirStore ${a.name}-local
-    Path ${maildir a.email}/
-    Inbox ${maildir a.email}/INBOX
-    SubFolders Verbatim
-
-    Channel ${a.name}
-    Far :${a.name}-remote:
-    Near :${a.name}-local:
-    Patterns ${lib.concatStringsSep " " (map (p: "\"${p}\"") a.patterns)}
-    ExpireUnread no
-    Create Both
-    Sync Pull New
-    Expunge None
-    MaxMessages 1000
-  '';
-
-  mbsyncConf = lib.concatStringsSep "\n\n" (map mkMbsyncAccount accounts);
+  accountNames = ["Main" "Personal" "Work" "me@lrd.rs"];
 
   mbsyncSerial = pkgs.writeShellScriptBin "mbsync-serial" ''
     set -euo pipefail
@@ -185,7 +169,7 @@
       preflight_channel "$channel"
 
       set +e
-      ${pkgs.isync}/bin/mbsync -c "${config.home.homeDirectory}/.mbsyncrc" "$channel" > >(tee "$log") 2> >(tee -a "$log" >&2)
+      ${pkgs.isync}/bin/mbsync -c "${config.xdg.configHome}/isyncrc" "$channel" > >(tee "$log") 2> >(tee -a "$log" >&2)
       status=$?
       set -e
 
@@ -195,7 +179,7 @@
           quarantine_state_artifacts "$state_file"
         done < <(${pkgs.findutils}/bin/find "$state_dir" -maxdepth 1 -type f -name ":''${channel}-remote:*_:''${channel}-local:*" ! -name "*.journal" ! -name "*.new" ! -name "*.lock" ! -name "*.corrupt-*" -print0)
 
-        ${pkgs.isync}/bin/mbsync -c "${config.home.homeDirectory}/.mbsyncrc" "$channel"
+        ${pkgs.isync}/bin/mbsync -c "${config.xdg.configHome}/isyncrc" "$channel"
         return
       fi
 
@@ -204,17 +188,27 @@
 
     cleanup_old_quarantines
 
-    for channel in ${lib.concatStringsSep " " (map (a: a.name) accounts)}; do
+    for channel in ${lib.concatStringsSep " " accountNames}; do
       run_channel "$channel"
     done
   '';
 in {
+  accounts.email = {
+    maildirBasePath = mailRoot;
+    accounts = emailAccounts;
+  };
+
+  programs = {
+    aerc.enable = true;
+    mbsync.enable = true;
+  };
+
   home.persistence."/persist".directories = [
     ".config/aerc"
     "Mail"
   ];
 
-  home.packages = with pkgs; [aerc isync cyrus-sasl-xoauth2 w3m urlscan imv];
+  home.packages = with pkgs; [cyrus-sasl-xoauth2 w3m urlscan imv];
 
   home.sessionVariables.SASL_PATH = "${sasl2Plugins}";
 
@@ -233,17 +227,6 @@ in {
   xdg.mimeApps.defaultApplications = {
     "x-scheme-handler/mailto" = "aerc.desktop";
   };
-
-  home.activation.setupMailDirs = lib.hm.dag.entryAfter ["writeBoundary"] ''
-        mkdir -p "${config.home.homeDirectory}/Mail"
-        ${lib.concatStringsSep "\n" (map (a: "mkdir -p ${maildir a.email}") accounts)}
-        mkdir -p "${config.xdg.configHome}/aerc"
-        (umask 077; cat > "${config.xdg.configHome}/aerc/accounts.conf") << 'AERCCONF'
-    ${accountsConf}
-    AERCCONF
-  '';
-
-  home.file.".mbsyncrc".text = mbsyncConf;
 
   systemd.user = {
     services.mbsync = {
@@ -271,38 +254,40 @@ in {
     };
   };
 
-  xdg.configFile."aerc/aerc.conf".text = ''
-    [general]
-    default-save-path = ${config.home.homeDirectory}/Downloads
-    log-file = ${config.xdg.configHome}/aerc/aerc.log
+  programs.aerc.extraConfig = {
+    general = {
+      unsafe-accounts-conf = true;
+      default-save-path = "${config.home.homeDirectory}/Downloads";
+      log-file = "${config.xdg.configHome}/aerc/aerc.log";
+    };
+    ui = {
+      index-format = "%D %-18.18n %-20.20r %s";
+      sidebar-width = 20;
+      sort = "-r date";
+      next-message-on-delete = true;
+      styleset-dirs = "${config.xdg.configHome}/aerc/stylesets/";
+      styleset-name = "dark";
+    };
+    compose = {
+      editor = "hx";
+      header-placeholders = "To:Cc:Subject:";
+    };
+    viewer = {
+      pager-msgs = 10;
+      header-layout = ["From" "To" "Cc" "Subject" "Date"];
+    };
+    filters = {
+      "text/plain" = "colorize";
+      "text/html" = "${pkgs.w3m}/bin/w3m -I UTF-8 -T text/html -cols 80 -o display_image=false -dump";
+      "text/calendar" = "${pkgs.w3m}/bin/w3m -I UTF-8 -T text/html -cols 80 -o display_image=false -dump";
+    };
+    openers = {
+      "image/*" = "${pkgs.imv}/bin/imv %s";
+      "application/*" = "xdg-open %s";
+    };
+  };
 
-    [ui]
-    index-format = %D %-18.18n %-20.20r %s
-    sidebar-width = 20
-    sort = -r date
-    next-message-on-delete = true
-    styleset-dirs = ${config.xdg.configHome}/aerc/stylesets/
-    styleset-name = dark
-
-    [compose]
-    editor = hx
-    header-placeholders = To:Cc:Subject:
-
-    [viewer]
-    pager-msgs = 10
-    header-layout=From,To,Cc,Subject,Date
-
-    [filters]
-    text/plain = colorize
-    text/html = ${pkgs.w3m}/bin/w3m -I UTF-8 -T text/html -cols 80 -o display_image=false -dump
-    text/calendar = ${pkgs.w3m}/bin/w3m -I UTF-8 -T text/html -cols 80 -o display_image=false -dump
-
-    [openers]
-    image/* = ${pkgs.imv}/bin/imv %s
-    application/* = xdg-open %s
-  '';
-
-  xdg.configFile."aerc/stylesets/dark".text = ''
+  programs.aerc.stylesets.dark = ''
     *.selected.bg = #2d5c8a
     *.selected.fg = #ffffff
     *.selected.bold = true
@@ -389,7 +374,7 @@ in {
     };
   };
 
-  xdg.configFile."aerc/binds.conf".text = ''
+  programs.aerc.extraBinds = ''
     <C-p> = :prev-tab<Enter>
     <C-PgUp> = :prev-tab<Enter>
     <C-n> = :next-tab<Enter>
