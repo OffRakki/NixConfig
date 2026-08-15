@@ -9,7 +9,6 @@
     codex
     drawio
     gnome-sound-recorder
-    quickshell
     kdePackages.qttools
     lm_sensors
     r2modman

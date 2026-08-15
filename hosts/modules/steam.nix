@@ -1,7 +1,7 @@
 {pkgs, ...}: {
   programs.steam = {
     enable = true;
-    # package = pkgs.inputs.millennium.steam-millennium;
+    package = pkgs.millennium-steam;
     gamescopeSession.enable = true;
     remotePlay.openFirewall = true;
     dedicatedServer.openFirewall = true;

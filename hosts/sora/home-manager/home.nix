@@ -108,16 +108,6 @@
           "application/x-ini"
         ];
       };
-      whatsappWeb = {
-        name = "Whatsapp";
-        genericName = "Web Whatsapp";
-        exec = "brave --app=https://web.whatsapp.com";
-        terminal = false;
-        categories = [
-          "Network"
-          "WebBrowser"
-        ];
-      };
     };
   };
 }

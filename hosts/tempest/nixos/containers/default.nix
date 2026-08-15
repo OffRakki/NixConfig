@@ -1,8 +1,5 @@
 {
-  imports = [
-    # ./containers.nix
-    ./n8n.nix
-  ];
+  imports = [./n8n.nix];
 
   networking = {
     firewall.trustedInterfaces = ["podman0"];
@@ -16,11 +13,4 @@
     };
     oci-containers.backend = "podman";
   };
-
-  # systemd.services.podman-glance = {
-  #   serviceConfig = {
-  #     restart = "on-failure";
-  #     RestartSec = 5;
-  #   };
-  # };
 }

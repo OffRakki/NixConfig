@@ -61,7 +61,7 @@
     ministerio.url = "github:misterio77/nix-config";
 
     # Games
-    # millennium.url = "github:SteamClientHomebrew/Millennium?dir=packages/nix";
+    millennium.url = "github:SteamClientHomebrew/Millennium?dir=packages/nix";
     nix-minecraft.url = "github:Infinidoge/nix-minecraft";
     hytale = {
       url = "github:TNAZEP/HytaleLauncherFlake";
@@ -77,12 +77,10 @@
   nixConfig = {
     extra-substituters = [
       "https://hyprland.cachix.org"
-      "https://cuda-maintainers.cachix.org"
       "https://kopuz.cachix.org"
     ];
     extra-trusted-public-keys = [
       "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
-      "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="
       "kopuz.cachix.org-1:J2X3AnAYhKTJW5S3aCLoA1ckonQXVNZMQvhZA0YAufw="
     ];
   };
@@ -90,14 +88,6 @@
   outputs = {
     self,
     nixpkgs,
-    noctalia,
-    nix-minecraft,
-    # millennium,
-    nuls,
-    home-manager,
-    catppuccin,
-    hyprland,
-    lanzaboote,
     ...
   } @ inputs: {
     formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.alejandra; # Default .nix code formatter

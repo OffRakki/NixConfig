@@ -9,10 +9,6 @@
     ./partitions.nix
   ];
 
-  environment.systemPackages = [
-    # pkgs.zenmonitor3
-  ];
-
   programs.corectrl.enable = true;
   services.power-profiles-daemon.enable = true;
 
@@ -68,7 +64,6 @@
     plymouth = {
       enable = true;
       theme = "bgrt";
-      # themePackages = [ (pkgs.catppuccin-plymouth.override { variant = "mocha"; }) ];
     };
     consoleLogLevel = 0;
     initrd.verbose = false;

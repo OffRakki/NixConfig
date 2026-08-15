@@ -60,7 +60,7 @@
             });
           };
       })
-      # inputs.millennium.overlays.default
+      inputs.millennium.overlays.default
       (final: _: {
         inputs =
           builtins.mapAttrs (
@@ -201,11 +201,6 @@
   console.useXkbConfig = true;
 
   programs = {
-    river-classic = {
-      enable = true;
-      xwayland.enable = true;
-    };
-
     gpu-screen-recorder.enable = true;
 
     nix-ld = {
@@ -324,7 +319,6 @@
       deviceSection = ''
         Option "Coolbits" "28"
       '';
-      displayManager = {};
       xkb = {
         layout = "us";
         variant = "intl";
@@ -344,28 +338,8 @@
       };
     };
     displayManager = {
-      sessionPackages = [
-        pkgs.hyprland
-      ];
+      sessionPackages = [pkgs.hyprland];
       defaultSession = "hyprland";
-      sddm = {
-        enable = false;
-        wayland.enable = true;
-        theme = "sddm-astronaut-theme";
-        package = pkgs.kdePackages.sddm;
-        extraPackages = with pkgs; [
-          kdePackages.qtmultimedia
-          kdePackages.qt5compat
-          pkgs.kdePackages.qtsvg
-          pkgs.kdePackages.qtdeclarative
-        ];
-        settings = {
-          Wayland = {
-            # File to tell which monitor the SDDM should go *see environment.etc*
-            CompositorCommand = "${pkgs.weston}/bin/weston --shell=kiosk -c /etc/sddm-weston.ini";
-          };
-        };
-      };
     };
     openssh = {
       enable = true;
@@ -454,18 +428,6 @@
 
   i18n.extraLocaleSettings = {
     LC_ALL = "en_US.UTF-8";
-  };
-
-  environment = {
-    etc."sddm-weston.ini".text = ''
-      [output]
-      name=HDMI-A-1
-      mode=off
-
-      [output]
-      name=DP-1
-      mode=preferred
-    '';
   };
 
   zramSwap = {

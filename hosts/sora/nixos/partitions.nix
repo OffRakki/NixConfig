@@ -71,27 +71,5 @@
         };
       };
     };
-
-    # ssd-sata = {
-    #   device = "/dev/disk/by-id/ata-HUSKY_SSD_1TB_HB9BMSR3311205";
-    #   type = "disk";
-    #   content = {
-    #     type = "gpt";
-    #     partitions = {
-    #       data = {
-    #         size = "100%";
-    #         content = {
-    #           type = "btrfs";
-    #           subvolumes = {
-    #             "/data" = {
-    #               mountOptions = ["compress=zstd"];
-    #               mountpoint = "/data";
-    #             };
-    #           };
-    #         };
-    #       };
-    #     };
-    #   };
-    # };
   };
 }

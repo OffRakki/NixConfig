@@ -376,7 +376,7 @@ in {
           local desktop_env = "WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_DATA_DIRS GTK_THEME HYPRCURSOR_THEME HYPRCURSOR_SIZE XCURSOR_THEME XCURSOR_SIZE QT_QPA_PLATFORM QT_QPA_PLATFORMTHEME QT_STYLE_OVERRIDE"
           hl.exec_cmd("sleep 2 && systemctl --user import-environment " .. desktop_env)
           hl.exec_cmd("sleep 2 && dbus-update-activation-environment --systemd " .. desktop_env)
-          hl.exec_cmd("sleep 4 && systemctl --user restart xsettingsd && pkill -9 quickshell || true; sleep 1; noctalia-shell")
+          hl.exec_cmd("sleep 4 && systemctl --user restart xsettingsd; sleep 1; noctalia-shell")
           hl.exec_cmd("clipse -listen")
           hl.exec_cmd("nm-applet --indicator")
           hl.exec_cmd("openrgb --startminimized")
