@@ -20,6 +20,7 @@
     ./neovim.nix
     ./kitty.nix
     ./qutebrowser.nix
+    ./email.nix
     ./aerc/aerc.nix
     ./hytale.nix
     ./quickshell/quickshell.nix
