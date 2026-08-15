@@ -28,11 +28,10 @@ As páginas de medicamentos participantes (`/medicamentos-participantes/<slug>`)
 
 Use `web_search` para pesquisar documentação do Google Search Console e artigos técnicos.
 Use `fetch_content` para extrair conteúdo de URLs de páginas concorrentes, APIs ou ferramentas.
-Use pi-chrome (via `browser.py`) para verificar renderização JS real quando o HTML inicial não basta:
-
-```bash
-browser.py '[{"action":"navigate","url":"https://cuidadospelavida.com.br/medicamentos-participantes/<slug>"},{"action":"extract"},{"action":"screenshot","path":"/tmp/pi/seo-ssr-check.png"}]'
-```
+Use `agent_browser` via the `browser` skill to verify real JavaScript rendering
+when the initial HTML is insufficient. Capture a snapshot or screenshot after
+page hydration and compare it with the static response from `fetch_content` or
+a deliberate raw HTTP request.
 
 Para inspecionar o HTML estático (SSR) e comparar com o JS-renderizado:
 

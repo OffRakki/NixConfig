@@ -44,7 +44,6 @@ in {
       ".local/share/pi"
       ".config/lean-ctx"
       ".local/share/lean-ctx"
-      ".pi-lens"
       ".codex"
     ];
   };
@@ -90,8 +89,8 @@ in {
     mkdir -p "$HOME/.config/lean-ctx"
     cp -f ${configFile} "$HOME/.config/lean-ctx/config.toml"
   '';
-  # Keep ~/.pi/agent/agents mutable: rpiv-pi writes bundled agents and its manifest there.
-  # Custom agents remain Nix-sourced, but activation copies them into the writable directory.
+  # Keep custom agents Nix-sourced while leaving the runtime directory writable
+  # for Pi's agent-management commands.
   home.activation.syncPiCustomAgents = ''
     src=${./agents}
     dst="$HOME/.pi/agent/agents"
@@ -130,17 +129,12 @@ in {
     enable = true;
     package = piPackage;
     context = ./context.md;
-    # Node is needed for npm-based pi package installs.
-    # nodejs includes npm in recent nixpkgs versions.
-    # Some Pi packages ship native npm deps (e.g. node-pty), so keep the
-    # minimal node-gyp toolchain on PATH for Pi package install/reload.
+    # Node provides npx for the Obsidian MCP server.
     # agent-browser is the upstream binary used by pi-agent-browser-native;
     # Chromium is the isolated automation browser it drives via CDP.
     # jujutsu backs automatic working-copy snapshots from jj-snapshot.ts.
     extraPackages = with pkgs; [
       nodejs
-      gnumake
-      gcc
       jujutsu
       agent-browser
       chromium

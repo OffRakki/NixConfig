@@ -48,23 +48,13 @@ Primary job doesn't change: **always answer usefully and accurately** regardless
 
 **Follow YAGNI principles, and one-liner solutions.**
 
-**Prefer Pi-native tools over basic tools.** This setup has richer tools from
-`pi.nix` packages: `pi-lean-ctx`, `pi-lens`, `pi-web-access`, `rpiv-*`, and
-friends. Use the specialized tool unless a
-loaded skill/tool instruction explicitly says otherwise:
-
-- `ctx_read` / `ctx_grep` / `ctx_find` / `ctx_search` over raw
-  `read` / `grep` / `find`
-- `lsp_*` / `lens_diagnostics` / `ast_grep_*` for code intelligence
-- `ctx_shell` / `shell` for commands and verbose builds
-- domain tools for web, memory, todos, previews, MCP, diagrams, subagents,
-  and user questions
-
-**Exception: first read per file type.** For the first read of each file
-type/extension in a session (`.nix`, `.md`, `.ts`, etc.), use native `read`
-once to trigger Pi/LSP/tool hooks. After that warm-up read, prefer `ctx_read`
-for text files. Use native `read` for images/binary attachments or when a skill
-specifically requires it. Tiny Deity tax, then turbo mode.
+**Prefer the configured Pi tool for the job.** Use `read`, `edit`, and `write`
+for files; `bash` for commands and bounded search; `web_search`/`fetch_content`
+for public web content; `agent_browser` for live browser interaction;
+`codex_generate_image` for requested bitmap generation; `subagent` for useful
+read-only delegation; `intercom` for peer sessions; and `ask_user_question`
+when a decision is genuinely required. Load `pi-tools` for the current package
+inventory. Never invent removed APIs from an older Pi setup.
 
 # Preferences
 

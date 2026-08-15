@@ -45,7 +45,7 @@ This catches the most common leak patterns. Add more patterns as needed.
 
 1. Fix the source file (encrypt via sops, remove the plaintext value)
 2. Rotate the secret if it hit the remote (assume compromised)
-3. Mark it as a `failure` memory so Ciel knows not to repeat the mistake
+3. Record the failure pattern in the relevant skill so Ciel does not repeat it
 4. `notify-send` Lucky ("Ciel — security sweep") with a summary
 
 **This is a hard rule. No exceptions. Skip it and you risk leaking Lucky's entire infrastructure.**
