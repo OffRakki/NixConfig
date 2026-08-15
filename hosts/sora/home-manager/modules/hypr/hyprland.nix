@@ -369,6 +369,24 @@ in {
           fullscreen_on_one_column = true,
           column_width = 0.333,
         } })
+
+        local function balanceColumns()
+          hl.timer(function()
+            local workspace = hl.get_active_workspace()
+            if workspace == nil then return end
+
+            local columns = #hl.get_windows({ workspace = workspace, floating = false })
+            if columns == 2 or columns == 3 then
+              hl.dispatch(hl.dsp.layout("fit all"))
+            elseif columns > 3 then
+              hl.dispatch(hl.dsp.layout("colresize all 0.333"))
+            end
+          end, { timeout = 50, type = "oneshot" })
+        end
+
+        for _, event in ipairs({ "window.open", "window.close", "window.move_to_workspace", "workspace.active" }) do
+          hl.on(event, balanceColumns)
+        end
         -----------------------------------------------------------------------
 
         ------------------------------- EXEC ON START -------------------------------
