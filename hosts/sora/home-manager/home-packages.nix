@@ -42,7 +42,6 @@
     nil
 
     # CLI utils
-    aerc
     wineWow64Packages.full
     (import ./packages/winetricks.nix {inherit pkgs;})
     satty
