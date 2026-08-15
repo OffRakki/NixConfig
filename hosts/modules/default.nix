@@ -7,7 +7,6 @@
     ./ai.nix
     ./btrfs-ephemeral.nix
     ./optin-persistence.nix
-    ./stock-report.nix
     ./usb-tether-failover.nix
   ];
 }

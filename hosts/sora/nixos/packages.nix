@@ -70,8 +70,6 @@
     gpu-screen-recorder
     gpu-screen-recorder-gtk
     dotool
-    sddm-astronaut
-    sddm-sugar-dark
     appimage-run
     grc
     xwayland-satellite
@@ -95,8 +93,6 @@
     ueberzug
     direnv
     dragon-drop
-    refind
-    os-prober
     nixd
     evil-helix
     curl

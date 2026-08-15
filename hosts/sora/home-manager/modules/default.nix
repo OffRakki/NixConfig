@@ -23,8 +23,6 @@
     ./email.nix
     ./aerc/aerc.nix
     ./hytale.nix
-    ./quickshell/quickshell.nix
-    ./river.nix
     ./fuzzel.nix
     ./noctalia.nix
     ./spicetify.nix
