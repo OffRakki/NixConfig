@@ -10,13 +10,6 @@
       "capabilities": ["extension", "skills", "agent-instructions"]
     },
     {
-      "name": "pi-drawio",
-      "version": "0.1.0",
-      "source": "npm",
-      "trust": "pinned-third-party",
-      "capabilities": ["extension", "tool", "filesystem", "process"]
-    },
-    {
       "name": "pi-intercom",
       "version": "0.6.0",
       "source": "npm",
@@ -52,25 +45,11 @@
       "capabilities": ["extension", "tool-routing"]
     },
     {
-      "name": "pi-ask-user",
-      "version": "0.13.0",
-      "source": "npm",
-      "trust": "pinned-third-party",
-      "capabilities": ["extension", "tool", "ui"]
-    },
-    {
       "name": "pi-web-access",
       "version": "0.13.0",
       "source": "npm",
       "trust": "pinned-third-party",
       "capabilities": ["extension", "tools", "network", "filesystem"]
-    },
-    {
-      "name": "pi-mcp-adapter",
-      "version": "2.11.0",
-      "source": "npm",
-      "trust": "pinned-third-party",
-      "capabilities": ["extension", "tool", "network", "process", "credentials"]
     },
     {
       "name": "pi-markdown-preview",
@@ -85,13 +64,6 @@
       "source": "npm",
       "trust": "pinned-third-party",
       "capabilities": ["extension", "ui", "session-metadata"]
-    },
-    {
-      "name": "pi-hermes-memory",
-      "version": "0.8.1",
-      "source": "npm",
-      "trust": "pinned-third-party",
-      "capabilities": ["extension", "tools", "filesystem", "memory"]
     },
     {
       "name": "pi-invisible-continue",
@@ -133,13 +105,6 @@
       "source": "npm",
       "trust": "pinned-third-party",
       "capabilities": ["extension", "filesystem", "session-metadata"]
-    },
-    {
-      "name": "@weshipwork/pi-herdr",
-      "version": "0.1.0",
-      "source": "npm",
-      "trust": "pinned-third-party",
-      "capabilities": ["extension", "process", "network"]
     },
     {
       "name": "@juicesharp/rpiv-pi",

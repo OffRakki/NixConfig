@@ -9,17 +9,12 @@
     "@juicesharp/rpiv-ask-user-question"
     "@juicesharp/rpiv-pi"
     "@juicesharp/rpiv-todo"
-    "@weshipwork/pi-herdr"
     "pi-agent-browser-native"
-    "pi-ask-user"
-    "pi-drawio"
-    "pi-hermes-memory"
     "pi-intercom"
     "pi-invisible-continue"
     "pi-lean-ctx"
     "pi-lens"
     "pi-markdown-preview"
-    "pi-mcp-adapter"
     "pi-namespace"
     "pi-powerline-footer"
     "pi-simplify"
@@ -31,7 +26,7 @@
     pname = package.name;
     inherit (package) version;
     src = ./.;
-    npmDepsHash = "sha256-T9Vk64+oxpnjeB64HD2CwC2JP5etMdwQ94ti79ry75I=";
+    npmDepsHash = "sha256-jtGh4N+WY/p2FssU9cA2UZaa2fkrlzWQUhhWWnmrg10=";
     npmFlags = ["--legacy-peer-deps"];
     dontNpmBuild = true;
     installPhase = ''
