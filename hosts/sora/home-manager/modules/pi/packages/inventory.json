@@ -10,80 +10,11 @@
       "capabilities": ["extension", "skills", "agent-instructions"]
     },
     {
-      "name": "pi-intercom",
-      "version": "0.6.0",
+      "name": "@juicesharp/rpiv-ask-user-question",
+      "version": "1.20.0",
       "source": "npm",
       "trust": "pinned-third-party",
-      "capabilities": ["extension", "tool", "ipc", "sessions"]
-    },
-    {
-      "name": "pi-lean-ctx",
-      "version": "3.9.12",
-      "source": "npm",
-      "trust": "pinned-third-party",
-      "capabilities": ["extension", "tools", "filesystem", "process", "index"]
-    },
-    {
-      "name": "pi-lens",
-      "version": "3.8.70",
-      "source": "npm",
-      "trust": "pinned-third-party",
-      "capabilities": ["extension", "tools", "filesystem", "process", "lsp"]
-    },
-    {
-      "name": "pi-simplify",
-      "version": "0.2.3",
-      "source": "npm",
-      "trust": "pinned-third-party",
-      "capabilities": ["extension", "filesystem", "agent-instructions"]
-    },
-    {
-      "name": "pi-namespace",
-      "version": "0.2.1",
-      "source": "npm",
-      "trust": "pinned-third-party",
-      "capabilities": ["extension", "tool-routing"]
-    },
-    {
-      "name": "pi-web-access",
-      "version": "0.13.0",
-      "source": "npm",
-      "trust": "pinned-third-party",
-      "capabilities": ["extension", "tools", "network", "filesystem"]
-    },
-    {
-      "name": "pi-markdown-preview",
-      "version": "0.10.0",
-      "source": "npm",
-      "trust": "pinned-third-party",
-      "capabilities": ["extension", "tool", "filesystem", "process"]
-    },
-    {
-      "name": "pi-powerline-footer",
-      "version": "0.7.0",
-      "source": "npm",
-      "trust": "pinned-third-party",
-      "capabilities": ["extension", "ui", "session-metadata"]
-    },
-    {
-      "name": "pi-invisible-continue",
-      "version": "0.3.4",
-      "source": "npm",
-      "trust": "pinned-third-party",
-      "capabilities": ["extension", "session-control"]
-    },
-    {
-      "name": "pi-subagents",
-      "version": "0.34.0",
-      "source": "npm",
-      "trust": "pinned-third-party",
-      "capabilities": [
-        "extension",
-        "tools",
-        "process",
-        "sessions",
-        "filesystem"
-      ]
+      "capabilities": ["extension", "tool", "ui"]
     },
     {
       "name": "pi-agent-browser-native",
@@ -100,46 +31,52 @@
       ]
     },
     {
-      "name": "pi-tally",
-      "version": "0.0.11",
+      "name": "pi-codex-image-gen",
+      "version": "0.1.12",
       "source": "npm",
       "trust": "pinned-third-party",
-      "capabilities": ["extension", "filesystem", "session-metadata"]
+      "capabilities": ["extension", "tool", "network", "filesystem", "credentials"]
     },
     {
-      "name": "@juicesharp/rpiv-pi",
-      "version": "1.20.0",
+      "name": "pi-intercom",
+      "version": "0.6.0",
       "source": "npm",
       "trust": "pinned-third-party",
-      "capabilities": ["extension", "skills", "agents", "filesystem", "process"]
+      "capabilities": ["extension", "tool", "ipc", "sessions"]
     },
     {
-      "name": "@juicesharp/rpiv-todo",
-      "version": "1.20.0",
+      "name": "pi-invisible-continue",
+      "version": "0.3.4",
       "source": "npm",
       "trust": "pinned-third-party",
-      "capabilities": ["extension", "tool", "filesystem"]
+      "capabilities": ["extension", "session-control"]
     },
     {
-      "name": "@juicesharp/rpiv-args",
-      "version": "1.20.0",
+      "name": "pi-powerline-footer",
+      "version": "0.7.0",
       "source": "npm",
       "trust": "pinned-third-party",
-      "capabilities": ["extension", "process", "agent-instructions"]
+      "capabilities": ["extension", "ui", "session-metadata"]
     },
     {
-      "name": "@juicesharp/rpiv-ask-user-question",
-      "version": "1.20.0",
+      "name": "pi-subagents",
+      "version": "0.34.0",
       "source": "npm",
       "trust": "pinned-third-party",
-      "capabilities": ["extension", "tool", "ui"]
+      "capabilities": [
+        "extension",
+        "tools",
+        "process",
+        "sessions",
+        "filesystem"
+      ]
     },
     {
-      "name": "pi-caveman",
-      "version": "0d4c639d672b0b80afaa035f582152dcab9c6a8f",
-      "source": "github:jonjonrankin/pi-caveman",
+      "name": "pi-web-access",
+      "version": "0.13.0",
+      "source": "npm",
       "trust": "pinned-third-party",
-      "capabilities": ["extension", "system-prompt", "filesystem", "ui"]
+      "capabilities": ["extension", "tools", "network", "filesystem"]
     }
   ]
 }
