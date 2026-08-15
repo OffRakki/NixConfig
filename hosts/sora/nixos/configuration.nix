@@ -129,6 +129,10 @@
       owner = "rakki";
     };
 
+    secrets.lrdMailPass = {
+      owner = "rakki";
+    };
+
     secrets.lucky-info = {
       sopsFile = ../home-manager/modules/pi/private.yaml;
       owner = "rakki";
