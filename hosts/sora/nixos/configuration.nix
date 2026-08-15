@@ -36,6 +36,9 @@
     overlays = [
       inputs.nix-minecraft.overlay
       (_: prev: {
+        aerc = prev.aerc.overrideAttrs (old: {
+          patches = (old.patches or []) ++ [./aerc-config-includes.patch];
+        });
         flatpak = prev.flatpak.overrideAttrs (old: {
           patches =
             (old.patches or [])
