@@ -48,7 +48,6 @@
     aerc = {
       enable = true;
       smtpAuth = "xoauth2";
-      extraAccounts."copy-to" = true;
     };
     mbsync = (sync "XOAUTH2") // {inherit patterns;};
   };
@@ -87,7 +86,7 @@ in {
         aerc = {
           enable = true;
           smtpAuth = "login";
-          extraAccounts."copy-to" = true;
+          extraAccounts."copy-to" = "Sent";
         };
         mbsync = (sync "LOGIN") // {patterns = ["*"];};
         thunderbird = {
