@@ -518,24 +518,19 @@ in {
         hl.bind("${mod} + SHIFT + E",           hl.dsp.exec_cmd("${terminal} -e ${files}"))
         hl.bind("${mod} + SHIFT + F",           hl.dsp.window.fullscreen({ mode = "fullscreen" }))
 
-        -- Dynamic maximized toggle
-        local maximized = {}
+        -- Cycle the active column through 100%, 50%, and 33% widths
+        local columnWidths = { "fit active", "colresize 0.5", "colresize 0.333" }
+        local columnWidthIndex = {}
         hl.bind("${mod} + F", function()
           local window = hl.get_active_window()
-
           if window == nil then return end
 
-          if maximized[window.address] then
-            hl.dispatch(hl.dsp.layout("colresize 0.5"))
-            maximized[window.address] = nil
-
-          else
-            hl.dispatch(hl.dsp.layout("fit active"))
-            maximized[window.address] = true
-          end
+          local index = (columnWidthIndex[window.address] or 0) % #columnWidths + 1
+          hl.dispatch(hl.dsp.layout(columnWidths[index]))
+          columnWidthIndex[window.address] = index
         end)
         hl.on("window.close", function(window)
-          maximized[window.address] = nil
+          columnWidthIndex[window.address] = nil
         end)
 
         -- Dont float kitty-dropterm and pwvycontrol
