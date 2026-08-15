@@ -1,6 +1,6 @@
 {...}: {
   accounts.email.accounts = {
-    "me@lrd.rs" = {
+    me = {
       address = "me@lrd.rs";
       userName = "me@lrd.rs";
       realName = "Fernando Marques";

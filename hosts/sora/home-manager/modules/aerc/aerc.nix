@@ -85,10 +85,10 @@ in {
   accounts.email = {
     maildirBasePath = "Mail";
     accounts = {
-      Main = gmail "offrakki@gmail.com" ["INBOX" "Linkedin" "LumisCards" "Nota Fiscal" "NuBank" "Riot" "Spotify" "Steam" "Twitch" "[Notion]" "[Gmail]/Drafts" "[Gmail]/Important" "[Gmail]/Sent Mail" "[Gmail]/Starred"];
-      Personal = gmail "fernandomarques1505@gmail.com" ["INBOX" "Archive" "Mailspring/Snoozed" "Notes" "Personal" "Receipts" "Work" "[Gmail]/Drafts" "[Gmail]/Important" "[Gmail]/Sent Mail" "[Gmail]/Starred"];
-      Work = gmail "fernando12.contato@gmail.com" ["INBOX" "[Gmail]/Drafts" "[Gmail]/Important" "[Gmail]/Sent Mail" "[Gmail]/Starred"];
-      "me@lrd.rs" = {
+      offrakki = gmail "offrakki@gmail.com" ["INBOX" "Linkedin" "LumisCards" "Nota Fiscal" "NuBank" "Riot" "Spotify" "Steam" "Twitch" "[Notion]" "[Gmail]/Drafts" "[Gmail]/Important" "[Gmail]/Sent Mail" "[Gmail]/Starred"];
+      fernandomarques1505 = gmail "fernandomarques1505@gmail.com" ["INBOX" "Archive" "Mailspring/Snoozed" "Notes" "Personal" "Receipts" "Work" "[Gmail]/Drafts" "[Gmail]/Important" "[Gmail]/Sent Mail" "[Gmail]/Starred"];
+      contato = gmail "fernando12.contato@gmail.com" ["INBOX" "[Gmail]/Drafts" "[Gmail]/Important" "[Gmail]/Sent Mail" "[Gmail]/Starred"];
+      "me" = {
         passwordCommand = "${pkgs.coreutils}/bin/cat ${config.home.homeDirectory}/pass.env";
         folders = {
           inbox = "INBOX";

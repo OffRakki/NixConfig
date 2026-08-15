@@ -2,7 +2,7 @@
   home.persistence."/persist".directories = [".thunderbird"];
 
   accounts.email.accounts = {
-    "me@lrd.rs".thunderbird = {
+    me.thunderbird = {
       enable = true;
       settings = id: {
         "mail.server.server_${id}.directory-rel" = "[ProfD]ImapMail/email-ssl.com.br";
@@ -53,7 +53,7 @@
     profiles.rakki = {
       isDefault = true;
       accountsOrder = [
-        "me@lrd.rs"
+        "me"
         "fruteiralab@lrd.rs"
       ];
       settings = {
