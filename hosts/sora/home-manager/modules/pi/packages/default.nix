@@ -5,28 +5,20 @@
   package = builtins.fromJSON (builtins.readFile ./package.json);
   activeNpmPackages = [
     "@dietrichgebert/ponytail"
-    "@juicesharp/rpiv-args"
     "@juicesharp/rpiv-ask-user-question"
-    "@juicesharp/rpiv-pi"
-    "@juicesharp/rpiv-todo"
     "pi-agent-browser-native"
+    "pi-codex-image-gen"
     "pi-intercom"
     "pi-invisible-continue"
-    "pi-lean-ctx"
-    "pi-lens"
-    "pi-markdown-preview"
-    "pi-namespace"
     "pi-powerline-footer"
-    "pi-simplify"
     "pi-subagents"
-    "pi-tally"
     "pi-web-access"
   ];
   npmClosure = pkgs.buildNpmPackage {
     pname = package.name;
     inherit (package) version;
     src = ./.;
-    npmDepsHash = "sha256-jtGh4N+WY/p2FssU9cA2UZaa2fkrlzWQUhhWWnmrg10=";
+    npmDepsHash = "sha256-rwdzcAmsavrkZPgAgKPuK3ZJywqxyYLbCUhD9b7paxw=";
     npmFlags = ["--legacy-peer-deps"];
     dontNpmBuild = true;
     installPhase = ''
@@ -48,16 +40,8 @@
       runHook postInstallCheck
     '';
   };
-  cavemanRev = "0d4c639d672b0b80afaa035f582152dcab9c6a8f";
-  _caveman = pkgs.fetchFromGitHub {
-    owner = "jonjonrankin";
-    repo = "pi-caveman";
-    rev = cavemanRev;
-    hash = "sha256-DhawjQ6tZvG5go4ayPdB+Yup77MjsLF2hFmjxgu9yTQ=";
-  };
   inventory = builtins.fromJSON (builtins.readFile ./inventory.json);
   inventoryNpmPackages = builtins.filter (entry: entry.source == "npm") inventory.packages;
-  inventoryCaveman = builtins.filter (entry: entry.name == "pi-caveman") inventory.packages;
   sort = builtins.sort builtins.lessThan;
 in
   assert sort activeNpmPackages == sort (map (entry: entry.name) inventoryNpmPackages);
@@ -66,13 +50,7 @@ in
       builtins.hasAttr entry.name package.dependencies
       && package.dependencies.${entry.name} == entry.version
   )
-  inventoryNpmPackages;
-  assert builtins.length inventoryCaveman == 1;
-  assert (builtins.head inventoryCaveman).source == "github:jonjonrankin/pi-caveman";
-  assert (builtins.head inventoryCaveman).version == cavemanRev; {
+  inventoryNpmPackages; {
     inherit inventory npmClosure;
-    paths =
-      map (name: "${npmClosure}/node_modules/${name}") activeNpmPackages
-      # ++ [_caveman]
-      ;
+    paths = map (name: "${npmClosure}/node_modules/${name}") activeNpmPackages;
   }
