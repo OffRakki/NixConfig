@@ -370,12 +370,20 @@ in {
           column_width = 0.333,
         } })
 
+        local columnCounts = {}
+        for _, workspace in ipairs(hl.get_workspaces()) do
+          columnCounts[workspace.id] = #hl.get_windows({ workspace = workspace, floating = false })
+        end
+
         local function balanceColumns()
           hl.timer(function()
             local workspace = hl.get_active_workspace()
             if workspace == nil then return end
 
             local columns = #hl.get_windows({ workspace = workspace, floating = false })
+            if columnCounts[workspace.id] == columns then return end
+            columnCounts[workspace.id] = columns
+
             if columns == 2 or columns == 3 then
               hl.dispatch(hl.dsp.layout("fit all"))
             elseif columns > 3 then
