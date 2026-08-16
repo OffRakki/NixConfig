@@ -18,6 +18,7 @@
     sops
     age
 
+    rustdesk-flutter
     pwvucontrol
     vulkan-tools
     floorp-bin
