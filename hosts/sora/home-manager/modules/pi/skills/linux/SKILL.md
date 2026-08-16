@@ -170,6 +170,8 @@ Lucky uses Hyprland on Wayland. Key points:
   shell profiles (since Hyprland starts them)
 - `hyprctl` is the runtime control tool for theme-switching scripts (e.g.,
   setting wallpapers, reloading config)
+- For Hypridle/Hyprlock DPMS changes, verify current upstream behavior and prefer
+  Hypridle listeners or Hyprland's native DPMS wake settings over custom timers.
 
 ## GTK theming via home-manager
 

@@ -76,6 +76,7 @@ in {
             disable_splash_rendering = true,
             vrr = 0,
             mouse_move_enables_dpms = false,
+            key_press_enables_dpms = true,
             enable_swallow = false,
             swallow_regex = "^(kitty)$",
             focus_on_activate = false,
