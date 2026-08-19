@@ -17,6 +17,7 @@
     ./calendar.nix
     ./wofi.nix
     ./fastfetch.nix
+    ./fetch.nix
     ./glance.nix
     ./waybar.nix
     ./neovim.nix
