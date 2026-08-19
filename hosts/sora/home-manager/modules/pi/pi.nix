@@ -255,7 +255,6 @@ in {
     };
   };
   home.file = {
-    ".pi/agent/extensions".source = ./extensions;
     ".pi/agent/package-inventory.json".source = ./packages/inventory.json;
     ".pi/agent/skills".source = ./skills;
     ".pi/agent/prompts".source = ./prompts;
