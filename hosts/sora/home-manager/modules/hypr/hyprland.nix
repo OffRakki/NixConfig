@@ -510,7 +510,7 @@ in {
         hl.bind("${mod} + N",                   hl.dsp.exec_cmd("noctalia-shell ipc call notifications toggleHistory"))
         hl.bind("${mod} + SHIFT + W",           hl.dsp.exec_cmd("noctalia-shell ipc call wallpaper toggle"))
         hl.bind("CTRL + ALT + N",               hl.dsp.exec_cmd("${terminal} --class middleFloat -e hx"))
-        hl.bind("${mod} + SHIFT + P",           hl.dsp.exec_cmd("'${../../../../../scripts/pass-wofi.sh}'"))
+        hl.bind("${mod} + SHIFT + P",           hl.dsp.exec_cmd("${terminal} --class middleFloat -e 'pi --no-extensions'"))
         hl.bind("${mod} + I",                   hl.dsp.window.pin({ action = "toggle" }))
         hl.bind("Print",                        hl.dsp.exec_cmd("${hyprshot} -z --clipboard-only -m region --freeze"))
         hl.bind("CTRL + Print",                 hl.dsp.exec_cmd("${hyprshot} -z --clipboard-only -m output --freeze"))
