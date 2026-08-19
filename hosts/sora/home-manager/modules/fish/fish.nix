@@ -91,7 +91,8 @@
         set fish_greeting
         direnv hook fish | source
         zoxide init fish --cmd cd | source
-        fastfetch
+        # fastfetch
+        fetch
 
         set fish_cursor_default     block      blink
         set fish_cursor_insert      line       blink

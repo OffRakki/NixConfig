@@ -23,7 +23,7 @@
     memory
     ip
     colors
-    label_color=cyan
+    label_color=red
     separator=═
     box=1
   '';
