@@ -1,5 +1,6 @@
 {
   imports = [
+    ./herdr.nix
     ./pi
     ./obs.nix
     ./steam/steam.nix
