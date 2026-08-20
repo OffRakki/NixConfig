@@ -26,8 +26,10 @@ Runtime files under `~/.pi/agent/` are outputs, not sources; never edit them.
 
 | Package | Provides |
 |---|---|
+| `@apat183/pi-buddy` | animated Pi header, state widget, and spinner |
 | `@dietrichgebert/ponytail` | YAGNI implementation/review skills |
 | `@juicesharp/rpiv-ask-user-question` | `ask_user_question` |
+| `@wishx127/pi-tokyo-night` | Tokyo Night themes, rain panel, and status UI |
 | `pi-agent-browser-native` | `agent_browser` and browser automation |
 | `pi-codex-image-gen` | `codex_generate_image` and `imagegen` |
 | `pi-intercom` | `intercom` and cross-session coordination |
@@ -35,6 +37,7 @@ Runtime files under `~/.pi/agent/` are outputs, not sources; never edit them.
 | `pi-powerline-footer` | powerline status UI |
 | `pi-subagents` | `subagent`, `wait`, and packaged agents |
 | `pi-web-access` | `web_search`, `fetch_content`, `get_search_content`, and `librarian` |
+| `rinco-pi-sakura` | Sakura Macaron theme and animated header |
 
 `lean-ctx` is installed as a companion CLI package on `PATH`; it is not an
 active Pi extension and does not provide `ctx_*` tools in this configuration.
