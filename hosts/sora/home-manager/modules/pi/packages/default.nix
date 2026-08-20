@@ -4,8 +4,10 @@
 }: let
   package = builtins.fromJSON (builtins.readFile ./package.json);
   activeNpmPackages = [
+    "@apat183/pi-buddy"
     "@dietrichgebert/ponytail"
     "@juicesharp/rpiv-ask-user-question"
+    "@wishx127/pi-tokyo-night"
     "pi-agent-browser-native"
     "pi-codex-image-gen"
     "pi-intercom"
@@ -13,12 +15,13 @@
     "pi-powerline-footer"
     "pi-subagents"
     "pi-web-access"
+    "rinco-pi-sakura"
   ];
   npmClosure = pkgs.buildNpmPackage {
     pname = package.name;
     inherit (package) version;
     src = ./.;
-    npmDepsHash = "sha256-rwdzcAmsavrkZPgAgKPuK3ZJywqxyYLbCUhD9b7paxw=";
+    npmDepsHash = "sha256-CLuvQfwu3ilqQlVZVzoweQQ3YqXQU2mGTkzVmBGXm6c=";
     npmFlags = ["--legacy-peer-deps"];
     dontNpmBuild = true;
     installPhase = ''
