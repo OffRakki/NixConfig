@@ -146,7 +146,7 @@ in {
       defaultProvider = "openai-codex";
       defaultModel = "gpt-5.6-sol";
       defaultThinkingLevel = "medium";
-      theme = "ciel-cursor";
+      theme = "sakura-macaron";
       enabledModels = [
         "gpt-5.5"
         "gpt-5.6*"
