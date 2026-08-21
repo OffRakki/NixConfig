@@ -10,6 +10,7 @@
     nix-output-monitor
     nvd
     icu
+    quickshell
 
     whisper-cpp
 
