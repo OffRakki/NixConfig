@@ -6,13 +6,15 @@
   activeNpmPackages = [
     "@apat183/pi-buddy"
     "@dietrichgebert/ponytail"
+    "@juanibiapina/pi-extension-settings"
+    "@juanibiapina/pi-powerbar"
     "@juicesharp/rpiv-ask-user-question"
     "@wishx127/pi-tokyo-night"
     "pi-agent-browser-native"
     "pi-codex-image-gen"
     "pi-intercom"
     "pi-invisible-continue"
-    "pi-powerline-footer"
+    # "pi-powerline-footer"
     "pi-subagents"
     "pi-web-access"
     "rinco-pi-sakura"
@@ -21,7 +23,7 @@
     pname = package.name;
     inherit (package) version;
     src = ./.;
-    npmDepsHash = "sha256-CLuvQfwu3ilqQlVZVzoweQQ3YqXQU2mGTkzVmBGXm6c=";
+    npmDepsHash = "sha256-QZ29exWGcnITqNd0IzixsSxWy2VQe1C4DGnlzEzBchQ=";
     npmFlags = ["--legacy-peer-deps"];
     dontNpmBuild = true;
     installPhase = ''

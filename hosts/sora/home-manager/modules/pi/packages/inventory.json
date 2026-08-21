@@ -17,6 +17,20 @@
       "capabilities": ["extension", "skills", "agent-instructions"]
     },
     {
+      "name": "@juanibiapina/pi-extension-settings",
+      "version": "0.9.1",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "ui", "filesystem"]
+    },
+    {
+      "name": "@juanibiapina/pi-powerbar",
+      "version": "0.14.0",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "ui", "network", "filesystem", "credentials", "session-metadata"]
+    },
+    {
       "name": "@juicesharp/rpiv-ask-user-question",
       "version": "1.20.0",
       "source": "npm",
@@ -64,13 +78,6 @@
       "source": "npm",
       "trust": "pinned-third-party",
       "capabilities": ["extension", "session-control"]
-    },
-    {
-      "name": "pi-powerline-footer",
-      "version": "0.7.0",
-      "source": "npm",
-      "trust": "pinned-third-party",
-      "capabilities": ["extension", "ui", "session-metadata"]
     },
     {
       "name": "pi-subagents",
