@@ -5,7 +5,6 @@
   "description": "Nix-built Pi package closure",
   "dependencies": {
     "@apat183/pi-buddy": "0.1.2",
-    "@dietrichgebert/ponytail": "4.8.4",
     "@juanibiapina/pi-extension-settings": "0.9.1",
     "@juanibiapina/pi-powerbar": "0.14.0",
     "@juicesharp/rpiv-ask-user-question": "1.20.0",
