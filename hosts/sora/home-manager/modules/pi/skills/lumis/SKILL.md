@@ -48,6 +48,12 @@ The example uses Pedidos-specific columns (Status, Cliente, Qtd, Valor, Data). A
 
 **Parsing the Lista column:** Each line in a card list is prefixed with a quantity (e.g. `15 Goblin Token (SLD) 2421` means 15 copies). If no leading number (e.g. `Goblin Recruiter (SLD) 1313`), quantity is 1. Always parse the leading number — never count lines. A line with `//` indicates a double-sided card (DFC or token with card back).
 
+## Pricing
+
+- Orders below 80 cards: **$3.00 per card**.
+- Orders of 80 cards or more: **$2.00 per card** for the entire order.
+- Printed card backs: **+$0.50 per card** that receives one.
+
 ## Workflow
 
 1. Client sends card list (usually via WhatsApp)
