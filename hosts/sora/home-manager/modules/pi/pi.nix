@@ -94,8 +94,8 @@ in {
     powerbar="$HOME/.pi/agent/settings-extensions.json"
     mkdir -p "$(dirname "$buddy")"
 
-    ${pkgs.jq}/bin/jq '.placement = "belowEditor"' "$buddy" > "$buddy.tmp" 2>/dev/null \
-      || printf '{"placement":"belowEditor"}\n' > "$buddy.tmp"
+    ${pkgs.jq}/bin/jq '.placement = "belowEditor" | .header = false' "$buddy" > "$buddy.tmp" 2>/dev/null \
+      || printf '{"placement":"belowEditor","header":false}\n' > "$buddy.tmp"
     mv "$buddy.tmp" "$buddy"
 
     ${pkgs.jq}/bin/jq '(.powerbar //= {}) | .powerbar.placement = "belowEditor"' "$powerbar" > "$powerbar.tmp" 2>/dev/null \
