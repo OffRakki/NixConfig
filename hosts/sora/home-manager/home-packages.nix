@@ -1,7 +1,6 @@
 {pkgs, ...}: {
   home.packages = with pkgs; [
     shiru
-    (import ./packages/ab-download-manager.nix {inherit pkgs;})
     viddy
     (import ./packages/orca-slicer.nix {inherit pkgs;})
     (import ./packages/linoffice.nix {inherit pkgs;})
