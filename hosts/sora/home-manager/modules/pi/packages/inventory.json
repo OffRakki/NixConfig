@@ -10,13 +10,6 @@
       "capabilities": ["extension", "ui", "filesystem"]
     },
     {
-      "name": "@dietrichgebert/ponytail",
-      "version": "4.8.4",
-      "source": "npm",
-      "trust": "pinned-third-party",
-      "capabilities": ["extension", "skills", "agent-instructions"]
-    },
-    {
       "name": "@juanibiapina/pi-extension-settings",
       "version": "0.9.1",
       "source": "npm",

@@ -5,7 +5,6 @@
   package = builtins.fromJSON (builtins.readFile ./package.json);
   activeNpmPackages = [
     "@apat183/pi-buddy"
-    "@dietrichgebert/ponytail"
     "@juanibiapina/pi-extension-settings"
     "@juanibiapina/pi-powerbar"
     "@juicesharp/rpiv-ask-user-question"
@@ -23,7 +22,7 @@
     pname = package.name;
     inherit (package) version;
     src = ./.;
-    npmDepsHash = "sha256-QZ29exWGcnITqNd0IzixsSxWy2VQe1C4DGnlzEzBchQ=";
+    npmDepsHash = "sha256-hnxsYll+822IBTKEKh5uawzxyqPogkkRzU/YvOvXjyU=";
     npmFlags = ["--legacy-peer-deps"];
     dontNpmBuild = true;
     installPhase = ''

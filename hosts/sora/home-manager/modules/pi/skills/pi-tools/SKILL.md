@@ -27,7 +27,6 @@ Runtime files under `~/.pi/agent/` are outputs, not sources; never edit them.
 | Package | Provides |
 |---|---|
 | `@apat183/pi-buddy` | animated Pi header, state widget, and spinner |
-| `@dietrichgebert/ponytail` | YAGNI implementation/review skills |
 | `@juanibiapina/pi-extension-settings` | shared extension settings UI |
 | `@juanibiapina/pi-powerbar` | persistent powerline status UI and usage segments |
 | `@juicesharp/rpiv-ask-user-question` | `ask_user_question` |
