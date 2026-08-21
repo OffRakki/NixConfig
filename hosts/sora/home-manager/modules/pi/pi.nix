@@ -89,6 +89,19 @@ in {
     mkdir -p "$HOME/.config/lean-ctx"
     cp -f ${configFile} "$HOME/.config/lean-ctx/config.toml"
   '';
+  home.activation.setPiWidgetPlacement = ''
+    buddy="$HOME/.pi/agent/pi-buddy/config.json"
+    powerbar="$HOME/.pi/agent/settings-extensions.json"
+    mkdir -p "$(dirname "$buddy")"
+
+    ${pkgs.jq}/bin/jq '.placement = "belowEditor"' "$buddy" > "$buddy.tmp" 2>/dev/null \
+      || printf '{"placement":"belowEditor"}\n' > "$buddy.tmp"
+    mv "$buddy.tmp" "$buddy"
+
+    ${pkgs.jq}/bin/jq '(.powerbar //= {}) | .powerbar.placement = "belowEditor"' "$powerbar" > "$powerbar.tmp" 2>/dev/null \
+      || printf '{"powerbar":{"placement":"belowEditor"}}\n' > "$powerbar.tmp"
+    mv "$powerbar.tmp" "$powerbar"
+  '';
   # Keep custom agents Nix-sourced while leaving the runtime directory writable
   # for Pi's agent-management commands.
   home.activation.syncPiCustomAgents = ''
