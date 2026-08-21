@@ -5,18 +5,42 @@
   ...
 }: let
   piPackage = pkgs.pi-coding-agent.overrideAttrs (finalAttrs: _: {
-    version = "0.80.10";
-    src = pkgs.fetchFromGitHub {
-      owner = "earendil-works";
-      repo = "pi";
-      tag = "v${finalAttrs.version}";
-      hash = "sha256-Vs/ndHYzFyfN4CjPV2zMYblLXe9IuM13UrPJI1VsZEQ=";
+    version = "0.84.2";
+    src = pkgs.fetchurl {
+      url = "https://github.com/earendil-works/pi/releases/download/v${finalAttrs.version}/pi-${finalAttrs.version}-source.tar.gz";
+      hash = "sha256-lqnvrSWPpvqJ9mG7+DDDVt07r2zQbGVDzk6CU8FDRg4=";
     };
     npmDeps = pkgs.fetchNpmDeps {
       name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
       inherit (finalAttrs) src;
-      hash = "sha256-XGvDNH+eilsgc0Z7ITqbitB/9RVc+WuDfCcr1pibNqk=";
+      hash = "sha256-6J5Efe+6ptCuR3VZojwYPZO8BBnnZsOQ4OAeB64uYOY=";
     };
+    buildPhase = ''
+      runHook preBuild
+      npm run build --workspace=packages/tui
+      npm run build --workspace=packages/telemetry
+      npm run build:offline --workspace=packages/ai
+      npm run build --workspace=packages/agent
+      npm run build --workspace=packages/protocol
+      npm run build --workspace=packages/client
+      npm run build --workspace=packages/coding-agent
+      runHook postBuild
+    '';
+    postInstall = ''
+      local nm="$out/lib/node_modules/pi-monorepo/node_modules"
+      for ws in @earendil-works/pi-ai:packages/ai \
+                @earendil-works/pi-agent-core:packages/agent \
+                @earendil-works/pi-client:packages/client \
+                @earendil-works/pi-protocol:packages/protocol \
+                @earendil-works/pi-telemetry:packages/telemetry \
+                @earendil-works/pi-tui:packages/tui; do
+        IFS=: read -r pkg src <<< "$ws"
+        rm "$nm/$pkg"
+        cp -r "$src" "$nm/$pkg"
+      done
+      find "$nm" -type l -lname '*/packages/*' -delete
+      find "$nm/.bin" -xtype l -delete
+    '';
   });
   piPackages = import ./packages {inherit piPackage pkgs;};
   piw = pkgs.writeShellApplication {
