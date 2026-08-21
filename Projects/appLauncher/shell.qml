@@ -9,11 +9,11 @@ ShellRoot {
     PanelWindow {
         id: root
 
-        property bool opened: true
+        property bool opened: false
         property bool favoritesOnly: false
         property string sortMode: "smart"
-        property var apps: DesktopEntries.applications.values.slice()
-        property var results: {
+        readonly property var apps: DesktopEntries.applications.values.slice()
+        readonly property var matchingApps: {
             const query = search.text.trim().toLowerCase()
             const favorites = state.favorites
             const counts = state.launches
@@ -40,8 +40,9 @@ ShellRoot {
                 }
                 return a.entry.name.localeCompare(b.entry.name)
             })
-            return matches.slice(0, 10)
+            return matches
         }
+        readonly property var results: matchingApps.slice(0, 10)
 
         function fuzzyScoreText(text: string, query: string): real {
             let position = -1
@@ -66,7 +67,18 @@ ShellRoot {
             return fuzzyScoreText(text, query) + (name.startsWith(query) ? 120 : 0)
         }
 
+        function focusedScreen(): var {
+            for (const candidate of Quickshell.screens) {
+                if (Hyprland.monitorFor(candidate) === Hyprland.focusedMonitor)
+                    return candidate
+            }
+            return root.screen ?? Quickshell.screens[0]
+        }
+
         function show(): void {
+            const targetScreen = focusedScreen()
+            if (targetScreen)
+                screen = targetScreen
             visible = true
             opened = true
             search.text = ""
@@ -83,10 +95,10 @@ ShellRoot {
             opened ? hide() : show()
         }
 
-        function launch(): void {
+        function launchAt(index: int): void {
             if (results.length === 0)
                 return
-            const app = results[Math.max(0, list.currentIndex)].entry
+            const app = results[Math.max(0, Math.min(index, results.length - 1))].entry
             const launches = Object.assign({}, state.launches)
             launches[app.id] = (launches[app.id] || 0) + 1
             state.launches = launches
@@ -120,14 +132,14 @@ ShellRoot {
         anchors { top: true; right: true; bottom: true; left: true }
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
-        visible: true
+        visible: false
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.namespace: "ciel-app-launcher"
         WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
         Component.onCompleted: {
             console.assert(fuzzyScoreText("firefox", "ffx") > -Infinity, "fuzzy matching failed")
             console.assert(fuzzyScoreText("firefox", "zzz") === -Infinity, "fuzzy rejection failed")
-            Qt.callLater(() => search.forceActiveFocus())
+            Qt.callLater(() => root.show())
         }
 
         Timer {
@@ -302,7 +314,7 @@ ShellRoot {
                                 else if (event.key === Qt.Key_PageUp) root.moveSelection(-5)
                                 else if (ctrl && event.key === Qt.Key_Home) list.currentIndex = 0
                                 else if (ctrl && event.key === Qt.Key_End && root.results.length) list.currentIndex = root.results.length - 1
-                                else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) root.launch()
+                                else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) root.launchAt(list.currentIndex)
                                 else if (ctrl && event.key === Qt.Key_Space) root.toggleSelectedFavorite()
                                 else if (ctrl && event.key === Qt.Key_F) root.favoritesOnly = !root.favoritesOnly
                                 else if (ctrl && event.key === Qt.Key_1) root.sortMode = "smart"
@@ -316,7 +328,7 @@ ShellRoot {
                         }
 
                         Text {
-                            text: root.results.length + " results"
+                            text: root.results.length + " / " + root.matchingApps.length
                             color: "#70737c"
                             font.family: "Noto Sans"
                             font.pixelSize: 11
@@ -410,26 +422,17 @@ ShellRoot {
                         color: index === list.currentIndex ? "#24262c" : rowMouse.containsMouse ? "#1b1c21" : "transparent"
                         border.width: index === list.currentIndex ? 1 : 0
                         border.color: "#3b3d45"
-                        opacity: 0
-                        x: 12
                         Behavior on color { ColorAnimation { duration: 90 } }
-
-                        Component.onCompleted: entrance.start()
-                        SequentialAnimation {
-                            id: entrance
-                            PauseAnimation { duration: Math.min(row.index, 6) * 18 }
-                            ParallelAnimation {
-                                NumberAnimation { target: row; property: "opacity"; to: 1; duration: 140; easing.type: Easing.OutCubic }
-                                NumberAnimation { target: row; property: "x"; to: 0; duration: 170; easing.type: Easing.OutCubic }
-                            }
-                        }
 
                         MouseArea {
                             id: rowMouse
                             anchors.fill: parent
                             hoverEnabled: true
                             onEntered: list.currentIndex = row.index
-                            onClicked: root.launch()
+                            onClicked: {
+                                list.currentIndex = row.index
+                                root.launchAt(row.index)
+                            }
                         }
 
                         RowLayout {

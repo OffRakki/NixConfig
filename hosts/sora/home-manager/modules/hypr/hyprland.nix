@@ -18,9 +18,11 @@
   hyprshot = "${lib.getExe pkgs.hyprshot}";
   lock = lib.getExe pkgs.hyprlock;
   quickshell = lib.getExe pkgs.quickshell;
-  appLauncher = "$HOME/Projects/NixConfig/Projects/appLauncher";
+  appLauncher = "appLauncher";
 in {
   imports = [];
+
+  xdg.configFile."quickshell/${appLauncher}".source = ../../../../../Projects/appLauncher;
 
   wayland.windowManager.hyprland = {
     enable = true;
@@ -519,7 +521,7 @@ in {
         hl.bind("CTRL + Print",                 hl.dsp.exec_cmd("${hyprshot} -z --clipboard-only -m output --freeze"))
         hl.bind("${mod} + ALT + L",             hl.dsp.exec_cmd("${lock}"))
         -- "${mod} + SHIFT + D",                hl.dsp.exec_cmd("pkill wofi || wofi --show drun -G --insensitive" -- Main Menu))
-        hl.bind("${mod} + D",                   hl.dsp.exec_cmd("${quickshell} ipc -p ${appLauncher} call launcher toggle || ${quickshell} -p ${appLauncher} -n -d"))
+        hl.bind("${mod} + D",                   hl.dsp.exec_cmd("${quickshell} ipc -c ${appLauncher} call launcher toggle || ${quickshell} -c ${appLauncher} -n -d"))
         hl.bind("${mod} + ALT + D",             hl.dsp.exec_cmd("pkill wofi || wofi --show run -G --insensitive")) -- Main Menu
         hl.bind("${mod} + V",                   hl.dsp.exec_cmd("pkill clipse & ${terminal} --class middleFloat -e clipse"))
         hl.bind("${mod} + A",                   hl.dsp.exec_cmd("pkill wofi || true && ags -t 'overview'"))

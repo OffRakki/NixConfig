@@ -1,15 +1,23 @@
 # App Launcher
 
+The deployed launcher is available after a NixOS/Home Manager rebuild:
+
 ```sh
-qs -p ~/Projects/NixConfig/Projects/appLauncher
+qs -c appLauncher -n
 ```
 
-Toggle an already-running launcher:
+For foreground development directly from this checkout:
 
 ```sh
-qs ipc -p ~/Projects/NixConfig/Projects/appLauncher call launcher toggle
+qs -p ~/Projects/NixConfig/Projects/appLauncher -n
+```
+
+Toggle an already-running deployed launcher:
+
+```sh
+qs ipc -c appLauncher call launcher toggle
 ```
 
 Keyboard controls: fuzzy type-to-search; `↑/↓`, `Ctrl+J/K`, or `Ctrl+N/P` to navigate; `Enter` to launch; `Ctrl+Space` to favorite; `Ctrl+F` for favorites-only; `Ctrl+1/2/3` to sort; `Ctrl+L` to clear; `Esc` to close. The mouse is optional.
 
-Hyprland launches or toggles it with `Super+D`.
+Hyprland starts or toggles it with `Super+D`; the launcher opens on the focused monitor.
