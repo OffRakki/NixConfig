@@ -76,7 +76,7 @@ ShellRoot {
 
         function hide(): void {
             opened = false
-            hideTimer.restart()
+            visible = false
         }
 
         function toggle(): void {
@@ -131,12 +131,6 @@ ShellRoot {
         }
 
         Timer {
-            id: hideTimer
-            interval: 170
-            onTriggered: root.visible = false
-        }
-
-        Timer {
             id: saveTimer
             interval: 120
             onTriggered: stateFile.writeAdapter()
@@ -174,9 +168,7 @@ ShellRoot {
 
         Rectangle {
             anchors.fill: parent
-            color: "#a6000000"
-            opacity: root.opened ? 1 : 0
-            Behavior on opacity { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+            color: "#80090a0d"
 
             MouseArea {
                 anchors.fill: parent
@@ -194,10 +186,6 @@ ShellRoot {
             border.width: 1
             border.color: "#34363d"
             clip: true
-            opacity: root.opened ? 1 : 0
-            scale: root.opened ? 1 : 0.96
-            Behavior on opacity { NumberAnimation { duration: 140; easing.type: Easing.OutCubic } }
-            Behavior on scale { NumberAnimation { duration: 190; easing.type: Easing.OutCubic } }
 
             MouseArea {
                 anchors.fill: parent
