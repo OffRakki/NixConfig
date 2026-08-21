@@ -6,7 +6,6 @@
     (import ./packages/orca-slicer.nix {inherit pkgs;})
     (import ./packages/linoffice.nix {inherit pkgs;})
     (import ./packages/penecho.nix {inherit pkgs;})
-    codex
     drawio
     gnome-sound-recorder
     kdePackages.qttools
