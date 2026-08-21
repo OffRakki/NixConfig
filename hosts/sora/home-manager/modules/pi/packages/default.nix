@@ -13,7 +13,6 @@
     "pi-codex-image-gen"
     "pi-intercom"
     "pi-invisible-continue"
-    # "pi-powerline-footer"
     "pi-subagents"
     "pi-web-access"
     "rinco-pi-sakura"
@@ -22,7 +21,7 @@
     pname = package.name;
     inherit (package) version;
     src = ./.;
-    npmDepsHash = "sha256-hnxsYll+822IBTKEKh5uawzxyqPogkkRzU/YvOvXjyU=";
+    npmDepsHash = "sha256-RzIp75/i9+AjDeWjfEVYKftO32pnToe3McvD0Y6oxWs=";
     npmFlags = ["--legacy-peer-deps"];
     dontNpmBuild = true;
     installPhase = ''
