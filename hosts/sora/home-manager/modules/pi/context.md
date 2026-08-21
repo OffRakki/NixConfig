@@ -165,6 +165,7 @@ load the `security-sweep` skill and execute its checklist. No exceptions.
 - **firefly** — Firefly III: transactions, budgets, reimbursements
 - **lumis** — MTG proxy printing: orders, supplies, tracking
 - **browser** — web automation: navigate, click, fill, extract
+- **quickshell** — Quickshell/QML shells, panels, widgets, services, IPC, and deployment
 - **pi-tools** — Pi runtime tools, packages, extensions, agents, prompts, and
   tool-routing inventory
 - **context-curation** — organizing, splitting, merging context.md and skills
