@@ -178,6 +178,7 @@ in {
         hl.layer_rule({ match = {namespace = "selection"}, animation = "fade" })
         hl.layer_rule({ match = {namespace = "hyprpaper"}, animation = "fade" })
         hl.layer_rule({ match = {namespace = "noctalia-background-.*$"}, ignore_alpha = 0.5, blur = true, blur_popups = true })
+        hl.layer_rule({ match = {namespace = "ciel-app-launcher"}, animation = "fade", blur = true, ignore_alpha = 0.25 })
 
         local suppressMaximizeRule = hl.window_rule({
             -- Ignore maximize requests from all apps.
