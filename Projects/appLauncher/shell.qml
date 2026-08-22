@@ -10,6 +10,7 @@ ShellRoot {
         id: root
 
         property bool opened: false
+        property bool mouseArmed: false
         property bool favoritesOnly: false
         property string sortMode: "smart"
         readonly property var apps: DesktopEntries.applications.values.slice()
@@ -79,6 +80,7 @@ ShellRoot {
             const targetScreen = focusedScreen()
             if (targetScreen)
                 screen = targetScreen
+            mouseArmed = false
             visible = true
             opened = true
             search.text = ""
@@ -184,6 +186,7 @@ ShellRoot {
 
             MouseArea {
                 anchors.fill: parent
+                enabled: root.mouseArmed
                 onClicked: root.hide()
             }
         }
@@ -201,6 +204,7 @@ ShellRoot {
 
             MouseArea {
                 anchors.fill: parent
+                enabled: root.mouseArmed
                 onClicked: event => event.accepted = true
             }
 
@@ -369,6 +373,7 @@ ShellRoot {
 
                             MouseArea {
                                 anchors.fill: parent
+                                enabled: root.mouseArmed
                                 onClicked: root.sortMode = modelData.key
                             }
                         }
@@ -395,6 +400,7 @@ ShellRoot {
 
                         MouseArea {
                             anchors.fill: parent
+                            enabled: root.mouseArmed
                             onClicked: root.favoritesOnly = !root.favoritesOnly
                         }
                     }
@@ -427,6 +433,7 @@ ShellRoot {
                         MouseArea {
                             id: rowMouse
                             anchors.fill: parent
+                            enabled: root.mouseArmed
                             hoverEnabled: true
                             onEntered: list.currentIndex = row.index
                             onClicked: {
@@ -508,6 +515,7 @@ ShellRoot {
                                 MouseArea {
                                     id: favoriteMouse
                                     anchors.fill: parent
+                                    enabled: root.mouseArmed
                                     hoverEnabled: true
                                     onClicked: event => {
                                         root.toggleFavorite(row.modelData.entry)
@@ -545,6 +553,14 @@ ShellRoot {
                     }
                 }
             }
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            enabled: root.visible && !root.mouseArmed
+            hoverEnabled: true
+            onPositionChanged: root.mouseArmed = true
+            onWheel: wheel => wheel.accepted = true
         }
     }
 }
