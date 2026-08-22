@@ -1,5 +1,5 @@
 //@ pragma ShellId ciel-app-launcher
-//@ pragma StateDir $BASE/quickshell/ciel-app-launcher
+//@ pragma StateDir $BASE/quickshell/appLauncher
 
 import QtQuick
 import QtQuick.Layouts
