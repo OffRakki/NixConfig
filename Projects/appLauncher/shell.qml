@@ -10,10 +10,7 @@ ShellRoot {
         id: root
 
         property bool opened: false
-        property bool mouseArmed: false
-        property bool mousePositionKnown: false
-        property real lastMouseX: 0
-        property real lastMouseY: 0
+        readonly property bool mouseEnabled: false
         property bool favoritesOnly: false
         property string sortMode: "smart"
         readonly property var apps: DesktopEntries.applications.values.slice()
@@ -79,23 +76,10 @@ ShellRoot {
             return root.screen ?? Quickshell.screens[0]
         }
 
-        function observeMouse(x: real, y: real): void {
-            if (!mousePositionKnown) {
-                lastMouseX = x
-                lastMouseY = y
-                mousePositionKnown = true
-                return
-            }
-            if (x !== lastMouseX || y !== lastMouseY)
-                mouseArmed = true
-        }
-
         function show(): void {
             const targetScreen = focusedScreen()
             if (targetScreen)
                 screen = targetScreen
-            mouseArmed = false
-            mousePositionKnown = false
             visible = true
             opened = true
             search.text = ""
@@ -149,6 +133,7 @@ ShellRoot {
         anchors { top: true; right: true; bottom: true; left: true }
         color: "transparent"
         exclusionMode: ExclusionMode.Ignore
+        mask: Region {}
         visible: false
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.namespace: "ciel-app-launcher"
@@ -201,7 +186,7 @@ ShellRoot {
 
             MouseArea {
                 anchors.fill: parent
-                enabled: root.mouseArmed
+                enabled: root.mouseEnabled
                 onClicked: root.hide()
             }
         }
@@ -219,7 +204,7 @@ ShellRoot {
 
             MouseArea {
                 anchors.fill: parent
-                enabled: root.mouseArmed
+                enabled: root.mouseEnabled
                 onClicked: event => event.accepted = true
             }
 
@@ -388,7 +373,7 @@ ShellRoot {
 
                             MouseArea {
                                 anchors.fill: parent
-                                enabled: root.mouseArmed
+                                enabled: root.mouseEnabled
                                 onClicked: root.sortMode = modelData.key
                             }
                         }
@@ -415,7 +400,7 @@ ShellRoot {
 
                         MouseArea {
                             anchors.fill: parent
-                            enabled: root.mouseArmed
+                            enabled: root.mouseEnabled
                             onClicked: root.favoritesOnly = !root.favoritesOnly
                         }
                     }
@@ -430,6 +415,7 @@ ShellRoot {
                     clip: true
                     currentIndex: 0
                     boundsBehavior: Flickable.StopAtBounds
+                    interactive: false
                     highlightMoveDuration: 110
                     onCurrentIndexChanged: positionViewAtIndex(currentIndex, ListView.Contain)
 
@@ -448,7 +434,7 @@ ShellRoot {
                         MouseArea {
                             id: rowMouse
                             anchors.fill: parent
-                            enabled: root.mouseArmed
+                            enabled: root.mouseEnabled
                             hoverEnabled: true
                             onEntered: list.currentIndex = row.index
                             onClicked: {
@@ -530,7 +516,7 @@ ShellRoot {
                                 MouseArea {
                                     id: favoriteMouse
                                     anchors.fill: parent
-                                    enabled: root.mouseArmed
+                                    enabled: root.mouseEnabled
                                     hoverEnabled: true
                                     onClicked: event => {
                                         root.toggleFavorite(row.modelData.entry)
@@ -570,13 +556,5 @@ ShellRoot {
             }
         }
 
-        MouseArea {
-            anchors.fill: parent
-            enabled: root.visible && !root.mouseArmed
-            hoverEnabled: true
-            onEntered: root.observeMouse(mouseX, mouseY)
-            onPositionChanged: mouse => root.observeMouse(mouse.x, mouse.y)
-            onWheel: wheel => wheel.accepted = true
-        }
     }
 }
