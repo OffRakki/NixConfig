@@ -18,11 +18,38 @@
   hyprshot = "${lib.getExe pkgs.hyprshot}";
   lock = lib.getExe pkgs.hyprlock;
   quickshell = lib.getExe pkgs.quickshell;
-  appLauncher = "appLauncher";
+  appLauncherName = "appLauncher";
+  appLauncher = pkgs.writeShellApplication {
+    name = "app-launcher";
+    runtimeInputs = [pkgs.jq];
+    text = ''
+      runtime_dir="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/quickshell"
+      launcher_filter='select(.config_path | endswith("/appLauncher/shell.qml"))'
+
+      while ${quickshell} list --all --json | jq -e "[.[] | $launcher_filter] | length > 0" >/dev/null; do
+        ${quickshell} list --all --json \
+          | jq -r ".[] | $launcher_filter | .pid" \
+          | while read -r pid; do
+              ${quickshell} kill --pid "$pid" 2>/dev/null || true
+            done
+        sleep 0.05
+      done
+
+      ${quickshell} list --all --show-dead --json \
+        | jq -r ".[] | $launcher_filter | [.id, .shell_id] | @tsv" \
+        | while IFS=$'\t' read -r id shell_id; do
+            rm -rf -- "$runtime_dir/by-id/$id"
+            rm -f -- "$runtime_dir/by-shell/$shell_id/$id"
+          done
+
+      exec ${quickshell} -c ${appLauncherName} -n -d
+    '';
+  };
 in {
   imports = [];
 
-  xdg.configFile."quickshell/${appLauncher}".source = ../../../../../Projects/appLauncher;
+  home.packages = [appLauncher];
+  xdg.configFile."quickshell/${appLauncherName}".source = ../../../../../Projects/appLauncher;
 
   wayland.windowManager.hyprland = {
     enable = true;
@@ -521,7 +548,7 @@ in {
         hl.bind("CTRL + Print",                 hl.dsp.exec_cmd("${hyprshot} -z --clipboard-only -m output --freeze"))
         hl.bind("${mod} + ALT + L",             hl.dsp.exec_cmd("${lock}"))
         -- "${mod} + SHIFT + D",                hl.dsp.exec_cmd("pkill wofi || wofi --show drun -G --insensitive" -- Main Menu))
-        hl.bind("${mod} + D",                   hl.dsp.exec_cmd("${quickshell} ipc -c ${appLauncher} call launcher toggle || ${quickshell} -c ${appLauncher} -n -d"))
+        hl.bind("${mod} + D",                   hl.dsp.exec_cmd("${lib.getExe appLauncher}"))
         hl.bind("${mod} + ALT + D",             hl.dsp.exec_cmd("pkill wofi || wofi --show run -G --insensitive")) -- Main Menu
         hl.bind("${mod} + V",                   hl.dsp.exec_cmd("pkill clipse & ${terminal} --class middleFloat -e clipse"))
         hl.bind("${mod} + A",                   hl.dsp.exec_cmd("pkill wofi || true && ags -t 'overview'"))

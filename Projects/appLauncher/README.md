@@ -1,21 +1,18 @@
 # App Launcher
 
-The deployed launcher is available after a NixOS/Home Manager rebuild:
+After a NixOS/Home Manager rebuild, start the launcher with:
 
 ```sh
-qs -c appLauncher -n
+app-launcher
 ```
 
-For foreground development directly from this checkout:
+Every call stops any existing launcher instance and starts one fresh canonical instance. Use this command from scripts and keybindings instead of invoking `qs` directly.
+
+For foreground development directly from this checkout, stop the deployed instance first:
 
 ```sh
-qs -p ~/Projects/NixConfig/Projects/appLauncher -n
-```
-
-Toggle an already-running deployed launcher:
-
-```sh
-qs ipc -c appLauncher call launcher toggle
+qs kill -c appLauncher --any-display || true
+qs -p ~/Projects/NixConfig/Projects/appLauncher
 ```
 
 Keyboard controls: fuzzy type-to-search; `↑/↓`, `Ctrl+J/K`, or `Ctrl+N/P` to navigate; `Enter` to launch; `Ctrl+Space` to favorite; `Ctrl+F` for favorites-only; `Ctrl+1/2/3` to sort; `Ctrl+L` to clear; `Esc` to close. The mouse is optional.
