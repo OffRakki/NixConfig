@@ -1,22 +1,30 @@
-# Ciel Bar
+# Bar
 
 A Quickshell 0.3 status bar using the same visual language as the app launcher. The layout adapts to all four screen edges and includes workspaces, the active window, MPRIS media controls, system metrics, SystemTray items, PipeWire volume, and a clock.
 
-Run the preview directly from this checkout:
+After a NixOS/Home Manager rebuild, start one canonical packaged instance:
 
 ```sh
-qs -p ~/Projects/NixConfig/Projects/bar
+bar
 ```
 
-The source default is `left`. Change the running preview without restarting it:
+The project owns its lifecycle manager. Every invocation stops all matching instances across displays, removes their dead runtime records, and starts exactly one copy of the configuration bundled with the package. The same manager works directly from this checkout:
 
 ```sh
-qs ipc -p ~/Projects/NixConfig/Projects/bar call bar setPosition top
-qs ipc -p ~/Projects/NixConfig/Projects/bar call bar setPosition right
-qs ipc -p ~/Projects/NixConfig/Projects/bar call bar cyclePosition
-qs ipc -p ~/Projects/NixConfig/Projects/bar call bar position
+./launch
+./launch --foreground
+./launch --stop
 ```
 
-Valid positions are `left`, `right`, `top`, and `bottom`. The selected position is persisted under Quickshell's state directory.
+Control whichever packaged or source-tree instance is running through the project command:
 
-This first pass deliberately runs as an overlay with the layer namespace `ciel-bar-preview`; it does not reserve workspace space or replace Noctalia yet.
+```sh
+bar ipc call bar setPosition top
+bar ipc call bar setPosition right
+bar ipc call bar cyclePosition
+bar ipc call bar position
+```
+
+Valid positions are `left`, `right`, `top`, and `bottom`. The source default is `left`; the selected position persists under Quickshell's state directory.
+
+This first pass deliberately runs as an overlay with the layer namespace `bar-preview`; it does not reserve workspace space or replace Noctalia yet.

@@ -65,7 +65,7 @@ PanelWindow {
         radius: surface.radius
     }
     WlrLayershell.layer: WlrLayer.Top
-    WlrLayershell.namespace: "ciel-bar-preview"
+    WlrLayershell.namespace: "bar-preview"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
     Rectangle {

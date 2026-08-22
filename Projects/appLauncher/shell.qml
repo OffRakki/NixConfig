@@ -1,4 +1,4 @@
-//@ pragma ShellId ciel-app-launcher
+//@ pragma ShellId app-launcher
 //@ pragma StateDir $BASE/quickshell/appLauncher
 
 import QtQuick
@@ -139,7 +139,7 @@ ShellRoot {
         mask: Region {}
         visible: false
         WlrLayershell.layer: WlrLayer.Overlay
-        WlrLayershell.namespace: "ciel-app-launcher"
+        WlrLayershell.namespace: "app-launcher"
         WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
         Component.onCompleted: {
             console.assert(fuzzyScoreText("firefox", "ffx") > -Infinity, "fuzzy matching failed")

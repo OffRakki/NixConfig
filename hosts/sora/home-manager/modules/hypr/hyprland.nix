@@ -17,39 +17,12 @@
   slurp = "${lib.getExe pkgs.slurp}";
   hyprshot = "${lib.getExe pkgs.hyprshot}";
   lock = lib.getExe pkgs.hyprlock;
-  quickshell = lib.getExe pkgs.quickshell;
-  appLauncherName = "appLauncher";
-  appLauncher = pkgs.writeShellApplication {
-    name = "app-launcher";
-    runtimeInputs = [pkgs.jq];
-    text = ''
-      runtime_dir="''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/quickshell"
-      launcher_filter='select(.config_path | endswith("/appLauncher/shell.qml"))'
-
-      while ${quickshell} list --all --json | jq -e "[.[] | $launcher_filter] | length > 0" >/dev/null; do
-        ${quickshell} list --all --json \
-          | jq -r ".[] | $launcher_filter | .pid" \
-          | while read -r pid; do
-              ${quickshell} kill --pid "$pid" 2>/dev/null || true
-            done
-        sleep 0.05
-      done
-
-      ${quickshell} list --all --show-dead --json \
-        | jq -r ".[] | $launcher_filter | [.id, .shell_id] | @tsv" \
-        | while IFS=$'\t' read -r id shell_id; do
-            rm -rf -- "$runtime_dir/by-id/$id"
-            rm -f -- "$runtime_dir/by-shell/$shell_id/$id"
-          done
-
-      exec ${quickshell} -c ${appLauncherName} -n -d
-    '';
-  };
+  appLauncher = pkgs.callPackage ../../../../../Projects/appLauncher {};
+  bar = pkgs.callPackage ../../../../../Projects/bar {};
 in {
   imports = [];
 
-  home.packages = [appLauncher];
-  xdg.configFile."quickshell/${appLauncherName}".source = ../../../../../Projects/appLauncher;
+  home.packages = [appLauncher bar];
 
   wayland.windowManager.hyprland = {
     enable = true;
@@ -207,7 +180,7 @@ in {
         hl.layer_rule({ match = {namespace = "selection"}, animation = "fade" })
         hl.layer_rule({ match = {namespace = "hyprpaper"}, animation = "fade" })
         hl.layer_rule({ match = {namespace = "noctalia-background-.*$"}, ignore_alpha = 0.5, blur = true, blur_popups = true })
-        hl.layer_rule({ match = {namespace = "ciel-app-launcher"}, animation = "fade", blur = true, ignore_alpha = 0.25 })
+        hl.layer_rule({ match = {namespace = "app-launcher"}, animation = "fade", blur = true, ignore_alpha = 0.25 })
 
         local suppressMaximizeRule = hl.window_rule({
             -- Ignore maximize requests from all apps.
