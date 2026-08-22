@@ -60,11 +60,16 @@ PanelWindow {
     implicitHeight: horizontal ? 58 : 0
     color: theme.window
     exclusionMode: ExclusionMode.Ignore
+    mask: Region {
+        item: surface
+        radius: surface.radius
+    }
     WlrLayershell.layer: WlrLayer.Top
     WlrLayershell.namespace: "ciel-bar-preview"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
 
     Rectangle {
+        id: surface
         anchors.fill: parent
         anchors.margins: 5
         radius: theme.radius
@@ -314,9 +319,11 @@ PanelWindow {
                         font.pixelSize: 10
                     }
                     Text {
-                        text: bar.horizontal
-                            ? "󰇚 " + bar.bytes(bar.stats.downloadBytes) + "  󰕒 " + bar.bytes(bar.stats.uploadBytes)
-                            : "󰇚 " + bar.bytes(bar.stats.downloadBytes) + "\n󰕒 " + bar.bytes(bar.stats.uploadBytes)
+                        text: !bar.stats.available
+                            ? "󰇚 —  󰕒 —"
+                            : bar.horizontal
+                                ? "󰇚 " + bar.bytes(bar.stats.downloadBytes) + "  󰕒 " + bar.bytes(bar.stats.uploadBytes)
+                                : "󰇚 " + bar.bytes(bar.stats.downloadBytes) + "\n󰕒 " + bar.bytes(bar.stats.uploadBytes)
                         color: theme.textMuted
                         horizontalAlignment: Text.AlignHCenter
                         font.family: theme.mono
