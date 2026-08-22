@@ -11,6 +11,9 @@ ShellRoot {
 
         property bool opened: false
         property bool mouseArmed: false
+        property bool mousePositionKnown: false
+        property real lastMouseX: 0
+        property real lastMouseY: 0
         property bool favoritesOnly: false
         property string sortMode: "smart"
         readonly property var apps: DesktopEntries.applications.values.slice()
@@ -76,11 +79,23 @@ ShellRoot {
             return root.screen ?? Quickshell.screens[0]
         }
 
+        function observeMouse(x: real, y: real): void {
+            if (!mousePositionKnown) {
+                lastMouseX = x
+                lastMouseY = y
+                mousePositionKnown = true
+                return
+            }
+            if (x !== lastMouseX || y !== lastMouseY)
+                mouseArmed = true
+        }
+
         function show(): void {
             const targetScreen = focusedScreen()
             if (targetScreen)
                 screen = targetScreen
             mouseArmed = false
+            mousePositionKnown = false
             visible = true
             opened = true
             search.text = ""
@@ -559,7 +574,8 @@ ShellRoot {
             anchors.fill: parent
             enabled: root.visible && !root.mouseArmed
             hoverEnabled: true
-            onPositionChanged: root.mouseArmed = true
+            onEntered: root.observeMouse(mouseX, mouseY)
+            onPositionChanged: mouse => root.observeMouse(mouse.x, mouse.y)
             onWheel: wheel => wheel.accepted = true
         }
     }
