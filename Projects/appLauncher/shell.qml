@@ -311,14 +311,16 @@ ShellRoot {
 
                             Keys.onPressed: event => {
                                 const ctrl = event.modifiers & Qt.ControlModifier
-                                if (event.key === Qt.Key_Escape) root.hide()
-                                else if (event.key === Qt.Key_Down || (ctrl && (event.key === Qt.Key_J || event.key === Qt.Key_N))) root.moveSelection(1)
+                                if (event.key === Qt.Key_Escape || event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                                    event.accepted = true
+                                    return
+                                }
+                                if (event.key === Qt.Key_Down || (ctrl && (event.key === Qt.Key_J || event.key === Qt.Key_N))) root.moveSelection(1)
                                 else if (event.key === Qt.Key_Up || (ctrl && (event.key === Qt.Key_K || event.key === Qt.Key_P))) root.moveSelection(-1)
                                 else if (event.key === Qt.Key_PageDown) root.moveSelection(5)
                                 else if (event.key === Qt.Key_PageUp) root.moveSelection(-5)
                                 else if (ctrl && event.key === Qt.Key_Home) list.currentIndex = 0
                                 else if (ctrl && event.key === Qt.Key_End && root.results.length) list.currentIndex = root.results.length - 1
-                                else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) root.launchAt(list.currentIndex)
                                 else if (ctrl && event.key === Qt.Key_Space) root.toggleSelectedFavorite()
                                 else if (ctrl && event.key === Qt.Key_F) root.favoritesOnly = !root.favoritesOnly
                                 else if (ctrl && event.key === Qt.Key_1) root.sortMode = "smart"
@@ -327,6 +329,15 @@ ShellRoot {
                                 else if (ctrl && event.key === Qt.Key_S) root.cycleSort()
                                 else if (ctrl && event.key === Qt.Key_L) search.text = ""
                                 else return
+                                event.accepted = true
+                            }
+                            Keys.onReleased: event => {
+                                if (event.key === Qt.Key_Escape)
+                                    root.hide()
+                                else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter)
+                                    root.launchAt(list.currentIndex)
+                                else
+                                    return
                                 event.accepted = true
                             }
                         }
