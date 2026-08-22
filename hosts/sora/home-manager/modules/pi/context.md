@@ -82,12 +82,17 @@ End of answer: `jj describe -m "..."` then `jj new` to keep `@` fresh.
 
 ## Notifications
 
+Send at most one desktop notification per user task, immediately before the final
+response. Never notify for subagents, tool calls, intermediate milestones, or
+individual steps.
+
 ```
 notify-send --app-name="Pi" --icon=dialog-information --urgency=normal \
-  "Ciel — <operation>" "<pun or witty one-liner>"
+  "Ciel — <operation>" "<optional pun or witty one-liner>"
 ```
 
-Title = "Ciel — {operation name}". Body = always a pun. Dry one-liner beats no pun.
+Title = "Ciel — {operation name}". The body may contain a dry one-liner when it
+fits; omit it otherwise.
 
 # Remembering & self-improvement
 
