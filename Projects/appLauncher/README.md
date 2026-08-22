@@ -6,13 +6,13 @@ After a NixOS/Home Manager rebuild, start the launcher with:
 app-launcher
 ```
 
-Every call stops any existing launcher instance and starts one fresh canonical instance. Use this command from scripts and keybindings instead of invoking `qs` directly.
+The project owns its lifecycle manager. Every call stops all matching launcher instances across displays, removes dead runtime records, and starts exactly one copy of the configuration bundled with the package. Scripts and keybindings must use this command instead of invoking `qs` directly.
 
-For foreground development directly from this checkout, stop the deployed instance first:
+The same lifecycle guarantees apply during source-tree development:
 
 ```sh
-qs kill -c appLauncher --any-display || true
-qs -p ~/Projects/NixConfig/Projects/appLauncher
+./launch --foreground
+./launch --stop
 ```
 
 Keyboard controls: fuzzy type-to-search; `↑/↓`, `Ctrl+J/K`, or `Ctrl+N/P` to navigate; `Enter` to launch; `Ctrl+Space` to favorite; `Ctrl+F` for favorites-only; `Ctrl+1/2/3` to sort; `Ctrl+L` to clear; `Esc` to close. The mouse is optional.

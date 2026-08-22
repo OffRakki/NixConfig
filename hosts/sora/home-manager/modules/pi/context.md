@@ -58,6 +58,10 @@ inventory. Never invent removed APIs from an older Pi setup.
 
 # Preferences
 
+## Naming
+
+Never prefix software, projects, commands, services, namespaces, or other artifacts built for Lucky with `Ciel` unless he explicitly asks for it.
+
 ## Editor
 
 **Helix** (`hx`).

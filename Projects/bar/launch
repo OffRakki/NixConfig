@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+config_name=bar
+shell_id=bar
+command_name="${0##*/}"
+config_path="${QUICKSHELL_CONFIG_PATH:-$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)}"
+mode=daemon
+
+usage() {
+    echo "usage: $command_name [--foreground | --stop | --path PATH | ipc ARGS...]" >&2
+}
+
+matches() {
+    jq --arg shell "$shell_id" --arg exact "$config_path/shell.qml" --arg suffix "/$config_name/shell.qml" \
+        '[.[] | select(.shell_id == $shell or .config_path == $exact or (.config_path | endswith($suffix)))]'
+}
+
+cleanup() {
+    local pids runtime_dir
+    runtime_dir="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/quickshell"
+
+    for _ in {1..40}; do
+        pids="$(qs list --all --json | matches | jq -r '.[].pid')"
+        [ -z "$pids" ] && break
+        while read -r pid; do
+            qs kill --pid "$pid" >/dev/null 2>&1 || true
+        done <<< "$pids"
+        sleep 0.05
+    done
+
+    if qs list --all --json | matches | jq -e 'length > 0' >/dev/null; then
+        echo "$command_name: failed to stop every existing instance" >&2
+        exit 1
+    fi
+
+    qs list --all --show-dead --json \
+        | matches \
+        | jq -r '.[] | [.id, .shell_id] | @tsv' \
+        | while IFS=$'\t' read -r id shell_id; do
+            rm -rf -- "$runtime_dir/by-id/$id"
+            rm -f -- "$runtime_dir/by-shell/$shell_id/$id"
+            rmdir -- "$runtime_dir/by-shell/$shell_id" 2>/dev/null || true
+        done
+
+    for link in "$runtime_dir/by-pid/"* "$runtime_dir/by-path/"*; do
+        if [ -L "$link" ] && [ ! -e "$link" ]; then
+            rm -f -- "$link"
+        fi
+    done
+}
+
+case "${1:-}" in
+    "") ;;
+    --foreground) mode=foreground ;;
+    --stop) mode=stop ;;
+    --path)
+        [ "$#" -eq 2 ] || { usage; exit 2; }
+        config_path="$(realpath -e -- "$2")"
+        [ -f "$config_path/shell.qml" ] || { echo "$command_name: shell.qml not found" >&2; exit 2; }
+        mode=foreground
+        ;;
+    ipc)
+        shift
+        config_file="$(qs list --all --json | matches | jq -r 'first.config_path // empty')"
+        [ -n "$config_file" ] || { echo "$command_name: no running instance" >&2; exit 1; }
+        exec qs ipc -p "${config_file%/shell.qml}" "$@"
+        ;;
+    *) usage; exit 2 ;;
+esac
+
+cleanup
+case "$mode" in
+    stop) exit 0 ;;
+    foreground) exec qs -p "$config_path" -n ;;
+    daemon) exec qs -p "$config_path" -n -d ;;
+esac

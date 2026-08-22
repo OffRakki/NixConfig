@@ -73,6 +73,20 @@ For a small shell, collapse empty layers. Do not build a cathedral for a clock.
 - Use `PersistentProperties` only for state that should survive a live reload. It is not disk persistence.
 - Keep secrets out of QML, logs, IPC, command lines, and checked-in JSON. A Quickshell config is executable code, not a sandbox.
 
+## Instance ownership
+
+Every persistent or user-launched Quickshell configuration must manage its own lifecycle through one canonical command or systemd unit. Raw `qs` invocations are development plumbing, not a safe user-facing launcher.
+
+- Keep the lifecycle command and package definition inside the application's project. Desktop/compositor modules may install and invoke that package, but instance correctness must not depend on unrelated Hyprland, Home Manager, keybinding, or autostart configuration.
+- Make the same project-owned command runnable against its packaged configuration and directly from the source tree, with identical lifecycle guarantees.
+- Before starting, enumerate matching instances with `qs list --all --json`, kill every live match by PID across displays, and wait for all of them to exit.
+- Clean that configuration's dead records from `qs list --all --show-dead --json`, including its `by-id` and `by-shell` entries; prune broken `by-pid` and `by-path` links.
+- Start exactly one configuration with a stable `ShellId` and retain `-n` as the final race guard. `-n` alone is insufficient because aliases, package paths, displays, and stale registry entries can differ.
+- Route keybindings, scripts, documentation, and autostart through the canonical command. If source-tree debugging is supported, expose it as a wrapper mode that performs the same cleanup before `qs -p`.
+- Bound shutdown waits and fail closed instead of launching when an old instance cannot be stopped.
+- Validate repeated invocation: one live matching instance remains, no matching dead records remain, and unrelated Quickshell configurations are untouched.
+- When systemd owns the process, keep Quickshell in the foreground and ensure pre-start cleanup plus stop/restart behavior preserves the same single-owner invariant.
+
 ## Implementation loop
 
 1. Build the data/service layer with a narrow typed interface.

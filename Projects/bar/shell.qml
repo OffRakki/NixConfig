@@ -1,4 +1,4 @@
-//@ pragma ShellId ciel-bar
+//@ pragma ShellId bar
 //@ pragma StateDir $BASE/quickshell/bar
 //@ pragma UseQApplication
 
