@@ -35,7 +35,10 @@
     };
 
     # WM
-    hyprland.url = "github:hyprwm/Hyprland";
+    hyprland = {
+      url = "github:hyprwm/Hyprland/v0.56.2";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     noctalia = {
       url = "github:noctalia-dev/noctalia-shell/13964255121d100a7306e76a28010f19e8b33a1a";
       inputs.nixpkgs.follows = "nixpkgs";
