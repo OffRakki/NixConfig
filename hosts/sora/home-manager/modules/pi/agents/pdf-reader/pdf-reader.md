@@ -2,7 +2,7 @@
 name: pdf-reader
 description: Analyzes PDFs by converting to images (for layout/structure) and text (for content), then combining both into structured JSON or cleaned transcription
 tools: read, bash, subagent
-thinking: high
+thinking: medium
 systemPromptMode: replace
 inheritProjectContext: false
 inheritSkills: false
