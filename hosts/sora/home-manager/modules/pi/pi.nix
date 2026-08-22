@@ -203,6 +203,12 @@ in {
       powerline = {
         preset = "nerd";
       };
+      subagents.agentOverrides = {
+        oracle.thinking = "medium";
+        planner.thinking = "medium";
+        reviewer.thinking = "medium";
+        worker.thinking = "medium";
+      };
       # Empty jump bindings suppress powerline's scroll-away navigation card.
       powerlineShortcuts = {
         jumpChatBottom = null;
