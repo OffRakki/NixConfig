@@ -102,9 +102,9 @@ in {
           },
 
           decoration = {
-            rounding = 12,
-            rounding_power = 0,
-            active_opacity = 0.98,
+            rounding = 6,
+            rounding_power = 2,
+            active_opacity = 1,
             inactive_opacity = 0.8,
             fullscreen_opacity = 1.0,
             dim_inactive = false,
