@@ -13,6 +13,7 @@
     ".local/share/PrismLauncher"
     ".local/share/applications"
     ".local/share/keyrings"
+    ".local/state/quickshell"
     ".local/state/wireplumber"
     ".local/share/icons"
     ".var/app/com.bambulab.BambuStudio"
