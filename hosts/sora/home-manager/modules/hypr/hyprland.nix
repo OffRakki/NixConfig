@@ -404,30 +404,41 @@ in {
         } })
 
         local columnCounts = {}
-        for _, workspace in ipairs(hl.get_workspaces()) do
-          columnCounts[workspace.id] = #hl.get_windows({ workspace = workspace, floating = false })
+
+        local function countColumns(workspace)
+          local seen = {}
+          local count = 0
+
+          for _, window in ipairs(hl.get_windows({ workspace = workspace, floating = false })) do
+            local layout = window.layout
+            local column = layout and layout.name == "scrolling" and layout.column or nil
+
+            if column ~= nil and not seen[column.index] then
+              seen[column.index] = true
+              count = count + 1
+            end
+          end
+
+          return count
         end
 
         local function balanceColumns()
-          hl.timer(function()
-            local workspace = hl.get_active_workspace()
-            if workspace == nil then return end
+          local workspace = hl.get_active_workspace()
+          if workspace == nil then return end
 
-            local columns = #hl.get_windows({ workspace = workspace, floating = false })
-            if columnCounts[workspace.id] == columns then return end
-            columnCounts[workspace.id] = columns
+          local columns = countColumns(workspace)
+          if columnCounts[workspace.id] == columns then return end
+          columnCounts[workspace.id] = columns
 
-            if columns == 2 or columns == 3 then
-              hl.dispatch(hl.dsp.layout("fit all"))
-            elseif columns > 3 then
-              hl.dispatch(hl.dsp.layout("colresize all 0.333"))
-            end
-          end, { timeout = 50, type = "oneshot" })
+          if columns == 2 or columns == 3 then
+            hl.dispatch(hl.dsp.layout("fit all"))
+          elseif columns > 3 then
+            hl.dispatch(hl.dsp.layout("colresize all 0.333"))
+          end
         end
 
-        for _, event in ipairs({ "window.open", "window.close", "window.move_to_workspace", "workspace.active" }) do
-          hl.on(event, balanceColumns)
-        end
+        -- Hyprland exposes no Lua event for moving a window between columns.
+        hl.timer(balanceColumns, { timeout = 100, type = "repeat" })
         -----------------------------------------------------------------------
 
         ------------------------------- EXEC ON START -------------------------------
