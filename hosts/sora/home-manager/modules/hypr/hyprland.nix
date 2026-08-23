@@ -18,11 +18,10 @@
   hyprshot = "${lib.getExe pkgs.hyprshot}";
   lock = lib.getExe pkgs.hyprlock;
   appLauncher = pkgs.callPackage ../../../../../Projects/appLauncher {};
-  bar = pkgs.callPackage ../../../../../Projects/bar {};
 in {
   imports = [];
 
-  home.packages = [appLauncher bar];
+  home.packages = [appLauncher];
 
   wayland.windowManager.hyprland = {
     enable = true;
