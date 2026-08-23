@@ -1,5 +1,11 @@
 #!/bin/sh
 
+interval=${1:-2}
+case "$interval" in
+    ''|*[!0-9]*) interval=2 ;;
+esac
+[ "$interval" -lt 1 ] && interval=1
+
 read_cpu() {
     set -- $(head -n 1 /proc/stat)
     shift
@@ -15,7 +21,7 @@ read_net() {
 set -- $(read_cpu); previous_idle=$1; previous_total=$2
 set -- $(read_net); previous_rx=$1; previous_tx=$2
 
-while sleep 2; do
+while sleep "$interval"; do
     set -- $(read_cpu); idle=$1; total=$2
     delta_idle=$((idle - previous_idle)); delta_total=$((total - previous_total))
     if [ "$delta_total" -gt 0 ]; then
@@ -36,7 +42,7 @@ while sleep 2; do
     done
 
     set -- $(read_net); rx=$1; tx=$2
-    download=$(((rx - previous_rx) / 2)); upload=$(((tx - previous_tx) / 2))
+    download=$(((rx - previous_rx) / interval)); upload=$(((tx - previous_tx) / interval))
     [ "$download" -lt 0 ] && download=0
     [ "$upload" -lt 0 ] && upload=0
     previous_rx=$rx; previous_tx=$tx

@@ -17,8 +17,13 @@ matches() {
 }
 
 cleanup() {
-    local pids runtime_dir
+    local config_file pids runtime_dir
     runtime_dir="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/quickshell"
+
+    while read -r config_file; do
+        [ -n "$config_file" ] || continue
+        qs ipc -p "${config_file%/shell.qml}" call bar saveSettings >/dev/null 2>&1 || true
+    done < <(qs list --all --json | matches | jq -r '.[].config_path')
 
     for _ in {1..40}; do
         pids="$(qs list --all --json | matches | jq -r '.[].pid')"
