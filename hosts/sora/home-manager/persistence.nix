@@ -18,6 +18,7 @@
     ".local/share/icons"
     ".var/app/com.bambulab.BambuStudio"
     ".config/sunshine"
+    ".config/shiru"
     ".config/jj"
     ".config/vesktop"
     ".config/dconf"
