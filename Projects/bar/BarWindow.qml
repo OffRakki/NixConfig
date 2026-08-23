@@ -12,8 +12,11 @@ PanelWindow {
     id: bar
 
     required property string position
+    required property var settings
     required property var stats
     required property date now
+
+    signal settingsRequested
 
     readonly property bool horizontal: position === "top" || position === "bottom"
     readonly property var monitor: Hyprland.monitorFor(screen)
@@ -31,15 +34,21 @@ PanelWindow {
     readonly property real volume: sink?.audio?.volume ?? 0
     readonly property bool muted: sink?.audio?.muted ?? false
 
-    function bytes(value: real): string {
-        if (value >= 1048576)
-            return (value / 1048576).toFixed(value >= 10485760 ? 0 : 1) + "M"
-        if (value >= 1024)
-            return (value / 1024).toFixed(0) + "K"
-        return value.toFixed(0) + "B"
+    function networkRate(value: real): string {
+        const rate = settings.networkBits ? value * 8 : value
+        const base = settings.networkBits ? 1000 : 1024
+        const suffix = settings.networkBits ? "b/s" : "B/s"
+        if (rate >= base * base)
+            return (rate / (base * base)).toFixed(rate >= base * base * 10 ? 0 : 1) + "M" + suffix
+        if (rate >= base)
+            return (rate / base).toFixed(0) + "K" + suffix
+        return rate.toFixed(0) + suffix
     }
 
-    Theme { id: theme }
+    Theme {
+        id: theme
+        settings: bar.settings
+    }
 
     Process {
         id: launcherProcess
@@ -56,8 +65,8 @@ PanelWindow {
         left: position !== "right"
         right: position !== "left"
     }
-    implicitWidth: horizontal ? 0 : 70
-    implicitHeight: horizontal ? 58 : 0
+    implicitWidth: horizontal ? 0 : settings.verticalSize
+    implicitHeight: horizontal ? settings.horizontalSize : 0
     color: theme.window
     exclusionMode: ExclusionMode.Ignore
     mask: Region {
@@ -71,7 +80,7 @@ PanelWindow {
     Rectangle {
         id: surface
         anchors.fill: parent
-        anchors.margins: 5
+        anchors.margins: settings.outerMargin
         radius: theme.radius
         color: theme.surface
         border.width: 1
@@ -81,12 +90,13 @@ PanelWindow {
             anchors.fill: parent
             anchors.margins: 7
             flow: bar.horizontal ? GridLayout.LeftToRight : GridLayout.TopToBottom
-            columns: bar.horizontal ? 9 : 1
-            rows: bar.horizontal ? 1 : 9
+            columns: bar.horizontal ? 10 : 1
+            rows: bar.horizontal ? 1 : 10
             rowSpacing: 6
             columnSpacing: 6
 
             Rectangle {
+                visible: settings.showLauncher
                 Layout.preferredWidth: bar.horizontal ? 40 : 48
                 Layout.preferredHeight: bar.horizontal ? 40 : 48
                 radius: theme.chipRadius
@@ -99,7 +109,7 @@ PanelWindow {
                     text: "󰀻"
                     color: theme.accent
                     font.family: theme.mono
-                    font.pixelSize: 19
+                    font.pixelSize: 19 * theme.fontScale
                 }
 
                 MouseArea {
@@ -111,6 +121,7 @@ PanelWindow {
             }
 
             Rectangle {
+                visible: settings.showWorkspaces
                 Layout.preferredWidth: bar.horizontal ? workspaceLayout.implicitWidth + 14 : 48
                 Layout.preferredHeight: bar.horizontal ? 40 : workspaceLayout.implicitHeight + 14
                 radius: theme.chipRadius
@@ -149,7 +160,7 @@ PanelWindow {
                                 text: workspaceButton.modelData.name
                                 color: workspaceButton.modelData.focused ? theme.accent : theme.textMuted
                                 font.family: theme.sans
-                                font.pixelSize: 11
+                                font.pixelSize: 11 * theme.fontScale
                                 font.weight: Font.DemiBold
                             }
 
@@ -172,6 +183,7 @@ PanelWindow {
             }
 
             Rectangle {
+                visible: settings.showTitle
                 Layout.preferredWidth: bar.horizontal ? 280 : 48
                 Layout.preferredHeight: 40
                 radius: theme.chipRadius
@@ -188,7 +200,7 @@ PanelWindow {
                         text: "󰖯"
                         color: theme.textMuted
                         font.family: theme.mono
-                        font.pixelSize: 15
+                        font.pixelSize: 15 * theme.fontScale
                     }
 
                     Text {
@@ -201,7 +213,7 @@ PanelWindow {
                         wrapMode: bar.horizontal ? Text.NoWrap : Text.Wrap
                         horizontalAlignment: bar.horizontal ? Text.AlignLeft : Text.AlignHCenter
                         font.family: theme.sans
-                        font.pixelSize: bar.horizontal ? 12 : 9
+                        font.pixelSize: (bar.horizontal ? 12 : 9) * theme.fontScale
                     }
                 }
             }
@@ -214,7 +226,7 @@ PanelWindow {
             }
 
             Rectangle {
-                visible: bar.player !== null
+                visible: settings.showMedia && bar.player !== null
                 Layout.preferredWidth: visible ? (bar.horizontal ? 250 : 48) : 0
                 Layout.preferredHeight: visible ? (bar.horizontal ? 40 : 112) : 0
                 radius: theme.chipRadius
@@ -247,7 +259,7 @@ PanelWindow {
                         visible: bar.player?.canGoPrevious ?? false
                         color: theme.textMuted
                         font.family: theme.mono
-                        font.pixelSize: 13
+                        font.pixelSize: 13 * theme.fontScale
                         MouseArea { anchors.fill: parent; onClicked: bar.player.previous() }
                     }
                     ColumnLayout {
@@ -260,7 +272,7 @@ PanelWindow {
                             elide: Text.ElideRight
                             horizontalAlignment: bar.horizontal ? Text.AlignLeft : Text.AlignHCenter
                             font.family: theme.sans
-                            font.pixelSize: bar.horizontal ? 11 : 9
+                            font.pixelSize: (bar.horizontal ? 11 : 9) * theme.fontScale
                             font.weight: Font.Medium
                         }
                         Text {
@@ -270,7 +282,7 @@ PanelWindow {
                             color: theme.textMuted
                             elide: Text.ElideRight
                             font.family: theme.sans
-                            font.pixelSize: 9
+                            font.pixelSize: 9 * theme.fontScale
                         }
                     }
                     Text {
@@ -278,7 +290,7 @@ PanelWindow {
                         visible: bar.player?.canGoNext ?? false
                         color: theme.textMuted
                         font.family: theme.mono
-                        font.pixelSize: 13
+                        font.pixelSize: 13 * theme.fontScale
                         MouseArea { anchors.fill: parent; onClicked: bar.player.next() }
                     }
                 }
@@ -286,6 +298,7 @@ PanelWindow {
             }
 
             Rectangle {
+                visible: settings.showMetrics
                 Layout.preferredWidth: bar.horizontal ? 260 : 48
                 Layout.preferredHeight: bar.horizontal ? 40 : 148
                 radius: theme.chipRadius
@@ -304,30 +317,30 @@ PanelWindow {
                         text: "󰍛 " + (bar.stats.available ? bar.stats.cpuPercent.toFixed(0) + "%" : "—")
                         color: theme.textMuted
                         font.family: theme.mono
-                        font.pixelSize: 10
+                        font.pixelSize: 10 * theme.fontScale
                     }
                     Text {
                         text: "󰘚 " + (bar.stats.available ? bar.stats.memoryPercent.toFixed(0) + "%" : "—")
                         color: theme.textMuted
                         font.family: theme.mono
-                        font.pixelSize: 10
+                        font.pixelSize: 10 * theme.fontScale
                     }
                     Text {
                         text: "󰔄 " + (bar.stats.available ? bar.stats.temperature.toFixed(0) + "°" : "—")
                         color: theme.textMuted
                         font.family: theme.mono
-                        font.pixelSize: 10
+                        font.pixelSize: 10 * theme.fontScale
                     }
                     Text {
                         text: !bar.stats.available
                             ? "󰇚 —  󰕒 —"
                             : bar.horizontal
-                                ? "󰇚 " + bar.bytes(bar.stats.downloadBytes) + "  󰕒 " + bar.bytes(bar.stats.uploadBytes)
-                                : "󰇚 " + bar.bytes(bar.stats.downloadBytes) + "\n󰕒 " + bar.bytes(bar.stats.uploadBytes)
+                                ? "󰇚 " + bar.networkRate(bar.stats.downloadBytes) + "  󰕒 " + bar.networkRate(bar.stats.uploadBytes)
+                                : "󰇚 " + bar.networkRate(bar.stats.downloadBytes) + "\n󰕒 " + bar.networkRate(bar.stats.uploadBytes)
                         color: theme.textMuted
                         horizontalAlignment: Text.AlignHCenter
                         font.family: theme.mono
-                        font.pixelSize: 9
+                        font.pixelSize: 9 * theme.fontScale
                     }
                 }
             }
@@ -336,7 +349,7 @@ PanelWindow {
                 readonly property int itemCount: SystemTray.items.values?.length ?? 0
                 Layout.preferredWidth: bar.horizontal ? Math.max(40, trayLayout.implicitWidth + 12) : 48
                 Layout.preferredHeight: bar.horizontal ? 40 : Math.max(40, trayLayout.implicitHeight + 12)
-                visible: itemCount > 0
+                visible: settings.showTray && itemCount > 0
                 radius: theme.chipRadius
                 color: theme.surfaceRaised
                 border.color: theme.border
@@ -392,6 +405,7 @@ PanelWindow {
             }
 
             Rectangle {
+                visible: settings.showVolume
                 Layout.preferredWidth: bar.horizontal ? 74 : 48
                 Layout.preferredHeight: 40
                 radius: theme.chipRadius
@@ -405,7 +419,7 @@ PanelWindow {
                         + (bar.horizontal ? "  " + Math.round(bar.volume * 100) : "")
                     color: bar.muted ? theme.textDim : theme.text
                     font.family: theme.mono
-                    font.pixelSize: 12
+                    font.pixelSize: 12 * theme.fontScale
                 }
 
                 MouseArea {
@@ -424,6 +438,7 @@ PanelWindow {
             }
 
             Rectangle {
+                visible: settings.showClock
                 Layout.preferredWidth: bar.horizontal ? 124 : 48
                 Layout.preferredHeight: bar.horizontal ? 40 : 66
                 radius: theme.chipRadius
@@ -432,14 +447,44 @@ PanelWindow {
 
                 Text {
                     anchors.centerIn: parent
-                    text: bar.horizontal
-                        ? Qt.formatDateTime(bar.now, "ddd  dd MMM  HH:mm")
-                        : Qt.formatDateTime(bar.now, "HH:mm\ndd/MM")
+                    text: {
+                        const time = Qt.formatDateTime(bar.now, settings.clock24Hour ? "HH:mm" : "h:mm AP")
+                        if (!settings.showDate)
+                            return time
+                        return bar.horizontal
+                            ? Qt.formatDateTime(bar.now, "ddd  dd MMM  ") + time
+                            : time + Qt.formatDateTime(bar.now, "\ndd/MM")
+                    }
                     color: theme.text
                     horizontalAlignment: Text.AlignHCenter
                     font.family: theme.sans
-                    font.pixelSize: bar.horizontal ? 11 : 10
+                    font.pixelSize: (bar.horizontal ? 11 : 10) * theme.fontScale
                     font.weight: Font.DemiBold
+                }
+            }
+
+            Rectangle {
+                visible: settings.showSettingsButton
+                Layout.preferredWidth: bar.horizontal ? 40 : 48
+                Layout.preferredHeight: 40
+                radius: theme.chipRadius
+                color: settingsMouse.containsMouse ? theme.surfaceHover : theme.surfaceRaised
+                border.color: theme.border
+                Behavior on color { ColorAnimation { duration: theme.animationFast } }
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "󰒓"
+                    color: theme.textMuted
+                    font.family: theme.mono
+                    font.pixelSize: 15 * theme.fontScale
+                }
+
+                MouseArea {
+                    id: settingsMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    onClicked: bar.settingsRequested()
                 }
             }
         }

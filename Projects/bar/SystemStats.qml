@@ -5,6 +5,8 @@ import Quickshell.Io
 Scope {
     id: root
 
+    required property int refreshSeconds
+
     property real cpuPercent: 0
     property real memoryPercent: 0
     property real temperature: 0
@@ -27,9 +29,14 @@ Scope {
         available = true
     }
 
+    onRefreshSecondsChanged: {
+        statsProcess.running = false
+        restartTimer.restart()
+    }
+
     Process {
         id: statsProcess
-        command: ["sh", Quickshell.shellPath("scripts/system-stats")]
+        command: ["sh", Quickshell.shellPath("scripts/system-stats"), root.refreshSeconds.toString()]
         running: true
         stdout: SplitParser {
             onRead: line => root.parseLine(line)

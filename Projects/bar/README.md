@@ -16,15 +16,25 @@ The project owns its lifecycle manager. Every invocation stops all matching inst
 ./launch --stop
 ```
 
-Control whichever packaged or source-tree instance is running through the project command:
+Open the full settings dashboard from the gear button or IPC:
+
+```sh
+bar ipc call bar toggleSettings
+bar ipc call bar showSettings
+bar ipc call bar hideSettings
+bar ipc call bar resetSettings
+```
+
+The dashboard controls font family and scale, horizontal and vertical bar size, opacity, radius, margins, widget visibility, edge position, metrics refresh rate, network units, clock format, date visibility, and theme colors. Changes apply live and persist under Quickshell's state directory.
+
+Other controls remain available through IPC:
 
 ```sh
 bar ipc call bar setPosition top
-bar ipc call bar setPosition right
 bar ipc call bar cyclePosition
 bar ipc call bar position
 ```
 
-Valid positions are `left`, `right`, `top`, and `bottom`. The source default is `left`; the selected position persists under Quickshell's state directory.
+Valid positions are `left`, `right`, `top`, and `bottom`; the source default is `left`.
 
 This first pass deliberately runs as an overlay with the layer namespace `bar-preview`; it does not reserve workspace space or replace Noctalia yet.
