@@ -13,10 +13,10 @@
   };
   programs.gamescope = {
     enable = true;
-    capSysNice = true;
+    capSysNice = false;
     args = [
       "-r"
-      "237"
+      "162"
     ];
   };
 }
