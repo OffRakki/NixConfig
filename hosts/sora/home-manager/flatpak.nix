@@ -27,4 +27,12 @@ in {
       "org.freedesktop.Platform.GL.nvidia-${nvidiaVersion}//1.4"
     ];
   };
+
+  xdg.desktopEntries.airi = {
+    name = "AIRI";
+    genericName = "AI Companion";
+    exec = "${pkgs.flatpak}/bin/flatpak run --command=/app/bin/airi/airi ai.moeru.airi --no-sandbox";
+    terminal = false;
+    categories = ["Utility"];
+  };
 }
