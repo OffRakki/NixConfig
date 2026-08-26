@@ -2,15 +2,16 @@
   inputs,
   lib,
   osConfig,
-  pkgs,
   ...
 }: {
   imports = [
     ../../home-manager/profiles/base.nix
     inputs.catppuccin.homeModules.catppuccin
+    inputs.nix-flatpak.homeManagerModules.nix-flatpak
     inputs.noctalia.homeModules.default
     inputs.spicetify-nix.homeManagerModules.spicetify
     ./modules
+    ./flatpak.nix
     ./home-packages.nix
     ./gtk.nix
     ./darkman.nix
@@ -19,19 +20,6 @@
     ./persistence.nix
     ./onedrive.nix
   ];
-
-  home.activation.installBambuFlatpaks = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    export XDG_DATA_HOME="''${XDG_DATA_HOME:-$HOME/.local/share}"
-    export XDG_CACHE_HOME="''${XDG_CACHE_HOME:-$HOME/.cache}"
-
-    chmod u+w "$XDG_DATA_HOME/flatpak/exports/share/icons/hicolor/index.theme" 2>/dev/null || true
-
-    ${pkgs.flatpak}/bin/flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-    ${pkgs.flatpak}/bin/flatpak install --user --noninteractive -y flathub \
-      com.bambulab.BambuStudio \
-      com.orcaslicer.OrcaSlicer \
-      "org.freedesktop.Platform.GL.nvidia-${lib.replaceStrings ["."] ["-"] osConfig.hardware.nvidia.package.version}//1.4"
-  '';
 
   home = {
     username = "rakki";
