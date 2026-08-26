@@ -16,6 +16,7 @@
     ../../modules
     ./containers
     ./hardware-configuration.nix
+    ./rapoo-vt9pro.nix
     ./packages.nix
     ./fonts.nix
     ./users.nix
