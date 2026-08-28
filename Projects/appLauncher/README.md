@@ -6,12 +6,13 @@ After a NixOS/Home Manager rebuild, start the launcher with:
 app-launcher
 ```
 
-The project owns its lifecycle manager. Every call stops all matching launcher instances across displays, removes dead runtime records, and starts exactly one copy of the configuration bundled with the package. Scripts and keybindings must use this command instead of invoking `qs` directly.
+The project owns its lifecycle manager. Hyprland preloads one hidden instance, and each call toggles it over IPC. Stale, duplicate, or outdated instances are cleaned up before exactly one current copy starts. Scripts and keybindings must use this command instead of invoking `qs` directly.
 
 The same lifecycle guarantees apply during source-tree development:
 
 ```sh
 ./launch --foreground
+./launch --hidden
 ./launch --stop
 ```
 

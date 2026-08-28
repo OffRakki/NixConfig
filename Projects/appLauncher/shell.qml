@@ -144,7 +144,8 @@ ShellRoot {
         Component.onCompleted: {
             console.assert(fuzzyScoreText("firefox", "ffx") > -Infinity, "fuzzy matching failed")
             console.assert(fuzzyScoreText("firefox", "zzz") === -Infinity, "fuzzy rejection failed")
-            Qt.callLater(() => root.show())
+            if (Quickshell.env("APP_LAUNCHER_HIDDEN") !== "1")
+                Qt.callLater(() => root.show())
         }
 
         Timer {
