@@ -345,7 +345,7 @@ in {
 
         hl.window_rule({
           name = "scratchpadBorderColorFix",
-          match = { class = "^(pypr-.*|com\\.saivert\\.pwvucontrol|Spotify)$" },
+          match = { class = "^(pypr-.*|com\\.saivert\\.pwvucontrol|spotify)$" },
           border_color = "rgba(BFA16Eff) rgba(BFA16E44)",
           border_size = 2,
         })
@@ -519,7 +519,7 @@ in {
         -- hl.bind("Caps_Lock",                 hl.dsp.exec_cmd(${swayosd.caps-lock}))
         hl.bind("${mod} + SHIFT + Return",      hl.dsp.exec_cmd("pypr toggle term")) -- Dropdown terminal
         hl.bind("${mod} + SHIFT + V",           hl.dsp.exec_cmd("pypr toggle volume")) -- Pavucontrol
-        hl.bind("${mod} + SHIFT + S",           hl.dsp.exec_cmd("pypr toggle spotify")) -- Pavucontrol
+        hl.bind("${mod} + SHIFT + D",           hl.dsp.exec_cmd("pypr toggle spotify")) -- Spotify
         hl.bind("${mod} + M",                   hl.dsp.exec_cmd("noctalia-shell ipc call sessionMenu toggle"))
         hl.bind("${mod} + N",                   hl.dsp.exec_cmd("noctalia-shell ipc call notifications toggleHistory"))
         hl.bind("${mod} + SHIFT + W",           hl.dsp.exec_cmd("noctalia-shell ipc call wallpaper toggle"))
