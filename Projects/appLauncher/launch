@@ -5,10 +5,10 @@ config_name=appLauncher
 shell_id=app-launcher
 command_name="${0##*/}"
 config_path="${QUICKSHELL_CONFIG_PATH:-$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)}"
-mode=daemon
+mode=toggle
 
 usage() {
-    echo "usage: $command_name [--foreground | --stop | --path PATH | ipc ARGS...]" >&2
+    echo "usage: $command_name [--foreground | --hidden | --stop | --path PATH | ipc ARGS...]" >&2
 }
 
 matches() {
@@ -53,6 +53,7 @@ cleanup() {
 case "${1:-}" in
     "") ;;
     --foreground) mode=foreground ;;
+    --hidden) mode=hidden ;;
     --stop) mode=stop ;;
     --path)
         [ "$#" -eq 2 ] || { usage; exit 2; }
@@ -69,9 +70,24 @@ case "${1:-}" in
     *) usage; exit 2 ;;
 esac
 
+if [ "$mode" = toggle ] && qs ipc -p "$config_path" call launcher toggle >/dev/null 2>&1; then
+    exit 0
+fi
+
+if [ "$mode" = hidden ]; then
+    current="$(qs list --all --json | matches)"
+    pid="$(jq -r --arg exact "$config_path/shell.qml" \
+        'if length == 1 and first.config_path == $exact then first.pid else empty end' <<< "$current")"
+    [ -n "$pid" ] && exit 0
+fi
+
 cleanup
 case "$mode" in
     stop) exit 0 ;;
     foreground) exec qs -p "$config_path" -n ;;
-    daemon) exec qs -p "$config_path" -n -d ;;
+    hidden)
+        export APP_LAUNCHER_HIDDEN=1
+        exec qs -p "$config_path" -n -d
+        ;;
+    toggle) exec qs -p "$config_path" -n -d ;;
 esac
