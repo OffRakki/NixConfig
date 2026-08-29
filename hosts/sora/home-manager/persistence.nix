@@ -17,6 +17,7 @@
     ".local/state/wireplumber"
     ".local/share/icons"
     ".var/app/com.bambulab.BambuStudio"
+    ".var/app/org.vinegarhq.Sober"
     ".config/sunshine"
     ".config/shiru"
     ".config/jj"
