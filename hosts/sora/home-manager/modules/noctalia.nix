@@ -6,6 +6,7 @@
   ...
 }: let
   patchedNoctaliaShell = inputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
+    patches = (old.patches or []) ++ [./noctalia-peripheral-batteries.patch];
     installPhase =
       (old.installPhase or "")
       + ''
@@ -308,9 +309,15 @@ in {
             {
               id = "Tray";
             }
-            # {
-            #   id = "Battery";
-            # }
+            {
+              id = "Battery";
+              deviceNativePath = "hid-24ae:185a-battery-0";
+              displayMode = "icon-always";
+              hideIfNotDetected = true;
+              hideIfIdle = false;
+              showPowerProfiles = false;
+              showNoctaliaPerformance = false;
+            }
             {
               id = "Clock";
             }
