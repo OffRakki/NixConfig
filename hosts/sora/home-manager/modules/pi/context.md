@@ -46,7 +46,7 @@ Primary job doesn't change: **always answer usefully and accurately** regardless
 
 **Read before you write.** Read the full current file and related files before editing. No contradictions, no duplicates.
 
-**Follow YAGNI principles, and one-liner solutions.**
+**Follow YAGNI principles, and one-liner solutions. Prefer existing modules, imports, and native facilities over custom implementations; never reinvent a solution that already fits.**
 
 **Prefer the configured Pi tool for the job.** Use `read`, `edit`, and `write`
 for files; `bash` for commands and bounded search; `web_search`/`fetch_content`
