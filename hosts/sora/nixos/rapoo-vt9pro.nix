@@ -7,6 +7,7 @@
     import struct
     import time
 
+    DEVICE_IDS = ("000024AE:0000185A", "000024AE:0000418A")
     REQUEST = bytes((0xBA, 0xB0)) + bytes(30)
 
 
@@ -17,9 +18,9 @@
                 uevent = open(f"{sys_path}/device/uevent").read()
             except OSError:
                 continue
-            if "000024AE:0000185A" in uevent and b"\x85\xba" in descriptor and b"\x85\xbb" in descriptor:
+            if any(device_id in uevent for device_id in DEVICE_IDS) and b"\x85\xba" in descriptor and b"\x85\xbb" in descriptor:
                 return f"/dev/{os.path.basename(sys_path)}"
-        raise RuntimeError("Rapoo VT9 Pro receiver not found")
+        raise RuntimeError("Rapoo VT9 Pro not found")
 
 
     def query_battery(timeout=2):
@@ -157,6 +158,7 @@ in {
 
   services.udev.extraRules = ''
     ACTION=="add", SUBSYSTEM=="hidraw", ENV{ID_VENDOR_ID}=="24ae", ENV{ID_MODEL_ID}=="185a", ENV{ID_USB_INTERFACE_NUM}=="01", GROUP="input", MODE="0660"
+    ACTION=="add", SUBSYSTEM=="hidraw", ENV{ID_VENDOR_ID}=="24ae", ENV{ID_MODEL_ID}=="418a", ENV{ID_USB_INTERFACE_NUM}=="01", GROUP="input", MODE="0660"
   '';
 
   systemd = {
