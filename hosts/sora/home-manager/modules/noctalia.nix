@@ -312,8 +312,8 @@ in {
             {
               id = "Battery";
               deviceNativePath = "hid-24ae:185a-battery-0";
-              displayMode = "icon-always";
-              hideIfNotDetected = true;
+              displayMode = "graphic";
+              hideIfNotDetected = false;
               hideIfIdle = false;
               showPowerProfiles = false;
               showNoctaliaPerformance = false;
