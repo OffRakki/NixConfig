@@ -1,5 +1,6 @@
 {pkgs, ...}: {
   home.packages = with pkgs; [
+    chromium
     shiru
     viddy
     (import ./packages/orca-slicer.nix {inherit pkgs;})
