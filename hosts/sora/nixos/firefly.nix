@@ -4,20 +4,6 @@
   lib,
   ...
 }: {
-  services.mysql = {
-    enable = true;
-    package = pkgs.mariadb;
-    ensureDatabases = ["firefly"];
-    ensureUsers = [
-      {
-        name = "firefly-iii";
-        ensurePermissions = {
-          "firefly.*" = "ALL PRIVILEGES";
-        };
-      }
-    ];
-  };
-
   services.firefly-iii = {
     enable = true;
     enableNginx = true;
@@ -62,24 +48,32 @@
     '';
   };
 
-  environment.persistence."/persist".directories = [
-    "/var/lib/mysql"
-    "/var/lib/firefly-iii"
-  ];
+  environment.persistence."/persist".directories = ["/var/lib/firefly-iii"];
 
   systemd.services.firefly-backup = {
     description = "Backup Firefly III database to ~/sync/geral/FireflyBKP";
-    path = with pkgs; [mariadb gzip];
+    path = with pkgs; [sqlite gzip];
     script = ''
+      DATABASE="/var/lib/firefly-iii/storage/database/database.sqlite"
       OUTDIR="/home/rakki/sync/geral/FireflyBKP"
-      mkdir -p "$OUTDIR"
+      install -d -o rakki -g users -m 0700 "$OUTDIR"
 
-      FILENAME="$OUTDIR/firefly-$(date +%Y%m%d-%H%M%S).sql.gz"
+      FILENAME="$OUTDIR/firefly-$(date +%Y%m%d-%H%M%S).sqlite.gz"
+      SNAPSHOT=$(mktemp "$OUTDIR/.firefly-XXXXXXXX.sqlite")
+      TMPFILE="$FILENAME.tmp"
+      trap 'rm -f "$SNAPSHOT" "$TMPFILE"' EXIT
 
-      mysqldump --databases firefly | gzip > "$FILENAME"
-      chown rakki:users "$FILENAME"
+      sqlite3 "$DATABASE" ".backup '$SNAPSHOT'"
+      test "$(sqlite3 "$SNAPSHOT" 'PRAGMA quick_check;')" = ok
+      gzip -c "$SNAPSHOT" > "$TMPFILE"
+      gzip -t "$TMPFILE"
+      chmod 0600 "$TMPFILE"
+      chown rakki:users "$TMPFILE"
+      mv "$TMPFILE" "$FILENAME"
+      rm "$SNAPSHOT"
+      trap - EXIT
 
-      ls -t "$OUTDIR"/firefly-*.sql.gz \
+      ls -t "$OUTDIR"/firefly-* \
         | tail -n +31 \
         | xargs -r rm
     '';
