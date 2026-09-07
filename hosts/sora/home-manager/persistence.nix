@@ -19,6 +19,7 @@
     ".local/share/icons"
     ".var/app/com.bambulab.BambuStudio"
     ".var/app/org.vinegarhq.Sober"
+    ".config/ds4u"
     ".config/sunshine"
     ".config/shiru"
     ".config/jj"
