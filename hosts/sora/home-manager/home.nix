@@ -12,6 +12,7 @@
     inputs.spicetify-nix.homeManagerModules.spicetify
     ./modules
     ./flatpak.nix
+    ./ds4u.nix
     ./home-packages.nix
     ./gtk.nix
     ./darkman.nix
