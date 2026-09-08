@@ -194,7 +194,7 @@ in {
         ];
       };
       bar = {
-        position = "left";
+        position = "top";
         density = "compact";
         showOutline = false;
         showCapsule = false;
@@ -202,7 +202,7 @@ in {
         capsuleColorKey = "none";
         widgetSpacing = 6;
         contentPadding = 2;
-        fontScale = 1.5;
+        fontScale = 1.3;
         backgroundOpacity = 0.93;
         useSeparateOpacity = false;
         floating = true;
@@ -319,9 +319,6 @@ in {
               showNoctaliaPerformance = false;
             }
             {
-              id = "Clock";
-            }
-            {
               id = "Volume";
             }
             {
@@ -332,6 +329,9 @@ in {
             }
             {
               id = "plugin:catwalk";
+            }
+            {
+              id = "Clock";
             }
           ];
         };
@@ -347,7 +347,7 @@ in {
         screenOverrides = [
           {
             name = "DP-1";
-            position = "left";
+            position = "top";
           }
           {
             name = "DP-2";
