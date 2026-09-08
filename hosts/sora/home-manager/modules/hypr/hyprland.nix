@@ -176,7 +176,7 @@ in {
         hl.layer_rule({ match = {namespace = "hyprpicker"}, animation = "fade" })
         hl.layer_rule({ match = {namespace = "selection"}, animation = "fade" })
         hl.layer_rule({ match = {namespace = "hyprpaper"}, animation = "fade" })
-        hl.layer_rule({ match = {namespace = "noctalia-background-.*$"}, ignore_alpha = 0.5, blur = true, blur_popups = true })
+        hl.layer_rule({ match = {namespace = "^noctalia-(bar-.*|panel|attached-panel)$"}, ignore_alpha = 0.5, blur = true, blur_popups = true })
         hl.layer_rule({ match = {namespace = "app-launcher"}, animation = "fade", blur = true, ignore_alpha = 0.25 })
 
         local suppressMaximizeRule = hl.window_rule({
@@ -379,7 +379,7 @@ in {
           local desktop_env = "WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_DATA_DIRS GTK_THEME HYPRCURSOR_THEME HYPRCURSOR_SIZE XCURSOR_THEME XCURSOR_SIZE QT_QPA_PLATFORM QT_QPA_PLATFORMTHEME QT_STYLE_OVERRIDE"
           hl.exec_cmd("sleep 2 && systemctl --user import-environment " .. desktop_env)
           hl.exec_cmd("sleep 2 && dbus-update-activation-environment --systemd " .. desktop_env)
-          hl.exec_cmd("sleep 4 && systemctl --user restart xsettingsd; sleep 1; noctalia-shell")
+          hl.exec_cmd("sleep 4 && systemctl --user restart xsettingsd; sleep 1; noctalia")
           hl.exec_cmd("${lib.getExe appLauncher} --hidden")
           hl.exec_cmd("clipse -listen")
           hl.exec_cmd("nm-applet --indicator")
@@ -483,9 +483,9 @@ in {
         hl.bind("${mod} + SHIFT + Return",      hl.dsp.exec_cmd("pypr toggle term")) -- Dropdown terminal
         hl.bind("${mod} + SHIFT + V",           hl.dsp.exec_cmd("pypr toggle volume")) -- Pavucontrol
         hl.bind("${mod} + SHIFT + S",           hl.dsp.exec_cmd("pypr toggle spotify")) -- Spotify
-        hl.bind("${mod} + M",                   hl.dsp.exec_cmd("noctalia-shell ipc call sessionMenu toggle"))
-        hl.bind("${mod} + N",                   hl.dsp.exec_cmd("noctalia-shell ipc call notifications toggleHistory"))
-        hl.bind("${mod} + SHIFT + W",           hl.dsp.exec_cmd("noctalia-shell ipc call wallpaper toggle"))
+        hl.bind("${mod} + M",                   hl.dsp.exec_cmd("noctalia msg panel-toggle session"))
+        hl.bind("${mod} + N",                   hl.dsp.exec_cmd("noctalia msg panel-toggle control-center notifications"))
+        hl.bind("${mod} + SHIFT + W",           hl.dsp.exec_cmd("noctalia msg panel-toggle wallpaper"))
         hl.bind("CTRL + ALT + N",               hl.dsp.exec_cmd("${terminal} --class middleFloat -e hx"))
         hl.bind("${mod} + SHIFT + P",           hl.dsp.exec_cmd("${terminal} --class middleFloat --directory /home/rakki -e pi"))
         hl.bind("${mod} + I",                   hl.dsp.window.pin({ action = "toggle" }))
