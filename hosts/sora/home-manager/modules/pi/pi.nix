@@ -170,8 +170,8 @@ in {
       enableInstallTelemtry = false;
       enableAnalytics = false;
       defaultProvider = "openai-codex";
-      defaultModel = "gpt-6-astra";
-      defaultThinkingLevel = "low";
+      defaultModel = "gpt-5.6-sol";
+      defaultThinkingLevel = "medium";
       theme = "sakura-macaron";
       enabledModels = [
         "gpt-6*"
