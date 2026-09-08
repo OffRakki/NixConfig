@@ -370,45 +370,8 @@ in {
           follow_focus = true,
           focus_fit_method = 1,
           fullscreen_on_one_column = true,
-          column_width = 0.333,
+          column_width = 0.5,
         } })
-
-        local columnCounts = {}
-
-        local function countColumns(workspace)
-          local seen = {}
-          local count = 0
-
-          for _, window in ipairs(hl.get_windows({ workspace = workspace, floating = false })) do
-            local layout = window.layout
-            local column = layout and layout.name == "scrolling" and layout.column or nil
-
-            if column ~= nil and not seen[column.index] then
-              seen[column.index] = true
-              count = count + 1
-            end
-          end
-
-          return count
-        end
-
-        local function balanceColumns()
-          local workspace = hl.get_active_workspace()
-          if workspace == nil then return end
-
-          local columns = countColumns(workspace)
-          if columnCounts[workspace.id] == columns then return end
-          columnCounts[workspace.id] = columns
-
-          if columns == 2 or columns == 3 then
-            hl.dispatch(hl.dsp.layout("fit all"))
-          elseif columns > 3 then
-            hl.dispatch(hl.dsp.layout("colresize all 0.333"))
-          end
-        end
-
-        -- Hyprland exposes no Lua event for moving a window between columns.
-        hl.timer(balanceColumns, { timeout = 100, type = "repeat" })
         -----------------------------------------------------------------------
 
         ------------------------------- EXEC ON START -------------------------------
