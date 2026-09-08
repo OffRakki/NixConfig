@@ -10,9 +10,9 @@
 
     update() {
       if ${lib.getExe pkgs.playerctl} status --all-players 2>/dev/null | ${pkgs.gnugrep}/bin/grep -q "Playing"; then
-        noctalia-shell ipc --any-display call idleInhibitor enable && touch ${stateFile}
+        ${lib.getExe config.programs.noctalia.package} msg caffeine-enable && touch ${stateFile}
       else
-        noctalia-shell ipc --any-display call idleInhibitor disable && rm -f ${stateFile}
+        ${lib.getExe config.programs.noctalia.package} msg caffeine-disable && rm -f ${stateFile}
       fi
     }
 
