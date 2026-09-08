@@ -418,7 +418,8 @@ in {
         backlightDeviceMappings = [];
       };
       colorSchemes = {
-        useWallpaperColors = true;
+        predefinedScheme = "Kanagawa";
+        useWallpaperColors = false;
         darkMode = true;
         schedulingMode = "system";
         manualSunrise = "06:30";
