@@ -188,7 +188,7 @@ in {
           type = "custom_button";
           glyph = "list-check";
           tooltip = "Tasks";
-          actions.left = "exec ${lib.getExe pkgs.kitty} -e ${lib.getExe pkgs.todoman} repl";
+          actions.left = "exec ${lib.getExe pkgs.kitty} -e ${lib.getExe config.programs.todoman.package} repl";
         };
       };
       control_center.shortcuts = map (type: {inherit type;}) ["bluetooth" "wallpaper" "system" "notification" "caffeine" "nightlight"];

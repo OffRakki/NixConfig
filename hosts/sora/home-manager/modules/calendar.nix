@@ -5,6 +5,9 @@
   ...
 }: let
   caldavPass = "/run/secrets/caldavPass";
+  todoman = pkgs.todoman.overridePythonAttrs (old: {
+    dependencies = old.dependencies ++ old.optional-dependencies.repl;
+  });
 in {
   home.packages = with pkgs; [vdirsyncer khal khard];
 
@@ -99,6 +102,7 @@ in {
 
   programs.todoman = {
     enable = true;
+    package = todoman;
     extraConfig = ''
       path = "~/Calendars/todos/"
       default_list = "todos"
