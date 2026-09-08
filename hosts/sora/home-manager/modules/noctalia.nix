@@ -136,8 +136,14 @@ in {
         widget_spacing = 6;
         font_scale = 1.3;
         capsule = true;
-        start = ["control-center" "cpu" "temp" "ram" "swap" "rx" "tx" "media" "active_window"];
+        start = ["control-center" "group:system-metrics" "media" "active_window"];
         center = ["workspaces"];
+        capsule_group = [
+          {
+            id = "system-metrics";
+            members = ["cpu" "temp" "ram" "swap" "rx" "tx"];
+          }
+        ];
         end = ["privacy" "davemhammer/tailscale:status" "tray" "battery" "volume" "brightness" "notifications" "todos" "dotnetrob/cat:cat" "clock"];
         monitor.dp2 = {
           match = "DP-2";
