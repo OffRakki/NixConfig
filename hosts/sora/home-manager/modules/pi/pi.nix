@@ -5,30 +5,25 @@
   ...
 }: let
   piPackage = pkgs.pi-coding-agent.overrideAttrs (finalAttrs: _: {
-    version = "0.84.2";
+    version = "0.85.1";
     src = pkgs.fetchurl {
       url = "https://github.com/earendil-works/pi/releases/download/v${finalAttrs.version}/pi-${finalAttrs.version}-source.tar.gz";
-      hash = "sha256-lqnvrSWPpvqJ9mG7+DDDVt07r2zQbGVDzk6CU8FDRg4=";
+      hash = "sha256-9+yS7U97dTaRmDmKNCFzLq5AUYOXFFC8dMuFRPQtAso=";
     };
     npmDeps = pkgs.fetchNpmDeps {
       name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
       inherit (finalAttrs) src;
-      hash = "sha256-6J5Efe+6ptCuR3VZojwYPZO8BBnnZsOQ4OAeB64uYOY=";
+      hash = "sha256-jzlsZIQzfl1FCZZ5//dHFWwMfBZQ4nRD6KB4HHifPqE=";
     };
     buildPhase = ''
       runHook preBuild
-      npm run build --workspace=packages/tui
-      npm run build --workspace=packages/telemetry
-      npm run build:offline --workspace=packages/ai
-      npm run build --workspace=packages/agent
-      npm run build --workspace=packages/protocol
-      npm run build --workspace=packages/client
-      npm run build --workspace=packages/coding-agent
+      npm run build:offline
       runHook postBuild
     '';
     postInstall = ''
       local nm="$out/lib/node_modules/pi-monorepo/node_modules"
-      for ws in @earendil-works/pi-ai:packages/ai \
+      for ws in @earendil-works/chord:packages/chord \
+                @earendil-works/pi-ai:packages/ai \
                 @earendil-works/pi-agent-core:packages/agent \
                 @earendil-works/pi-client:packages/client \
                 @earendil-works/pi-protocol:packages/protocol \
@@ -161,11 +156,11 @@ in {
       enableInstallTelemtry = false;
       enableAnalytics = false;
       defaultProvider = "openai-codex";
-      defaultModel = "gpt-5.6-sol";
-      defaultThinkingLevel = "medium";
+      defaultModel = "gpt-6-astra";
+      defaultThinkingLevel = "low";
       theme = "sakura-macaron";
       enabledModels = [
-        "gpt-5.5"
+        "gpt-6*"
         "gpt-5.6*"
         "deepseek*"
       ];
