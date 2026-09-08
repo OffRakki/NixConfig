@@ -136,15 +136,27 @@ in {
         widget_spacing = 6;
         font_scale = 1.3;
         capsule = true;
-        start = ["control-center" "group:system-metrics" "media" "active_window"];
-        center = ["workspaces"];
+        start = ["control-center" "group:system-metrics" "media"];
+        center = ["group:center-widgets"];
         capsule_group = [
           {
             id = "system-metrics";
             members = ["cpu" "temp" "ram" "swap" "rx" "tx"];
           }
+          {
+            id = "center-widgets";
+            members = ["workspaces" "active_window"];
+          }
+          {
+            id = "hardware-controls";
+            members = ["battery" "volume" "brightness"];
+          }
+          {
+            id = "status-tools";
+            members = ["notifications" "todos" "davemhammer/tailscale:status"];
+          }
         ];
-        end = ["privacy" "davemhammer/tailscale:status" "tray" "battery" "volume" "brightness" "notifications" "todos" "dotnetrob/cat:cat" "clock"];
+        end = ["tray" "privacy" "group:hardware-controls" "group:status-tools" "clock"];
         monitor.dp2 = {
           match = "DP-2";
           position = "bottom";
@@ -190,6 +202,7 @@ in {
         battery = {
           device = "hid-24ae:185a-battery-0";
           display_mode = "graphic";
+          show_label = false;
         };
         todos = {
           type = "custom_button";
