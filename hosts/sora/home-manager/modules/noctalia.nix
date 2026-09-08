@@ -135,7 +135,7 @@ in {
         padding = 2;
         widget_spacing = 6;
         font_scale = 1.3;
-        capsule = false;
+        capsule = true;
         start = ["control-center" "cpu" "temp" "ram" "swap" "rx" "tx" "media" "active_window"];
         center = ["workspaces"];
         end = ["privacy" "davemhammer/tailscale:status" "tray" "battery" "volume" "brightness" "notifications" "todos" "dotnetrob/cat:cat" "clock"];
