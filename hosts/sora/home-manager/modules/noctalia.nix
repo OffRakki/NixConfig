@@ -149,11 +149,11 @@ in {
           }
           {
             id = "hardware-controls";
-            members = ["battery" "volume" "brightness"];
+            members = ["volume" "brightness"];
           }
           {
             id = "status-tools";
-            members = ["notifications" "todos" "davemhammer/tailscale:status"];
+            members = ["notifications" "todos" "davemhammer/tailscale:status" "battery"];
           }
         ];
         end = ["tray" "privacy" "group:hardware-controls" "group:status-tools" "clock"];
