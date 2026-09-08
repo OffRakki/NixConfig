@@ -15,18 +15,40 @@
       Type = "oneshot";
       ExecStart = with pkgs;
         writeShellScript "usb-tether-check" ''
+          set -euo pipefail
           ETH=enp6s0
           TARGET="1.1.1.1"
           TIMEOUT="3"
 
+          PROBE_METRIC=4294967295
+          probe_route=false
+          cleanup_probe() {
+            if "$probe_route"; then
+              ${iproute2}/bin/ip -4 route del default via "$GW" dev "$ETH" metric "$PROBE_METRIC"
+              probe_route=false
+            fi
+          }
+          trap cleanup_probe EXIT
+
+          # Keep USB preferred while giving the interface-bound recovery probe a route.
+          if [ -z "$(${iproute2}/bin/ip -4 route show default dev "$ETH")" ]; then
+            GW=$(${dhcpcd}/bin/dhcpcd -4 -U "$ETH" | ${gnused}/bin/sed -n 's/^routers=\([^ ]*\).*$/\1/p' || true)
+            if [ -n "$GW" ] && ${iproute2}/bin/ip -j -4 route show default \
+              | ${jq}/bin/jq -e --argjson metric "$PROBE_METRIC" 'all(.[]; (.metric // 0) < $metric)' >/dev/null; then
+              ${iproute2}/bin/ip -4 route add default via "$GW" dev "$ETH" metric "$PROBE_METRIC"
+              probe_route=true
+            fi
+          fi
+
           if ${iputils}/bin/ping -I "$ETH" -c 1 -W "$TIMEOUT" "$TARGET" >/dev/null 2>&1; then
-            GW=$(${gnugrep}/bin/grep -oP 'new_routers=\K\S+' /var/lib/dhcpcd/"$ETH".lease 2>/dev/null || true)
-            if [ -n "$GW" ]; then
-              ${iproute2}/bin/ip route show default dev "$ETH" >/dev/null 2>&1 || \
-                ${iproute2}/bin/ip route add default via "$GW" dev "$ETH" metric 1002
+            if "$probe_route"; then
+              cleanup_probe
+              # Restore the lease's routing policy instead of hardcoding its metric.
+              ${dhcpcd}/bin/dhcpcd -g "$ETH"
             fi
             exit 0
           fi
+          cleanup_probe
 
           for p in /sys/class/net/enp*u*/; do
             [ -d "$p" ] || continue
