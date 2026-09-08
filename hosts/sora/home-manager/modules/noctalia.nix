@@ -167,12 +167,13 @@ in {
           title_scroll = "on_hover";
         };
         active_window.max_length = 200;
+        tray.drawer = true;
         workspaces = {
           label_source = "name";
           max_label_chars = 7;
           labels_only_when_occupied = true;
           hide_when_empty = true;
-          pill_scale = 0.7;
+          pill_scale = 1.0;
           empty_color = "tertiary";
           font_weight = 600;
           actions = {
