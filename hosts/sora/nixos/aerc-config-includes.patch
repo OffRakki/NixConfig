@@ -1,49 +1,53 @@
-diff --git a/config/binds.go b/config/binds.go
-index 3b9510cd..9591ee49 100644
 --- a/config/binds.go
 +++ b/config/binds.go
-@@ -7,12 +7,14 @@ import (
+@@ -7,6 +7,7 @@
  	"io"
  	"os"
  	"path"
 +	"path/filepath"
  	"regexp"
  	"strings"
- 	"unicode"
+ 	"sync/atomic"
+@@ -14,6 +15,7 @@
  	"unicode/utf8"
  
  	"git.sr.ht/~rjarry/aerc/lib/log"
 +	"git.sr.ht/~rjarry/aerc/lib/xdg"
- 	"git.sr.ht/~rockorager/vaxis"
  	"github.com/go-ini/ini"
+ 	"go.rockorager.dev/vaxis"
  )
-@@ -104,7 +106,24 @@ func defaultBindsConfig() *BindingConfig {
- 
- var Binds = defaultBindsConfig()
+@@ -109,8 +111,29 @@
+ 	}
+ }
  
 -func parseBindsFromFile(root string, filename string) error {
 +func parseBindsFromFile(_ string, filename string) error {
+ 	conf := defaultBindsConfig()
 +	filename = xdg.ExpandHome(filename)
 +	absolute, err := filepath.Abs(filename)
 +	if err != nil {
 +		return err
 +	}
-+	return parseBindsFile(absolute, make(map[string]bool))
++	if err := parseBindsFile(conf, absolute, make(map[string]bool)); err != nil {
++		return err
++	}
++
++	log.Debugf("binds.conf: %#v", conf)
++	bindsConfig.Store(conf)
++	return nil
 +}
 +
-+func parseBindsFile(filename string, stack map[string]bool) error {
++func parseBindsFile(conf *BindingConfig, filename string, stack map[string]bool) error {
 +	filename = filepath.Clean(filename)
-+
 +	if stack[filename] {
 +		return fmt.Errorf("cyclic key bindings include: %s", filename)
 +	}
 +	stack[filename] = true
 +	defer delete(stack, filename)
-+
+ 
  	log.Debugf("Parsing key bindings configuration from %s", filename)
  	binds, err := ini.LoadSources(ini.LoadOptions{
- 		KeyValueDelimiters: "=",
-@@ -117,6 +136,26 @@ func parseBindsFromFile(root string, filename string) error {
+@@ -124,6 +147,26 @@
  		return err
  	}
  
@@ -61,16 +65,26 @@ index 3b9510cd..9591ee49 100644
 +			if !filepath.IsAbs(name) {
 +				name = filepath.Join(filepath.Dir(filename), name)
 +			}
-+			if err := parseBindsFile(name, stack); err != nil {
++			if err := parseBindsFile(conf, name, stack); err != nil {
 +				return fmt.Errorf("include %s from %s: %w", name, filename, err)
 +			}
 +		}
 +	}
 +
  	baseGroups := map[string]**KeyBindings{
- 		"default":           &Binds.Global,
- 		"compose":           &Binds.Compose,
-@@ -178,6 +217,8 @@ func LoadBindingSection(sec *ini.Section) (*KeyBindings, error) {
+ 		"default":           &conf.Global,
+ 		"compose":           &conf.Compose,
+@@ -156,9 +199,6 @@
+ 		}
+ 	}
+ 
+-	log.Debugf("binds.conf: %#v", conf)
+-	bindsConfig.Store(conf)
+-
+ 	return nil
+ }
+ 
+@@ -187,6 +227,8 @@
  		value, annotation, _ := strings.Cut(k.String(), " # ")
  		value = strings.TrimSpace(value)
  		switch key {
@@ -79,11 +93,9 @@ index 3b9510cd..9591ee49 100644
  		case "$ex":
  			strokes, err := ParseKeyStrokes(value)
  			if err != nil {
-diff --git a/config/binds_test.go b/config/binds_test.go
-index a47da41c..e3182537 100644
 --- a/config/binds_test.go
 +++ b/config/binds_test.go
-@@ -2,12 +2,57 @@ package config
+@@ -2,12 +2,52 @@
  
  import (
  	"fmt"
@@ -91,14 +103,13 @@ index a47da41c..e3182537 100644
 +	"path/filepath"
  	"testing"
  
- 	"git.sr.ht/~rockorager/vaxis"
  	"github.com/stretchr/testify/assert"
+ 	"go.rockorager.dev/vaxis"
  )
  
 +func TestBindsInclude(t *testing.T) {
-+	oldBinds := Binds
-+	t.Cleanup(func() { Binds = oldBinds })
-+	Binds = defaultBindsConfig()
++	oldBinds := Binds()
++	t.Cleanup(func() { bindsConfig.Store(oldBinds) })
 +
 +	dir := t.TempDir()
 +	write := func(name, content string) {
@@ -119,15 +130,11 @@ index a47da41c..e3182537 100644
 +		assert.Equal(t, BindingSearchResult(BINDING_FOUND), result)
 +		assert.Equal(t, want, got)
 +	}
-+	assertBinding(Binds.Global, "a", ":local<Enter>")
-+	assertBinding(Binds.MessageList, "q", ":extra<Enter>")
++	assertBinding(Binds().Global, "a", ":local<Enter>")
++	assertBinding(Binds().MessageList, "q", ":extra<Enter>")
 +}
 +
 +func TestBindsIncludeCycle(t *testing.T) {
-+	oldBinds := Binds
-+	t.Cleanup(func() { Binds = oldBinds })
-+	Binds = defaultBindsConfig()
-+
 +	dir := t.TempDir()
 +	assert.NoError(t, os.WriteFile(
 +		filepath.Join(dir, "one.conf"), []byte("$include = two.conf\n"), 0o600))
@@ -141,11 +148,9 @@ index a47da41c..e3182537 100644
  func TestGetBinding(t *testing.T) {
  	assert := assert.New(t)
  
-diff --git a/doc/aerc-binds.5.scd b/doc/aerc-binds.5.scd
-index 1f508ef8..68155c7a 100644
 --- a/doc/aerc-binds.5.scd
 +++ b/doc/aerc-binds.5.scd
-@@ -30,6 +30,23 @@ in a similar fashion.
+@@ -30,6 +30,23 @@
  You may configure different keybindings for different contexts by writing them
  into different *[sections]* of the ini file.
  

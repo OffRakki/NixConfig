@@ -12,7 +12,6 @@
     inputs.nix-minecraft.nixosModules.minecraft-servers
     inputs.sops-nix.nixosModules.sops
     inputs.home-manager.nixosModules.home-manager
-    inputs.hyprland.nixosModules.default
     ../../modules
     ./containers
     ./hardware-configuration.nix
@@ -39,16 +38,6 @@
       (_: prev: {
         aerc = prev.aerc.overrideAttrs (old: {
           patches = (old.patches or []) ++ [./aerc-config-includes.patch];
-        });
-        flatpak = prev.flatpak.overrideAttrs (old: {
-          patches =
-            (old.patches or [])
-            ++ [
-              (prev.fetchurl {
-                url = "https://github.com/flatpak/flatpak/pull/6721.patch";
-                hash = "sha256-1isR99NvPgTUB2q2/1N1cNieDIfZ67Y7+8xlu8FPsF0=";
-              })
-            ];
         });
         openldap = prev.openldap.overrideAttrs (_: {
           doCheck = false;
@@ -224,7 +213,6 @@
     hyprland = {
       enable = true;
       withUWSM = false;
-      portalPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
     };
 
     dconf.enable = true;

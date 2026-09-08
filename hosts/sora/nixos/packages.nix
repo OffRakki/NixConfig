@@ -85,7 +85,6 @@
     tailscale
     nyxt
     sudo-rs
-    mprime
     diffutils
     matugen
     pass
@@ -156,7 +155,6 @@
     eog
     gnome-system-monitor
     grim
-    gtk-engine-murrine
     inxi
     jq
     nwg-look
