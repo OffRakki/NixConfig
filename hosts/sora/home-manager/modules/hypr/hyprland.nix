@@ -461,7 +461,7 @@ in {
               disable_while_typing = true,
 
               -- Emulate middle click by clicking left + right simultaneously
-              middle_button_emulation = flase,
+              middle_button_emulation = false,
 
               -- Scroll speed modifier
               scroll_factor = 1.0,

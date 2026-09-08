@@ -93,13 +93,27 @@ in {
     powerbar="$HOME/.pi/agent/settings-extensions.json"
     mkdir -p "$(dirname "$buddy")"
 
-    ${pkgs.jq}/bin/jq '.placement = "belowEditor" | .header = false' "$buddy" > "$buddy.tmp" 2>/dev/null \
-      || printf '{"placement":"belowEditor","header":false}\n' > "$buddy.tmp"
-    mv "$buddy.tmp" "$buddy"
+    update_pi_widget() (
+      file="$1"
+      filter="$2"
+      tmp="$(mktemp "$file.XXXXXX")" || exit 1
+      trap 'rm -f "$tmp"' EXIT
 
-    ${pkgs.jq}/bin/jq '(.powerbar //= {}) | .powerbar.placement = "belowEditor"' "$powerbar" > "$powerbar.tmp" 2>/dev/null \
-      || printf '{"powerbar":{"placement":"belowEditor"}}\n' > "$powerbar.tmp"
-    mv "$powerbar.tmp" "$powerbar"
+      if [ -e "$file" ] || [ -L "$file" ]; then
+        if ! ${pkgs.jq}/bin/jq -se \
+          'if length == 1 and (.[0] | type == "object") then .[0] else error("Expected one JSON object") end | '"$filter" \
+          "$file" > "$tmp"; then
+          printf 'Cannot update Pi settings; preserving %s\n' "$file" >&2
+          exit 1
+        fi
+      else
+        ${pkgs.jq}/bin/jq -n "$filter" > "$tmp" || exit 1
+      fi
+      mv -- "$tmp" "$file"
+    )
+
+    update_pi_widget "$buddy" '.placement = "belowEditor" | .header = false'
+    update_pi_widget "$powerbar" '(.powerbar //= {}) | .powerbar.placement = "belowEditor"'
   '';
   # Keep custom agents Nix-sourced while leaving the runtime directory writable
   # for Pi's agent-management commands.
