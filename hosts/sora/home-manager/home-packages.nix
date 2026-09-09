@@ -1,5 +1,6 @@
 {pkgs, ...}: {
   home.packages = with pkgs; [
+    tailcat
     chromium
     shiru
     viddy
