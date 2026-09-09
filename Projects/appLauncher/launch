@@ -11,6 +11,13 @@ usage() {
     echo "usage: $command_name [--foreground | --hidden | --stop | --path PATH | ipc ARGS...]" >&2
 }
 
+instances() {
+    local output
+    output="$(qs list "$@" --json)"
+    [ "$output" = "No running instances." ] && output='[]'
+    jq -e . <<< "$output"
+}
+
 matches() {
     jq --arg shell "$shell_id" --arg exact "$config_path/shell.qml" --arg suffix "/$config_name/shell.qml" \
         '[.[] | select(.shell_id == $shell or .config_path == $exact or (.config_path | endswith($suffix)))]'
@@ -21,7 +28,7 @@ cleanup() {
     runtime_dir="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/quickshell"
 
     for _ in {1..40}; do
-        pids="$(qs list --all --json | matches | jq -r '.[].pid')"
+        pids="$(instances --all | matches | jq -r '.[].pid')"
         [ -z "$pids" ] && break
         while read -r pid; do
             qs kill --pid "$pid" >/dev/null 2>&1 || true
@@ -29,12 +36,12 @@ cleanup() {
         sleep 0.05
     done
 
-    if qs list --all --json | matches | jq -e 'length > 0' >/dev/null; then
+    if instances --all | matches | jq -e 'length > 0' >/dev/null; then
         echo "$command_name: failed to stop every existing instance" >&2
         exit 1
     fi
 
-    qs list --all --show-dead --json \
+    instances --all --show-dead \
         | matches \
         | jq -r '.[] | [.id, .shell_id] | @tsv' \
         | while IFS=$'\t' read -r id shell_id; do
@@ -63,7 +70,7 @@ case "${1:-}" in
         ;;
     ipc)
         shift
-        config_file="$(qs list --all --json | matches | jq -r 'first.config_path // empty')"
+        config_file="$(instances --all | matches | jq -r 'first.config_path // empty')"
         [ -n "$config_file" ] || { echo "$command_name: no running instance" >&2; exit 1; }
         exec qs ipc -p "${config_file%/shell.qml}" "$@"
         ;;
@@ -75,7 +82,7 @@ if [ "$mode" = toggle ] && qs ipc -p "$config_path" call launcher toggle >/dev/n
 fi
 
 if [ "$mode" = hidden ]; then
-    current="$(qs list --all --json | matches)"
+    current="$(instances --all | matches)"
     pid="$(jq -r --arg exact "$config_path/shell.qml" \
         'if length == 1 and first.config_path == $exact then first.pid else empty end' <<< "$current")"
     [ -n "$pid" ] && exit 0
