@@ -58,6 +58,7 @@ in {
     package = noctalia;
     settings = {
       shell = {
+        font_family = "Noto Sans";
         corner_radius_scale = 0.75;
         avatar_path = "${../../../../assets/svgs/pelucio.jpg}";
         time_format = "{:%H:%M}";
