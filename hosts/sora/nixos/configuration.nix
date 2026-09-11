@@ -321,7 +321,7 @@
           user = "rakki";
         };
         default_session = {
-          command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --sessions /run/current-system/sw/share/wayland-sessions:/run/current-system/sw/share/xsessions --user-menu --cmd start-hyprland";
+          command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --sessions /run/current-system/sw/share/wayland-sessions:/run/current-system/sw/share/xsessions --cmd start-hyprland";
           user = "greeter";
         };
       };
