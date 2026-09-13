@@ -13,6 +13,7 @@
         isNormalUser = true;
         hashedPasswordFile = config.sops.secrets.soraPass.path;
         extraGroups = [
+          "minecraft"
           "corectrl"
           "networkmanager"
           "storage"
