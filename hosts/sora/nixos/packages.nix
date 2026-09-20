@@ -31,6 +31,7 @@
     libsForQt5.qtstyleplugin-kvantum
     kdePackages.qtstyleplugin-kvantum
     (prismlauncher.override {
+      additionalLibs = [ libxkbcommon ];
       jdks = [
         pkgs.temurin-bin-8
         pkgs.temurin-bin-17
