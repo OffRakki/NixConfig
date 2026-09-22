@@ -176,6 +176,7 @@ in {
       defaultProvider = "openai-codex";
       defaultModel = "gpt-6-sol";
       defaultThinkingLevel = "medium";
+      cacheWarming = "idle";
       theme = "sakura-macaron";
       enabledModels = [
         "gpt-6*"
