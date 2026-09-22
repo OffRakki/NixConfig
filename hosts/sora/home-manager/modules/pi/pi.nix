@@ -5,15 +5,19 @@
   ...
 }: let
   piPackage = pkgs.pi-coding-agent.overrideAttrs (finalAttrs: _: {
-    version = "0.85.1";
+    version = "0.87.1";
     src = pkgs.fetchurl {
       url = "https://github.com/earendil-works/pi/releases/download/v${finalAttrs.version}/pi-${finalAttrs.version}-source.tar.gz";
-      hash = "sha256-9+yS7U97dTaRmDmKNCFzLq5AUYOXFFC8dMuFRPQtAso=";
+      hash = "sha256-eTlJ2NnlZik0bku5pr9fwXlS73RqG/TzGF+Olg6Ab88=";
     };
     npmDeps = pkgs.fetchNpmDeps {
       name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
       inherit (finalAttrs) src;
-      hash = "sha256-jzlsZIQzfl1FCZZ5//dHFWwMfBZQ4nRD6KB4HHifPqE=";
+      hash = "sha256-JBIYoP2vvRNz1HONNvDJ1U3c+nmCJ7/VgNthRTkrkIA=";
+    };
+    modelData = pkgs.fetchurl {
+      url = "https://registry.npmjs.org/@earendil-works/pi-ai/-/pi-ai-${finalAttrs.version}.tgz";
+      hash = "sha256-NbRDLyfMJmX4a+67mvajmxJRlwiDwwRL2L5PToxzHKA=";
     };
     buildPhase = ''
       runHook preBuild
@@ -170,7 +174,7 @@ in {
       enableInstallTelemtry = false;
       enableAnalytics = false;
       defaultProvider = "openai-codex";
-      defaultModel = "gpt-5.6-sol";
+      defaultModel = "gpt-6-sol";
       defaultThinkingLevel = "medium";
       theme = "sakura-macaron";
       enabledModels = [
