@@ -177,6 +177,7 @@ in {
       defaultModel = "gpt-6-sol";
       defaultThinkingLevel = "medium";
       cacheWarming = "idle";
+      showCacheMissNotices = true;
       theme = "sakura-macaron";
       enabledModels = [
         "gpt-6*"
