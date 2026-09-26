@@ -74,7 +74,7 @@
     extraRules = ''
       KERNEL=="uinput", MODE="0660", GROUP="uinput", OPTIONS+="static_node=uinput"
       KERNEL=="uinput", GROUP="input", MODE="0660", OPTIONS+="static_node=uinput"
-      SUBSYSTEM=="hidraw", ATTRS{idVendor}=="056a", ATTRS{idProduct}=="033b", TAG+="uaccess"
+      SUBSYSTEM=="hidraw", ATTRS{idVendor}=="056a", ATTRS{idProduct}=="033b", GROUP="input", MODE="0660"
     '';
   };
 
