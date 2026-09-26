@@ -18,6 +18,16 @@ Use this protocol whenever `jj root` succeeds from the current directory. Do not
 - If syntax or behavior is uncertain, use `jj help` instead of guessing; the integrated help matches the active jj version.
 - If a mutation has an unexpected result, stop and inspect `jj op log`. Prefer an explicit `jj op revert <op-id>` or `jj op restore <op-id>` over the implicit target selected by `jj undo`.
 
+## Prefer jj operations over manual reversal
+
+When undoing work, inspect `jj log` and `jj show` **before** editing source files. Use the smallest suitable jj operation instead of re-editing each affected file:
+
+- If one mutable change contains exactly the work to discard, `jj abandon <change-id>` removes that change and rebases its descendants. This is cleaner than manually reversing its hunks and creating a redundant counter-change. Inspect descendants, bookmarks, and whether the change was published first; verify the rebased result and resolve any conflicts.
+- If only part of a change should be undone, keep the rest: use a targeted `jj restore --from <revision> <path>` when restoring a whole file is safe, or make a minimal source edit when neither a whole change nor a whole file matches the intent. Do not abandon a mixed-purpose change just to avoid a small edit.
+- For other history work, prefer the matching native operation (`jj squash`, `jj rebase`, `jj split`) over manually reconstructing changes. Check `jj help <command>` when uncertain.
+
+Example: to revert a dedicated lockscreen-switch commit while keeping later unrelated DPMS work, inspect both commits, then `jj abandon <lockscreen-change-id>` and verify the resulting settings. Later commits can reintroduce the same behavior, so check the final configuration; handle only those residual settings separately. Never abandon unrelated or published history without explicit approval.
+
 ## Built-in documentation
 
 Prefer jj's integrated, version-correct help over remembered syntax or web examples:
