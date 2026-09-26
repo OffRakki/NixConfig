@@ -462,7 +462,13 @@ in {
           zoom_level = 1.0 -- Ignored by live mode, but kept as a valid placeholder
         })
         ---------------------------------------------------------------
-        hl.bind("${mod} + CTRL + ALT + O",      hl.dsp.exec_cmd("hyprctl eval 'hl.dispatch(hl.dsp.dpms({ action = \"enable\" }))'")) -- DPMS on
+        hl.bind("${mod} + CTRL + ALT + O", hl.dsp.dpms({ action = "enable" })) -- DPMS on
+        -- Wait for the rest of the chord to be released before powering off.
+        hl.bind("${mod} + CTRL + ALT + P", function()
+          hl.timer(function()
+            hl.dispatch(hl.dsp.dpms({ action = "disable" }))
+          end, { timeout = 750, type = "oneshot" })
+        end, { release = true }) -- DPMS off
         hl.bind("${mod} + mouse:272",           hl.dsp.window.drag(), { mouse = true }) -- mouse:272 = left click
         hl.bind("${mod} + mouse:273",           hl.dsp.window.resize(), { mouse = true }) -- mouse:273 = right click
         hl.bind("CTRL + SHIFT + ALT + C",       hl.dsp.exec_cmd("notify-send -t 1000 macro_toggled && '${../../../macros/autoClicker.sh}'"))
