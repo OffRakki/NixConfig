@@ -31,12 +31,12 @@ Runtime files under `~/.pi/agent/` are outputs, not sources; never edit them.
 | `@juanibiapina/pi-powerbar` | persistent powerline status UI and usage segments |
 | `@juicesharp/rpiv-ask-user-question` | `ask_user_question` |
 | `@wishx127/pi-tokyo-night` | Tokyo Night themes, rain panel, and status UI |
-| `pi-agent-browser-native` | `agent_browser` and browser automation |
+| `pi-agent-browser-native` | `agent_browser`, `agent_browser_code`, `agent_browser_tools`, and advanced browser tools |
 | `pi-codex-image-gen` | `codex_generate_image` and `imagegen` |
 | `pi-intercom` | `intercom` and cross-session coordination |
 | `pi-invisible-continue` | automatic agent-loop continuation |
-| `pi-subagents` | `subagent`, `wait`, and packaged agents |
-| `pi-web-access` | `web_search`, `fetch_content`, `get_search_content`, and `librarian` |
+| `pi-subagents` | `subagents_enable`, `subagent`, `bg_wait`, and packaged agents |
+| `pi-web-access` | `web_enable`, `web_search`, `source_check`, `fetch_content`, and `get_search_content` |
 | `rinco-pi-sakura` | Sakura Macaron theme and animated header |
 
 `lean-ctx` is installed as a companion CLI package on `PATH`; it is not an
@@ -52,7 +52,7 @@ active Pi extension and does not provide `ctx_*` tools in this configuration.
 | Public web research/content | `web_search`, `fetch_content`, `get_search_content` |
 | Image generation/editing | `codex_generate_image` via `imagegen` |
 | User decision | `ask_user_question` |
-| Subagents | `subagent`, then `wait` only when blocking is required |
+| Subagents | Enable with `subagents_enable` if needed; use `subagent`, then `bg_wait` only when blocking is required |
 | Cross-session coordination | `intercom` |
 
 Do not route work to removed APIs such as `ctx_*`, `lsp_*`, `lens_*`,
@@ -60,7 +60,11 @@ Do not route work to removed APIs such as `ctx_*`, `lsp_*`, `lens_*`,
 
 ## Updating a package pin
 
-1. Update the exact version in `packages/package.json`.
+Always update all Nix-managed Pi packages when updating Pi itself; choose the
+latest compatible releases rather than ignoring Node/Pi support floors.
+Browser-native 0.8 requires Node >=24.21.0; the current Node 24.19.0 supports 0.7.1.
+
+1. Review release/source changes and update the exact version in `packages/package.json`.
 2. Run `npm install --package-lock-only --ignore-scripts --legacy-peer-deps` in `packages/`.
 3. Update `inventory.json` when version or capabilities changed.
 4. Set `npmDepsHash = pkgs.lib.fakeHash`, build, and replace it with Nix's reported hash.
@@ -70,4 +74,8 @@ Do not route work to removed APIs such as `ctx_*`, `lsp_*`, `lens_*`,
 
 After Pi source changes, run `nix flake check --no-build`. Package, model,
 skill, agent, prompt, theme, and extension changes need Home Manager activation
-before runtime paths update.
+before runtime paths update. `--list-models` alone does not exercise extension
+loading: also smoke-test `DefaultResourceLoader.reload()` and session binding
+with an isolated HOME, checking errors and registered tools without a model call.
+Pi 1.0's Nix postInstall must preserve the `pi-codemode` and `pi-mcp` workspaces
+alongside the existing host libraries so unbundled SDK imports can resolve.

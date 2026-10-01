@@ -11,35 +11,35 @@
     },
     {
       "name": "@juanibiapina/pi-extension-settings",
-      "version": "0.9.1",
+      "version": "0.10.0",
       "source": "npm",
       "trust": "pinned-third-party",
       "capabilities": ["extension", "ui", "filesystem"]
     },
     {
       "name": "@juanibiapina/pi-powerbar",
-      "version": "0.14.0",
+      "version": "0.16.0",
       "source": "npm",
       "trust": "pinned-third-party",
       "capabilities": ["extension", "ui", "network", "filesystem", "credentials", "session-metadata"]
     },
     {
       "name": "@juicesharp/rpiv-ask-user-question",
-      "version": "1.20.0",
+      "version": "2.12.0",
       "source": "npm",
       "trust": "pinned-third-party",
       "capabilities": ["extension", "tool", "ui"]
     },
     {
       "name": "@wishx127/pi-tokyo-night",
-      "version": "1.1.7",
+      "version": "1.2.0",
       "source": "npm",
       "trust": "pinned-third-party",
       "capabilities": ["extension", "themes", "ui", "network", "filesystem"]
     },
     {
       "name": "pi-agent-browser-native",
-      "version": "0.2.68",
+      "version": "0.7.1",
       "source": "npm",
       "trust": "pinned-third-party",
       "capabilities": [
@@ -53,28 +53,28 @@
     },
     {
       "name": "pi-codex-image-gen",
-      "version": "0.1.12",
+      "version": "0.1.13",
       "source": "npm",
       "trust": "pinned-third-party",
       "capabilities": ["extension", "tool", "network", "filesystem", "credentials"]
     },
     {
       "name": "pi-intercom",
-      "version": "0.6.0",
+      "version": "0.16.0",
       "source": "npm",
       "trust": "pinned-third-party",
-      "capabilities": ["extension", "tool", "ipc", "sessions"]
+      "capabilities": ["extension", "tool", "ipc", "sessions", "network", "filesystem", "process"]
     },
     {
       "name": "pi-invisible-continue",
-      "version": "0.3.4",
+      "version": "0.3.15",
       "source": "npm",
       "trust": "pinned-third-party",
       "capabilities": ["extension", "session-control"]
     },
     {
       "name": "pi-subagents",
-      "version": "0.34.0",
+      "version": "0.74.0",
       "source": "npm",
       "trust": "pinned-third-party",
       "capabilities": [
@@ -87,7 +87,7 @@
     },
     {
       "name": "pi-web-access",
-      "version": "0.13.0",
+      "version": "0.35.0",
       "source": "npm",
       "trust": "pinned-third-party",
       "capabilities": ["extension", "tools", "network", "filesystem"]
