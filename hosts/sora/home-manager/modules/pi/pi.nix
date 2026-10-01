@@ -30,6 +30,8 @@
                 @earendil-works/pi-ai:packages/ai \
                 @earendil-works/pi-agent-core:packages/agent \
                 @earendil-works/pi-client:packages/client \
+                @earendil-works/pi-codemode:packages/codemode \
+                @earendil-works/pi-mcp:packages/mcp \
                 @earendil-works/pi-protocol:packages/protocol \
                 @earendil-works/pi-telemetry:packages/telemetry \
                 @earendil-works/pi-tui:packages/tui; do

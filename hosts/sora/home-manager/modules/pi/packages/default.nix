@@ -21,7 +21,7 @@
     pname = package.name;
     inherit (package) version;
     src = ./.;
-    npmDepsHash = "sha256-RzIp75/i9+AjDeWjfEVYKftO32pnToe3McvD0Y6oxWs=";
+    npmDepsHash = "sha256-QqKNswZCLJjMbnyByhHMgHws3akUIQ5pkCoPdQQrGv0=";
     npmFlags = ["--legacy-peer-deps"];
     dontNpmBuild = true;
     installPhase = ''
@@ -38,8 +38,25 @@
       export HOME="$TMPDIR/home"
       mkdir -p "$HOME"
       args=()
-      ${pkgs.lib.concatMapStringsSep "\n" (name: ''args+=(--extension "$out/node_modules/${name}")'') activeNpmPackages}
-      ${piPackage}/bin/pi --no-session "''${args[@]}" --list-models >/dev/null
+      export PI_CODING_AGENT_DIR="$HOME/.pi/agent" PI_TELEMETRY=0 PI_SKIP_VERSION_CHECK=1
+      ${pkgs.lib.concatMapStringsSep "\n" (name: ''args+=("$out/node_modules/${name}")'') activeNpmPackages}
+      ${pkgs.nodejs}/bin/node --input-type=module - "''${args[@]}" <<'JS'
+      import { createAgentSession, DefaultResourceLoader, SessionManager, SettingsManager } from '${piPackage}/lib/node_modules/pi-monorepo/dist/index.js';
+      const cwd = process.env.HOME;
+      process.chdir(cwd);
+      const agentDir = process.env.PI_CODING_AGENT_DIR;
+      const settingsManager = SettingsManager.inMemory({ packages: process.argv.slice(2), enableAnalytics: false, enableInstallTelemtry: false });
+      const resourceLoader = new DefaultResourceLoader({ cwd, agentDir, settingsManager, noContextFiles: true });
+      await resourceLoader.reload();
+      const { errors, warnings = [] } = resourceLoader.getExtensions();
+      if (errors.length || warnings.length) throw new Error(JSON.stringify({ errors, warnings }));
+      const { session } = await createAgentSession({ cwd, agentDir, settingsManager, resourceLoader, sessionManager: SessionManager.inMemory(cwd) });
+      const runtimeErrors = [];
+      await session.bindExtensions({ onError: error => runtimeErrors.push(error) });
+      session.dispose();
+      if (runtimeErrors.length) throw new Error(JSON.stringify(runtimeErrors));
+      process.exit(0);
+      JS
       runHook postInstallCheck
     '';
   };

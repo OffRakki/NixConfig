@@ -56,6 +56,9 @@ read-only delegation; `intercom` for peer sessions; and `ask_user_question`
 when a decision is genuinely required. Load `pi-tools` for the current package
 inventory. Never invent removed APIs from an older Pi setup.
 
+**Whenever Pi is updated, also update all Nix-managed Pi packages to their latest
+compatible releases, then validate and activate them together.**
+
 # Preferences
 
 ## Naming
