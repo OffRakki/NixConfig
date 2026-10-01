@@ -4,6 +4,7 @@
   ...
 }: {
   environment.systemPackages = with pkgs; [
+    headsetcontrol
     inputs.kopuz.packages.${pkgs.stdenv.hostPlatform.system}.default
     # NH
     nh
@@ -31,7 +32,7 @@
     libsForQt5.qtstyleplugin-kvantum
     kdePackages.qtstyleplugin-kvantum
     (prismlauncher.override {
-      additionalLibs = [ libxkbcommon ];
+      additionalLibs = [libxkbcommon];
       jdks = [
         pkgs.temurin-bin-8
         pkgs.temurin-bin-17

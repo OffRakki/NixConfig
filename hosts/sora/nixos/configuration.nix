@@ -233,7 +233,7 @@
       trusted-users = ["root" "rakki"];
       accept-flake-config = true;
       # Enable flakes and new 'nix' command
-      experimental-features = ["nix-command flakes"];
+      experimental-features = ["nix-command flakes" "flake-self-attrs"];
       # Opinionated: disable global registry
       flake-registry = "";
       # Workaround to get rid of the download buffer size warning
