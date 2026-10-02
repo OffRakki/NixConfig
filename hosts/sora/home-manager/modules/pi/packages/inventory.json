@@ -59,6 +59,13 @@
       "capabilities": ["extension", "tool", "network", "filesystem", "credentials"]
     },
     {
+      "name": "pi-context-view",
+      "version": "0.6.0",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "ui", "filesystem", "session-metadata", "session-control"]
+    },
+    {
       "name": "pi-intercom",
       "version": "0.16.0",
       "source": "npm",

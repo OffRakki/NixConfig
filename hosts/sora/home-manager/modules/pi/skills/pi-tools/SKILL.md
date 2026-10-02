@@ -33,6 +33,7 @@ Runtime files under `~/.pi/agent/` are outputs, not sources; never edit them.
 | `@wishx127/pi-tokyo-night` | Tokyo Night themes, rain panel, and status UI |
 | `pi-agent-browser-native` | `agent_browser`, `agent_browser_code`, `agent_browser_tools`, and advanced browser tools |
 | `pi-codex-image-gen` | `codex_generate_image` and `imagegen` |
+| `pi-context-view` | `/context` usage map and `/context injections` inspector |
 | `pi-intercom` | `intercom` and cross-session coordination |
 | `pi-invisible-continue` | automatic agent-loop continuation |
 | `pi-subagents` | `subagents_enable`, `subagent`, `bg_wait`, and packaged agents |

@@ -11,6 +11,7 @@
     "@wishx127/pi-tokyo-night"
     "pi-agent-browser-native"
     "pi-codex-image-gen"
+    "pi-context-view"
     "pi-intercom"
     "pi-invisible-continue"
     "pi-subagents"
@@ -21,7 +22,7 @@
     pname = package.name;
     inherit (package) version;
     src = ./.;
-    npmDepsHash = "sha256-QqKNswZCLJjMbnyByhHMgHws3akUIQ5pkCoPdQQrGv0=";
+    npmDepsHash = "sha256-PpLu6H+bXIrURkHwcYvOhT+2IeK4opBOfhPIQC+sGSQ=";
     npmFlags = ["--legacy-peer-deps"];
     dontNpmBuild = true;
     installPhase = ''
