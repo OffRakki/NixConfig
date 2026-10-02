@@ -11,6 +11,7 @@
     "@wishx127/pi-tokyo-night": "1.2.0",
     "pi-agent-browser-native": "0.7.1",
     "pi-codex-image-gen": "0.1.13",
+    "pi-context-view": "0.6.0",
     "pi-intercom": "0.16.0",
     "pi-invisible-continue": "0.3.15",
     "pi-subagents": "0.74.0",
