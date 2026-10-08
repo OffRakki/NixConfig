@@ -26,7 +26,7 @@ in {
       extraStartPre = ''
         if [ "$(cat .ftb-version 2>/dev/null || true)" != "100552" ]; then
           export PATH="${pkgs.jdk25_headless}/bin:$PATH"
-          ${installer} -pack 135 -version 100552 -auto -no-java -validate
+          ${installer} -pack 135 -version 100552 -auto -force -no-java -validate
           ln -sfn ${thaumaturge} mods/thaumaturge.jar
           echo 100552 > .ftb-version
         fi
