@@ -10,6 +10,7 @@
     nh
     nix-output-monitor
     nvd
+    tmux
     icu
     quickshell
 
