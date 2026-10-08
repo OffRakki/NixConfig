@@ -23,12 +23,10 @@ in {
       enable = true;
       autoStart = false;
       package = server;
-      # Install into the writable server directory, once per pinned pack version.
       extraStartPre = ''
         if [ "$(cat .ftb-version 2>/dev/null || true)" != "100552" ]; then
           export PATH="${pkgs.jdk25_headless}/bin:$PATH"
           ${installer} -pack 135 -version 100552 -auto -no-java -validate
-          # The module links mods before this hook; restore the link after FTB updates.
           ln -sfn ${thaumaturge} mods/thaumaturge.jar
           echo 100552 > .ftb-version
         fi
@@ -39,6 +37,5 @@ in {
     };
   };
 
-  # The first start downloads the modpack and installs NeoForge.
   systemd.services.minecraft-server-FTBEvolution2.serviceConfig.TimeoutStartSec = "30min";
 }
