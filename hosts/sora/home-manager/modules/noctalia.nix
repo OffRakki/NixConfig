@@ -223,7 +223,10 @@ in {
         position = "top_right";
         monitors = ["DP-1"];
         background_opacity = 1.0;
-        kinds.caffeine = false;
+        kinds = {
+          caffeine = false;
+          privacy = false;
+        };
       };
       audio = {
         enable_overdrive = true;
