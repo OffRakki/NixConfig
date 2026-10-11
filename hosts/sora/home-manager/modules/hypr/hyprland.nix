@@ -46,7 +46,7 @@ in {
           general = {
             resize_on_border = true,
             allow_tearing = false,
-            layout = "scrolling",
+            layout = "monocle",
             border_size = 2,
             gaps_in = 8, gaps_out = 12,
             col = { active_border = "rgba(BFA16Eff)", inactive_border = "rgba(BFA16E44)" },
