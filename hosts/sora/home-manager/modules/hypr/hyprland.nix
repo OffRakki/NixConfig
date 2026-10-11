@@ -562,6 +562,10 @@ in {
           -- Move active window to workspace and DON'T follow
           hl.bind("${mod} + CTRL + "  .. key, hl.dsp.window.move({ workspace = i, follow = false }))
         end
+        -- Cycle windows even when they overlap in monocle.
+        hl.bind("${mod} + Tab",         hl.dsp.window.cycle_next({ next = true }))
+        hl.bind("${mod} + SHIFT + Tab", hl.dsp.window.cycle_next({ next = false }))
+
         -- Move focus with Vim keys or arrow keys in any layout.
         hl.bind("${mod} + H",     hl.dsp.focus({ direction = "l" }))
         hl.bind("${mod} + L",     hl.dsp.focus({ direction = "r" }))
