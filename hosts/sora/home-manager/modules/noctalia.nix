@@ -112,8 +112,7 @@ in {
       };
       theme = {
         mode = "dark";
-        source = "builtin";
-        builtin = "Kanagawa";
+        source = "wallpaper";
         templates = {
           enable_builtin_templates = false;
           enable_community_templates = false;
