@@ -462,6 +462,7 @@ in {
           zoom_level = 1.0 -- Ignored by live mode, but kept as a valid placeholder
         })
         ---------------------------------------------------------------
+        ------------------------------ KEYBINDS ---------------------------------
         hl.bind("${mod} + CTRL + ALT + O", hl.dsp.dpms({ action = "enable" })) -- DPMS on
         -- Wait for the rest of the chord to be released before powering off.
         hl.bind("${mod} + CTRL + ALT + P", function()
