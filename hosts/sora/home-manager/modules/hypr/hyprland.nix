@@ -557,15 +557,15 @@ in {
           -- Move active window to workspace and DON'T follow
           hl.bind("${mod} + CTRL + "  .. key, hl.dsp.window.move({ workspace = i, follow = false }))
         end
-        -- Move focus with Vim keys or arrow keys
-        hl.bind("${mod} + H",     hl.dsp.layout("focus l"))
-        hl.bind("${mod} + L",     hl.dsp.layout("focus r"))
-        hl.bind("${mod} + K",     hl.dsp.layout("focus u"))
-        hl.bind("${mod} + J",     hl.dsp.layout("focus d"))
-        hl.bind("${mod} + left",  hl.dsp.layout("focus l"))
-        hl.bind("${mod} + right", hl.dsp.layout("focus r"))
-        hl.bind("${mod} + up",    hl.dsp.layout("focus u"))
-        hl.bind("${mod} + down",  hl.dsp.layout("focus d"))
+        -- Move focus with Vim keys or arrow keys in any layout.
+        hl.bind("${mod} + H",     hl.dsp.focus({ direction = "l" }))
+        hl.bind("${mod} + L",     hl.dsp.focus({ direction = "r" }))
+        hl.bind("${mod} + K",     hl.dsp.focus({ direction = "u" }))
+        hl.bind("${mod} + J",     hl.dsp.focus({ direction = "d" }))
+        hl.bind("${mod} + left",  hl.dsp.focus({ direction = "l" }))
+        hl.bind("${mod} + right", hl.dsp.focus({ direction = "r" }))
+        hl.bind("${mod} + up",    hl.dsp.focus({ direction = "u" }))
+        hl.bind("${mod} + down",  hl.dsp.focus({ direction = "d" }))
 
         -- Move windows with Vim keys or arrow keys
         hl.bind("${mod} + SHIFT + H",     hl.dsp.window.move({ direction = "l"}))
