@@ -463,6 +463,14 @@ in {
         })
         ---------------------------------------------------------------
         ------------------------------ KEYBINDS ---------------------------------
+        -- Cycle all built-in layouts, starting from the configured scrolling layout.
+        local layouts = { "scrolling", "dwindle", "master", "monocle" }
+        local layoutIndex = 1
+        hl.bind("${mod} + F1", function()
+          layoutIndex = layoutIndex % #layouts + 1
+          hl.config({ general = { layout = layouts[layoutIndex] } })
+        end)
+
         hl.bind("${mod} + CTRL + ALT + O", hl.dsp.dpms({ action = "enable" })) -- DPMS on
         -- Wait for the rest of the chord to be released before powering off.
         hl.bind("${mod} + CTRL + ALT + P", function()
