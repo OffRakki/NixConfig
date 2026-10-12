@@ -5,7 +5,9 @@
       buildCommand =
         old.buildCommand
         + ''
-          wrapProgram "$out/bin/hytale-launcher" --run ${pkgs.writeShellScript "hytale-launcher-install" ''
+          wrapProgram "$out/bin/hytale-launcher" \
+            --run 'export TMPDIR="$HOME/.local/share/Hytale/.tmp"; mkdir -p "$TMPDIR"' \
+            --run ${pkgs.writeShellScript "hytale-launcher-install" ''
             set -eu
             launcher="$HOME/.local/share/hytale-launcher/hytale-launcher"
             if [ ! -f "$launcher" ]; then
