@@ -146,7 +146,7 @@ in {
           }
           {
             id = "center-widgets";
-            members = ["workspaces" "active_window"];
+            members = ["taskbar" "active_window"];
           }
           {
             id = "hardware-controls";
@@ -187,14 +187,12 @@ in {
         };
         active_window.max_length = 200;
         tray.drawer = true;
-        workspaces = {
-          label_source = "name";
-          max_label_chars = 7;
-          labels_only_when_occupied = true;
-          hide_when_empty = true;
-          pill_scale = 1.0;
+        taskbar = {
+          group_by_workspace = true;
+          workspace_group_content = "count";
+          show_workspace_label = true;
+          hide_empty_workspaces = true;
           empty_color = "tertiary";
-          font_weight = 600;
           actions = {
             scroll_up = "none";
             scroll_down = "none";
