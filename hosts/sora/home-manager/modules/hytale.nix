@@ -1,4 +1,9 @@
 {pkgs, ...}: {
+  home.persistence."/persist".directories = [
+    ".local/share/Hytale"
+    ".local/share/hytale-launcher"
+  ];
+
   home.packages = [
     (pkgs.inputs.hytale.default.overrideAttrs (old: {
       nativeBuildInputs = (old.nativeBuildInputs or []) ++ [pkgs.makeWrapper];
