@@ -18,6 +18,9 @@
     extraOptions = [
       "--network=host"
       "--cap-add=NET_BIND_SERVICE"
+      # The image's HEALTHCHECK fires before the app is up, and its failed transient
+      # unit makes every switch report "units failed". Nothing depends on it.
+      "--no-healthcheck"
     ];
   };
 
