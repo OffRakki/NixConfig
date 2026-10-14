@@ -185,6 +185,7 @@ in {
         "gpt-6*"
         "gpt-5.6*"
         "deepseek*"
+        "anthropic/*"
       ];
       quietStartup = true;
       collapseChangelog = true;
@@ -238,6 +239,7 @@ in {
     };
     models = {
       providers = {
+        anthropic.apiKey = "!cat ${osConfig.sops.secrets.anthropicApiKey.path}";
         hyper = {
           baseUrl = "https://hyper.charm.land/v1";
           apiKey = "!cat ${osConfig.sops.secrets.hyperApiKey.path}";

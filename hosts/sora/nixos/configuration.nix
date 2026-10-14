@@ -139,6 +139,10 @@
       sopsFile = ../home-manager/modules/pi/private.yaml;
       owner = "rakki";
     };
+    secrets.anthropicApiKey = {
+      sopsFile = ../home-manager/modules/pi/private.yaml;
+      owner = "rakki";
+    };
     #Charm (free ai api 10m tokensish/month)
     secrets.hyperApiKey = {
       sopsFile = ../home-manager/modules/pi/private.yaml;
