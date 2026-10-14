@@ -42,19 +42,23 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    spicetify-nix.url = "github:Gerg-L/spicetify-nix";
+    spicetify-nix = {
+      url = "github:Gerg-L/spicetify-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # Catppuccin
     catppuccin.url = "github:catppuccin/nix";
 
+    # No nixpkgs follows: the kopuz/millennium binary caches are built against their own nixpkgs.
     kopuz.url = "github:kopuz-org/kopuz";
-
-    # Ministerio
-    ministerio.url = "github:misterio77/nix-config";
 
     # Games
     millennium.url = "github:SteamClientHomebrew/Millennium?dir=packages/nix";
-    nix-minecraft.url = "github:Infinidoge/nix-minecraft";
+    nix-minecraft = {
+      url = "github:Infinidoge/nix-minecraft";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     hytale = {
       url = "github:TNAZEP/HytaleLauncherFlake";
       inputs.nixpkgs.follows = "nixpkgs";

@@ -6,13 +6,14 @@
     dates = "weekly";
   };
 
-  # Automatic cleanup
-  nix = {
-    settings.auto-optimise-store = true;
-    gc = {
-      automatic = true;
+  # Automatic cleanup (nh keeps the newest generations, unlike a plain age-based gc)
+  nix.settings.auto-optimise-store = true;
+  programs.nh = {
+    enable = true;
+    clean = {
+      enable = true;
       dates = "daily";
-      options = "--delete-older-than 7d";
+      extraArgs = "--keep 5 --keep-since 7d";
     };
   };
 }

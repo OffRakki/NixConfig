@@ -14,6 +14,11 @@
     inputs.home-manager.nixosModules.home-manager
     ../../modules
     ./containers
+    ./overlays.nix
+    ./nix.nix
+    ./secrets.nix
+    ./services.nix
+    ./boot.nix
     ./hardware-configuration.nix
     ./rapoo-vt9pro.nix
     ./packages.nix
@@ -29,46 +34,6 @@
 
   programs.ydotool.enable = true;
 
-  nixpkgs = {
-    config.permittedInsecurePackages = [
-      "electron-39.8.10"
-    ];
-    overlays = [
-      inputs.nix-minecraft.overlay
-      (_: prev: {
-        aerc = prev.aerc.overrideAttrs (old: {
-          patches = (old.patches or []) ++ [./aerc-config-includes.patch];
-        });
-        openldap = prev.openldap.overrideAttrs (_: {
-          doCheck = false;
-        });
-        perl5Packages =
-          prev.perl5Packages
-          // {
-            DBDCSV = prev.perl5Packages.DBDCSV.overrideAttrs (_: {
-              doCheck = false;
-            });
-          };
-      })
-      inputs.millennium.overlays.default
-      (final: _: {
-        inputs =
-          builtins.mapAttrs (
-            _: flake: let
-              legacyPackages = (flake.legacyPackages or {}).${final.stdenv.hostPlatform.system} or {};
-              packages = (flake.packages or {}).${final.stdenv.hostPlatform.system} or {};
-            in
-              packages // legacyPackages
-          )
-          inputs;
-      })
-    ];
-    # Configure your nixpkgs instance
-    config = {
-      allowUnfree = true;
-    };
-  };
-
   home-manager = {
     extraSpecialArgs = {inherit inputs outputs nixConfigRoot;};
     backupFileExtension = "backup";
@@ -82,83 +47,6 @@
   virtualisation.waydroid = {
     enable = true;
     package = pkgs.waydroid-nftables;
-  };
-
-  sops = {
-    age.sshKeyPaths = ["/persist/etc/ssh/ssh_host_ed25519_key"];
-    defaultSopsFile = ../../../secrets.yaml;
-
-    secrets.syncthing_cert = {
-      owner = "rakki";
-    };
-    secrets.syncthing_key = {
-      owner = "rakki";
-    };
-
-    secrets.soraPass = {
-      neededForUsers = true;
-    };
-
-    secrets.onedriveToken = {
-      owner = "rakki";
-    };
-
-    secrets.deepseekApiKey = {
-      owner = "rakki";
-    };
-
-    secrets.openaiApiKey = {
-      owner = "rakki";
-    };
-
-    secrets.opencodeServerPass = {
-      owner = "rakki";
-    };
-
-    secrets.caldavPass = {
-      owner = "rakki";
-    };
-
-    secrets.lrdMailPass = {
-      owner = "rakki";
-    };
-
-    secrets.lucky-info = {
-      sopsFile = ../home-manager/modules/pi/private.yaml;
-      owner = "rakki";
-    };
-    secrets.skillFireflyPrivate = {
-      sopsFile = ../home-manager/modules/pi/private.yaml;
-      owner = "rakki";
-    };
-    secrets.skillLumisPrivate = {
-      sopsFile = ../home-manager/modules/pi/private.yaml;
-      owner = "rakki";
-    };
-    secrets.webSearchJson = {
-      sopsFile = ../home-manager/modules/pi/private.yaml;
-      owner = "rakki";
-    };
-    secrets.anthropicApiKey = {
-      sopsFile = ../home-manager/modules/pi/private.yaml;
-      owner = "rakki";
-    };
-    #Charm (free ai api 10m tokensish/month)
-    secrets.hyperApiKey = {
-      sopsFile = ../home-manager/modules/pi/private.yaml;
-      owner = "rakki";
-    };
-  };
-
-  sops.templates."rclone-onedrive.conf" = {
-    owner = "rakki";
-    content = ''
-      [onedrive]
-      type = onedrive
-      token = ${config.sops.placeholder.onedriveToken}
-      drive_id = FA1D85EC1252599A
-      drive_type = personal
-    '';
   };
 
   environment.sessionVariables = {
@@ -229,27 +117,6 @@
     };
   };
 
-  nix = let
-    flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
-  in {
-    package = pkgs.lixPackageSets.stable.lix;
-    settings = {
-      trusted-users = ["root" "rakki"];
-      accept-flake-config = true;
-      # Enable flakes and new 'nix' command
-      experimental-features = ["nix-command flakes" "flake-self-attrs"];
-      # Opinionated: disable global registry
-      flake-registry = "";
-      # Workaround to get rid of the download buffer size warning
-      ### Disabled for lix
-      # download-buffer-size = 524288000;
-    };
-
-    # Opinionated: make flake registry and nix path match flake inputs
-    registry = lib.mapAttrs (_: flake: {inherit flake;}) flakeInputs;
-    nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
-  };
-
   security = {
     sudo.enable = false;
     sudo-rs = {
@@ -292,125 +159,6 @@
 
   virtualisation.libvirtd.enable = true;
 
-  services = {
-    mpd = {
-      enable = true;
-      user = "rakki";
-      settings = {
-        music_directory = "/home/rakki/Music";
-        audio_output = [
-          {
-            type = "pipewire";
-            name = "Pipewire_Output";
-          }
-        ];
-      };
-    };
-    xserver = {
-      enable = true;
-      # Enable nvidia OC
-      deviceSection = ''
-        Option "Coolbits" "28"
-      '';
-      xkb = {
-        layout = "us";
-        variant = "intl";
-      };
-    };
-    greetd = {
-      enable = true;
-      settings = {
-        initial_session = {
-          command = "start-hyprland";
-          user = "rakki";
-        };
-        default_session = {
-          command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --sessions /run/current-system/sw/share/wayland-sessions:/run/current-system/sw/share/xsessions --cmd start-hyprland";
-          user = "greeter";
-        };
-      };
-    };
-    displayManager = {
-      sessionPackages = [pkgs.hyprland];
-      defaultSession = "hyprland";
-    };
-    openssh = {
-      enable = true;
-      settings = {
-        # Opinionated: forbid root login through SSH.
-        PermitRootLogin = "no";
-        PasswordAuthentication = true;
-        X11Forwarding = true;
-        X11UseLocalhost = true;
-      };
-      hostKeys = [
-        {
-          path = "/persist/etc/ssh/ssh_host_ed25519_key";
-          type = "ed25519";
-        }
-      ];
-    };
-    dbus = {
-      packages = [
-        pkgs.gsettings-desktop-schemas
-        pkgs.dconf
-      ];
-    };
-    smartd = {
-      enable = true;
-      autodetect = true;
-    };
-
-    gvfs.enable = true;
-
-    pipewire = {
-      enable = true;
-      alsa.enable = true;
-      alsa.support32Bit = true;
-      pulse.enable = true;
-      wireplumber.enable = true;
-    };
-
-    pulseaudio.enable = false; # unstable
-    envfs.enable = true;
-
-    fstrim = {
-      enable = true;
-      interval = "weekly";
-    };
-
-    libinput.enable = true;
-
-    rpcbind.enable = false;
-    nfs.server.enable = false;
-
-    flatpak.enable = true;
-
-    blueman.enable = true;
-
-    geoclue2.enable = true;
-
-    fwupd.enable = true;
-
-    upower.enable = true;
-
-    gnome.gnome-keyring.enable = true;
-
-    printing = {
-      enable = true;
-      drivers = [
-        pkgs.cnijfilter2
-      ];
-    };
-    ipp-usb.enable = true;
-
-    avahi = {
-      enable = true;
-      nssmdns4 = true;
-      openFirewall = true;
-    };
-  };
-
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
 
@@ -421,14 +169,6 @@
 
   i18n.extraLocaleSettings = {
     LC_ALL = "en_US.UTF-8";
-  };
-
-  zramSwap = {
-    enable = true;
-    priority = 100;
-    memoryPercent = 30;
-    swapDevices = 1;
-    algorithm = "zstd";
   };
 
   systemd = {
@@ -445,17 +185,6 @@
   };
 
   time.timeZone = lib.mkDefault "America/Sao_Paulo";
-
-  boot.loader.systemd-boot.enable = lib.mkForce false;
-
-  boot.lanzaboote = {
-    enable = true;
-    pkiBundle = "/var/lib/sbctl";
-  };
-
-  environment.systemPackages = with pkgs; [
-    sbctl
-  ];
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
   system.stateVersion = "25.05";

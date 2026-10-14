@@ -2,10 +2,14 @@
   config,
   pkgs,
   lib,
-  inputs,
   ...
 }: let
-  clip-notify = inputs.ministerio.packages.${pkgs.stdenv.hostPlatform.system}.clip-notify;
+  # Vendored from misterio77/nix-config (MIT).
+  clip-notify = pkgs.writeShellApplication {
+    name = "clip-notify";
+    runtimeInputs = with pkgs; [file coreutils libnotify wl-clipboard];
+    text = builtins.readFile ./clip-notify.sh;
+  };
 in {
   systemd.user.services.clip-notify = {
     Unit = {
