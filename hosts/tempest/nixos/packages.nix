@@ -4,7 +4,6 @@
     pkgs.python311
     kitty.terminfo
     ethtool
-    nh
     podman-compose
     btop
     intel-gpu-tools

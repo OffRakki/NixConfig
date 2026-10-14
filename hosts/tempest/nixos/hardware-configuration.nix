@@ -66,10 +66,6 @@
     ]; # Set default DNS to google's # this is a fix for conectivity problems i was having from iso to system
     useDHCP = lib.mkForce true;
     interfaces.enp2s0.useDHCP = true;
-    firewall.allowedTCPPorts = [
-    ];
-    firewall.allowedUDPPorts = [
-    ];
   };
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";

@@ -6,8 +6,6 @@
   environment.systemPackages = with pkgs; [
     headsetcontrol
     inputs.kopuz.packages.${pkgs.stdenv.hostPlatform.system}.default
-    # NH
-    nh
     nix-output-monitor
     nvd
     tmux

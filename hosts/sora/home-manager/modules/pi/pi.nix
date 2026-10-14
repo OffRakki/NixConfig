@@ -61,7 +61,7 @@ in {
       PI_CACHE_RETENTION = "long";
     };
     packages = [
-      inputs.llm-agents.packages.${pkgs.system}.lean-ctx
+      inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.lean-ctx
       piw
     ];
     persistence."/persist".directories = [
@@ -170,7 +170,7 @@ in {
       jujutsu
       agent-browser
       chromium
-      inputs.llm-agents.packages.${pkgs.system}.lean-ctx
+      inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.lean-ctx
     ];
     settings = {
       enableInstallTelemtry = false;

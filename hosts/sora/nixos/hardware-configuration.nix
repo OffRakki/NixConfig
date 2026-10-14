@@ -99,15 +99,14 @@
     ]; # Set default DNS to google's # this is a fix for conectivity problems i was having from iso to system
     useDHCP = true;
     interfaces.enp6s0.useDHCP = true;
+    # Unattributed (possibly Warframe) - move next to the service that needs them.
     firewall.allowedTCPPorts = [
-      25565
       4950
       4955
       4534
       4096
     ];
     firewall.allowedUDPPorts = [
-      25565
       4950
       4955
       4534
