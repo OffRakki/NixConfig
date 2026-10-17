@@ -175,7 +175,7 @@ in {
     settings = {
       enableInstallTelemtry = false;
       enableAnalytics = false;
-      defaultProvider = "openai-codex";
+      defaultProvider = "openai";
       defaultModel = "gpt-6.1-sol";
       defaultThinkingLevel = "medium";
       cacheWarming = "idle";
