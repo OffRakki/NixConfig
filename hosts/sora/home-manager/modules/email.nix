@@ -64,7 +64,7 @@ in {
         userName = "me@ore.rs";
         realName = "Fernando Marques";
         primary = true;
-        passwordCommand = "${pkgs.coreutils}/bin/cat ${osConfig.sops.secrets.lrdMailPass.path}";
+        passwordCommand = "${pkgs.coreutils}/bin/cat ${osConfig.sops.secrets.oreMailPass.path}";
         signature = {
           showSignature = "append";
           text = "Atenciosamente,\nFernando Marques.";
