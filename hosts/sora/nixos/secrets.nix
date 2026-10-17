@@ -36,7 +36,7 @@
       owner = "rakki";
     };
 
-    secrets.lrdMailPass = {
+    secrets.oreMailPass = {
       owner = "rakki";
     };
 
