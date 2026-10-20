@@ -53,6 +53,7 @@
     bottom
     brightnessctl
     cliphist
+    duf
     ffmpeg
     ffmpegthumbnailer
     fzf
