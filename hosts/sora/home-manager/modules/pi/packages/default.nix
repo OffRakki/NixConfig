@@ -43,6 +43,9 @@
       ${pkgs.lib.concatMapStringsSep "\n" (name: ''args+=("$out/node_modules/${name}")'') activeNpmPackages}
       ${pkgs.nodejs}/bin/node --input-type=module - "''${args[@]}" <<'JS'
       import { createAgentSession, DefaultResourceLoader, SessionManager, SettingsManager } from '${piPackage}/lib/node_modules/pi-monorepo/dist/index.js';
+      const { resolveHostPeerAliases } = await import(process.argv.slice(2).find(path => path.endsWith('/pi-subagents')) + '/src/runs/background/runner-aliases.js');
+      const { missing } = resolveHostPeerAliases('${piPackage}/lib/node_modules/pi-monorepo');
+      if (missing.length) throw new Error('Missing async child host aliases: ' + missing.join(', '));
       const cwd = process.env.HOME;
       process.chdir(cwd);
       const agentDir = process.env.PI_CODING_AGENT_DIR;

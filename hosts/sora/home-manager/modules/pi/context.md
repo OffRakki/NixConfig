@@ -162,11 +162,18 @@ load the `security-sweep` skill and execute its checklist. No exceptions.
 - **audio-analyzer** — transcribe/analyze audio (EN/PT-BR)
 - **pdf-reader** — PDFs → images+text, delegates to image-analyzer
 - **nix-auditor** — read-only NixConfig audit (dead code, redundancy, unused inputs)
+- **prisma** — evidence-first political research, fact-checking, and strategic analysis.
+  For substantive political discussions, load **politics** and delegate research to
+  Prisma using the native subagent tools; Lucky has requested this standing routing.
+  Pass the question and relevant context, retain final-answer ownership, and preserve
+  the distinction between verified facts, allegations, and supported inference.
 
 # Skill routing — load before answering
 
 - **jujutsu** — VCS with jj: commits, bookmarks, rebases, conflict recovery
 - **invest** — personal finance, stocks, FIIs, BTC, gold, AUVP/Sardinha
+- **politics** — political discussions, news verification, elections, legislation,
+  courts, public spending, statistics, rhetoric, and Prisma research routing
 - **linux** — desktop: darkman, GTK, Wayland, systemd, dconf traps
 - **nix** — NixOS rebuild, nix shell/run, SOPS, jj-sync builds
 - **nix-refactor** — flake cleanup: dead code, unused inputs, dedup
