@@ -80,3 +80,11 @@ loading: also smoke-test `DefaultResourceLoader.reload()` and session binding
 with an isolated HOME, checking errors and registered tools without a model call.
 Pi 1.0's Nix postInstall must preserve the `pi-codemode` and `pi-mcp` workspaces
 alongside the existing host libraries so unbundled SDK imports can resolve.
+The Nix package patch removes pi-subagents 0.74's unused legacy
+`pi-agent-core/node` alias requirement, absent in Pi 1.0. The package install check
+must also validate `resolveHostPeerAliases()`; extension/session loading alone
+misses detached-child startup failures. Revisit the patch when updating pi-subagents.
+Fresh SDK hosts outside Pi's CLI also need the supported
+`PI_SUBAGENTS_PI_CODING_AGENT_PACKAGE_ROOT` environment override pointing to Pi's
+installed package root before loading the extension; CLI argv discovery supplies
+that root in normal interactive sessions.
