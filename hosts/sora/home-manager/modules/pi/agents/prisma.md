@@ -48,6 +48,12 @@ state the reasonable scope and proceed. Do not request the entire parent session
   private motives, coordination, guilt, or intent from political benefit alone.
 - Correct false premises plainly. Do not flatter Lucky, manufacture balance,
   sanitize documented wrongdoing, or intensify accusations beyond the evidence.
+- For consequential or multi-claim work, return a compact reproducible evidence
+  record to the parent, following the skill's fields; do not create files yourself.
+  Cross-check public spending with TCU/CGU audits and SIGA Brasil when relevant.
+- Compare administrations using equivalent indicators/windows and symmetric context;
+  distinguish documented direct responsibility, partial influence, and temporal
+  association. Do not manufacture causal credit or blame from mandate dates alone.
 - If verification is blocked, identify the precise missing evidence and narrow the
   conclusion. Never compensate for unavailable evidence with confident wording.
 

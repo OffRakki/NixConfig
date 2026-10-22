@@ -141,6 +141,62 @@ actual bylines, agency credits, source chains, and original contributions.
   time period, and transfer chain; check counterpart state/municipal transparency
   portals where necessary. A supplier being paid does not by itself establish fraud.
 
+### TCU — external oversight and audit decisions
+
+- Portal: https://portal.tcu.gov.br/
+- Public integrated search: https://pesquisa.apps.tcu.gov.br/
+- Service/access guide:
+  https://portal.tcu.gov.br/carta-de-servicos/sessoes-jurisprudencia-e-normativos/consulta-acordaos-normas-e-jurisprudencia-pesquisa-integrada
+- Search the process number, acórdão number/year, audited entity, contract, or exact
+  expression; filter the appropriate document category. Fetch the linked decision
+  and report or use the browser for the JavaScript search interface. Public bases
+  are available without login; do not request restricted access.
+- Preserve process/decision IDs, deciding body, dates, scope, audited period, and
+  operative orders. Distinguish technical staff findings/proposals, interim orders,
+  the tribunal's decision, appeals, and later compliance/monitoring. An audit finding
+  or irregularity is not automatically a final criminal conviction; estimated loss,
+  potential savings, and money actually recovered are different measures.
+
+### CGU — internal oversight and public audit reports
+
+- Portal: https://www.gov.br/cgu/
+- Public e-Aud report discovery: https://eaud.cgu.gov.br/ ; navigate to the public
+  report search, not the authenticated work area. If the landing page changes, find
+  the report-search link from the official CGU portal.
+- Open audit metadata:
+  https://www.gov.br/cgu/pt-br/acesso-a-informacao/dados-abertos/arquivos/auditorias
+- The official catalogue describes monthly CSV releases of published audit-report
+  metadata. Follow its current download links rather than inventing an API. Locate
+  by audit/task ID, title, audited unit/superior body, location, publication date,
+  and service type; then open the actual report through public e-Aud links/search.
+- Metadata establishes that a report was published, not its substantive findings.
+  Read scope, sampling, findings, management responses, recommendations, and later
+  monitoring/corrections. An identified control weakness, suspected fraud, quantified
+  damage, administrative sanction, and criminal conviction are distinct conclusions.
+  Published reports are not a complete census of all irregularities or all audits.
+
+### SIGA Brasil — federal budget execution and amendments
+
+- Official entry: https://www12.senado.leg.br/orcamento/sigabrasil
+- Help/manuals: https://www12.senado.leg.br/orcamento/documentos/outros/siga-brasil
+- Follow the current entry-page links to **Painéis** or **Relatórios**. Use public
+  access; the specialist login is not needed to inspect the same underlying data.
+  The interfaces can change: use the browser and current manuals rather than
+  hardcoded SAP/BI session URLs or guessed API endpoints.
+- Preserve fiscal year, data refresh/reference date, budget universe, institution/
+  executing unit, function/program/action, amendment identifiers when relevant,
+  beneficiary/geography, filters, and export/calculation steps. Record values as
+  authorized, committed, liquidated, paid, or restos a pagar as appropriate; check
+  current-year execution versus payments of prior-year commitments and avoid
+  duplicate totals. Federal coverage does not replace state/municipal accounting.
+- SIGA integrates SIAFI and other planning/budget bases. Agreement with another
+  portal using the same upstream records is a consistency check, not independent
+  corroboration of the underlying transaction's legality or service delivery.
+- Attribute extracted data as requested by its portal: **SIGA Brasil (Senado
+  Federal | Consultoria de Orçamentos | Prodasen)**. For a suspected irregularity,
+  cross-reference transaction/contract IDs and period with TCU/CGU and other original
+  records; do not match cases solely by similar headlines, names, or amounts.
+
 ### IPEA
 
 - https://www.ipea.gov.br/ ; https://www.ipeadata.gov.br/
@@ -263,9 +319,11 @@ a particular factual claim is false; inspect the evidence.
 - **'Did unemployment/inflation/debt improve?'** IBGE/BCB/Tesouro series and metadata,
   matched definitions and period, transparent comparison, then causal research if
   the question attributes the change to a policy or administration.
-- **'Was public money diverted?'** Original expenditure/contract/audit/proceeding,
-  appropriate jurisdiction, independent investigation, procedural status, and the
-  subject's material response. Spending or an accusation alone is not proof of theft.
+- **'Was public money diverted?'** Trace budget execution through SIGA Brasil/
+  Transparência and audit findings through TCU/CGU, matching contract/process IDs,
+  entity, period, and accounting stage. Inspect original records, independent
+  investigation, procedural status, and the subject's material response. Spending,
+  an audit recommendation, or an accusation alone is not proof of theft.
 - **'Is this viral clip real?'** Original recording, context/date/location, independent
   provenance, and relevant fact-check. An authentic clip can still carry a false caption.
 - **'What is the political intention?'** Verified words/actions/timing/incentives,
