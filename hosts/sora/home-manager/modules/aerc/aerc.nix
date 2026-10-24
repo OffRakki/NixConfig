@@ -37,6 +37,17 @@
 in {
   home.persistence."/persist".directories = [".config/aerc"];
 
+  xdg.desktopEntries.aerc = {
+    name = "aerc";
+    genericName = "Mail Client";
+    comment = "Launches the aerc email client";
+    exec = "${lib.getExe pkgs.kitty} -e ${aerc} %u";
+    icon = "aerc";
+    terminal = false;
+    categories = ["Office" "Network" "Email" "ConsoleOnly"];
+    mimeType = ["x-scheme-handler/mailto"];
+  };
+
   programs.aerc = {
     enable = true;
     extraBinds = {
