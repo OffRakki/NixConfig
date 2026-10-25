@@ -51,6 +51,18 @@ Discovery runs on startup; after pulling a model in an existing session, use
 `/ollama-refresh`, then `/model`. Embedding models are excluded from chat.
 The endpoint is Nix-managed; do not use `/ollama-setup` to rewrite it.
 
+Ollama discovery reports a model's trained context maximum, not its allocated
+runtime window. `hosts/modules/ai.nix` sets `OLLAMA_CONTEXT_LENGTH`; `pi.nix`
+derives discovery's `globalModelDefaults.contextWindow` from that same value.
+Set `globalModelDefaults.compat.supportsDeveloperRole = false` so Pi sends
+instructions as `system`, not `developer`; this Ollama path ignores the latter.
+Set `maxTokensField = "max_tokens"` there too. Provider-level compatibility alone
+was insufficient with this discovery extension on Pi 1.0.
+Qwen3.5 9B has smaller per-model compaction budgets; cloud defaults stay intact.
+When adding local models, check their compaction budgets against this window.
+Verify `/api/ps` context allocation and test a long prompt for truncation; merely
+registering a model or testing a short greeting does not validate context.
+
 ## Tool routing
 
 | Need | Use |

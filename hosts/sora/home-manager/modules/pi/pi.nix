@@ -194,6 +194,10 @@ in {
         enabled = true;
         reserveTokens = 16384;
         keepRecentTokens = 20000;
+        modelOverrides."ollama/qwen3.5:9b" = {
+          reserveTokens = 8192;
+          keepRecentTokens = 8192;
+        };
       };
       retry = {
         enabled = true;
@@ -301,6 +305,16 @@ in {
     ".pi/agent/package-inventory.json".source = ./packages/inventory.json;
     ".pi/agent/pi-ollama.json".text = builtins.toJSON {
       baseUrl = "http://127.0.0.1:11434";
+      globalModelDefaults = {
+        # Discovery reports the trained maximum, not Ollama's allocated window.
+        contextWindow = builtins.fromJSON osConfig.virtualisation.oci-containers.containers.ollama.environment.OLLAMA_CONTEXT_LENGTH;
+        maxTokens = 8192;
+        compat = {
+          supportsDeveloperRole = false;
+          supportsReasoningEffort = false;
+          maxTokensField = "max_tokens";
+        };
+      };
     };
     ".pi/agent/skills".source = ./skills;
     ".pi/agent/prompts".source = ./prompts;
