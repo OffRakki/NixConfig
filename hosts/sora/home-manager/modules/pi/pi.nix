@@ -194,9 +194,15 @@ in {
         enabled = true;
         reserveTokens = 16384;
         keepRecentTokens = 20000;
-        modelOverrides."ollama/qwen3.5:9b" = {
-          reserveTokens = 8192;
-          keepRecentTokens = 8192;
+        modelOverrides = {
+          "ollama/qwen3.5:9b" = {
+            reserveTokens = 8192;
+            keepRecentTokens = 8192;
+          };
+          "ollama/qwen3.8:27b-q4_K_M" = {
+            reserveTokens = 8192;
+            keepRecentTokens = 8192;
+          };
         };
       };
       retry = {
