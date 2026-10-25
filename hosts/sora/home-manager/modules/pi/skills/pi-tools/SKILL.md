@@ -58,7 +58,9 @@ Set `globalModelDefaults.compat.supportsDeveloperRole = false` so Pi sends
 instructions as `system`, not `developer`; this Ollama path ignores the latter.
 Set `maxTokensField = "max_tokens"` there too. Provider-level compatibility alone
 was insufficient with this discovery extension on Pi 1.0.
-Qwen3.5 9B has smaller per-model compaction budgets; cloud defaults stay intact.
+Qwen3.5 9B and Qwen3.8 27B Q4_K_M have smaller per-model compaction budgets;
+cloud defaults stay intact. The 27B model needs CPU offloading on the RTX 5070;
+benchmark both prompt processing and generation before promising usable speed.
 When adding local models, check their compaction budgets against this window.
 Verify `/api/ps` context allocation and test a long prompt for truncation; merely
 registering a model or testing a short greeting does not validate context.
