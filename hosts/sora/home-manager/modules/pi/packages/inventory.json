@@ -10,6 +10,13 @@
       "capabilities": ["extension", "ui", "filesystem"]
     },
     {
+      "name": "@jamesjfoong/pi-ollama",
+      "version": "1.0.3",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "network", "filesystem", "ui"]
+    },
+    {
       "name": "@juanibiapina/pi-extension-settings",
       "version": "0.10.0",
       "source": "npm",

@@ -30,6 +30,7 @@ Runtime files under `~/.pi/agent/` are outputs, not sources; never edit them.
 | `@juanibiapina/pi-extension-settings` | shared extension settings UI |
 | `@juanibiapina/pi-powerbar` | persistent powerline status UI and usage segments |
 | `@juicesharp/rpiv-ask-user-question` | `ask_user_question` |
+| `@jamesjfoong/pi-ollama` | discovers downloaded Ollama chat models; `/ollama-refresh` refreshes them |
 | `@wishx127/pi-tokyo-night` | Tokyo Night themes, rain panel, and status UI |
 | `pi-agent-browser-native` | `agent_browser`, `agent_browser_code`, `agent_browser_tools`, and advanced browser tools |
 | `pi-codex-image-gen` | `codex_generate_image` and `imagegen` |
@@ -42,6 +43,13 @@ Runtime files under `~/.pi/agent/` are outputs, not sources; never edit them.
 
 `lean-ctx` is installed as a companion CLI package on `PATH`; it is not an
 active Pi extension and does not provide `ctx_*` tools in this configuration.
+
+## Local Ollama models
+
+`pi.nix` declares `pi-ollama.json` and the `ollama/*` model scope.
+Discovery runs on startup; after pulling a model in an existing session, use
+`/ollama-refresh`, then `/model`. Embedding models are excluded from chat.
+The endpoint is Nix-managed; do not use `/ollama-setup` to rewrite it.
 
 ## Tool routing
 
