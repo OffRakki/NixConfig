@@ -186,6 +186,7 @@ in {
         "gpt-5.6*"
         "deepseek*"
         "anthropic/*"
+        "ollama/*"
       ];
       quietStartup = true;
       collapseChangelog = true;
@@ -298,6 +299,9 @@ in {
   };
   home.file = {
     ".pi/agent/package-inventory.json".source = ./packages/inventory.json;
+    ".pi/agent/pi-ollama.json".text = builtins.toJSON {
+      baseUrl = "http://127.0.0.1:11434";
+    };
     ".pi/agent/skills".source = ./skills;
     ".pi/agent/prompts".source = ./prompts;
     ".pi/agent/themes".source = ./themes;
