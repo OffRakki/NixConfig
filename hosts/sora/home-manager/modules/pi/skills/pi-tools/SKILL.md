@@ -27,6 +27,7 @@ Runtime files under `~/.pi/agent/` are outputs, not sources; never edit them.
 | Package | Provides |
 |---|---|
 | `@apat183/pi-buddy` | animated Pi header, state widget, and spinner |
+| `@groeponline/pi-agent-orchestrator` | `Agent`, `get_subagent_result`, `steer_subagent`, `/agents`, scheduling, and orchestra workflows |
 | `@juanibiapina/pi-extension-settings` | shared extension settings UI |
 | `@juanibiapina/pi-powerbar` | persistent powerline status UI and usage segments |
 | `@juicesharp/rpiv-ask-user-question` | `ask_user_question` |
@@ -40,6 +41,12 @@ Runtime files under `~/.pi/agent/` are outputs, not sources; never edit them.
 | `pi-subagents` | `subagents_enable`, `subagent`, `bg_wait`, and packaged agents |
 | `pi-web-access` | `web_enable`, `web_search`, `source_check`, `fetch_content`, and `get_search_content` |
 | `rinco-pi-sakura` | Sakura Macaron theme and animated header |
+
+Agent Orchestrator complements `pi-subagents`; existing delegation routing remains unchanged.
+Use its `/agents` dashboard or `/orchestra-audit` and `/orchestra-plan` workflows
+when explicitly requested. Its Git-worktree isolation is not suitable for this
+jj-managed workspace; do not enable it here. Multi-agent dispatch still requires
+authorization, regardless of which extension provides it.
 
 `lean-ctx` is installed as a companion CLI package on `PATH`; it is not an
 active Pi extension and does not provide `ctx_*` tools in this configuration.

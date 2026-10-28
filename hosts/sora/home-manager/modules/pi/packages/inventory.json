@@ -10,6 +10,13 @@
       "capabilities": ["extension", "ui", "filesystem"]
     },
     {
+      "name": "@groeponline/pi-agent-orchestrator",
+      "version": "0.19.1",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "tools", "skills", "prompts", "ui", "sessions", "session-control", "filesystem", "process", "scheduling"]
+    },
+    {
       "name": "@jamesjfoong/pi-ollama",
       "version": "1.0.3",
       "source": "npm",
