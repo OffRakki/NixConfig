@@ -1,80 +1,100 @@
 # Workflow: Start Work in an Isolated Workspace
 
-For parallel development — e.g. multiple agents working on different features simultaneously, or running long tests in one workspace while iterating in another. Each workspace has its own `@` so they don't step on each other.
+Use one native jj workspace per worker for parallel development or tests. Files and `@` are isolated; history, bookmarks, and the operation log are shared. Start with the [canonical protocol](../SKILL.md#native-workspaces-for-parallel-agents); this walkthrough expands it without adding Git wiring or push requirements.
 
-## 1. Create the workspace
+## 1. Inspect and select the base
 
-Pick a feature name (or derive one from the task description). Create a workspace under `.worktrees/` in the main repo:
-
-```bash
-MAIN_REPO=$(jj root)
-WORKSPACE_PATH="$MAIN_REPO/.worktrees/<feature-name>"
-mkdir -p "$MAIN_REPO/.worktrees"
-jj workspace add "$WORKSPACE_PATH" --name <feature-name>
-```
-
-## 2. Wire `$GIT_DIR` (colocated repos only)
-
-`jj workspace add` does *not* create a `.git/` directory in the new workspace, so tools like `gh`, `git`, and various integrations will fail there. Add a `.envrc` that points them at the main repo:
+Run the full required preflight in the invoking workspace:
 
 ```bash
-if [[ -d "$MAIN_REPO/.git" ]]; then
-  printf 'export GIT_DIR="%s/.git"\nexport GIT_WORK_TREE="%s"\n' \
-    "$MAIN_REPO" "$WORKSPACE_PATH" > "$WORKSPACE_PATH/.envrc"
-  direnv allow "$WORKSPACE_PATH" 2>/dev/null \
-    || echo "Run 'source .envrc' in $WORKSPACE_PATH for gh CLI support."
-fi
+jj root
+jj st
+jj log -r '@ | @-' --no-graph
+jj diff
+jj workspace list
+jj show <base-change-id>
+jj log -r '<base-change-id> | ancestors(<base-change-id>, 3)'
 ```
 
-If `direnv` isn't installed, the user will need to `source .envrc` manually whenever they enter the workspace.
+Choose an inspected, unambiguous stable base change ID that includes exactly the intended prerequisites. Preserve unrelated existing work; do not assume `main` or another worker's bookmark is the right base.
 
-## 3. Enter the workspace
+## 2. Create at an unused external path
+
+Pick a unique workspace name and an unused absolute path **outside** the source tree. Check both `jj workspace list` and the filesystem first; do not reuse or overwrite a directory.
 
 ```bash
-cd "$WORKSPACE_PATH"
-source .envrc       # if direnv is not auto-loading
+# Replace placeholders after inspection; this example path must be unused.
+test ! -e /tmp/project-worker-unique && test ! -L /tmp/project-worker-unique
+# Proceed only if both tests succeeded and the workspace name is unused.
+jj workspace add /tmp/project-worker-unique \
+  --name worker-unique --revision <base-change-id>
+cd /tmp/project-worker-unique
 ```
 
-## 4. Create a bookmark for the work
+`--revision <base-change-id>` creates a **new child** of that base, as with `jj new <base-change-id>`; it does not check out the base itself. Without `--revision`, the new child uses the invoking `@`'s parent(s), not the invoking `@`. No `.envrc`, Git worktree, or `.git/` wiring is required for native jj work.
 
-Branch from `main` (or wherever the user wants) and create the bookmark *before* writing code, so the bookmark tracks the change ID:
+## 3. Repeat preflight inside the worker workspace
+
+The coordinator's inspection does not replace the worker's own preflight:
 
 ```bash
-jj new main -m "feat: <description>"
-jj bookmark create <feature-name> -r @
+jj root
+jj st
+jj log -r '@ | @-' --no-graph
+jj diff
+# Only after classifying @ as safe for this task:
+jj describe -m "Added <task scope>"
+jj st
+jj log -r '@ | @-' --no-graph
+jj diff
 ```
 
-Confirm to the user:
+Give the worker its exact path, workspace name, base, scope, and no-integration boundary. All worker edits and commands stay in that workspace. Bookmarks are optional shared pointers, **not workspace-local**; do not create or move them without an actual need and approval. No mandatory `main`, push, or PR step is implied.
 
-> Working on bookmark **<feature-name>** (change **<change-id>**) in workspace **<workspace-path>**. File edits auto-amend into this change. When done, run the commit/push/PR workflow to ship.
+## 4. Work, check, and hand off the completed change
 
-## 5. Work
-
-Edit files freely. They are automatically amended into `@` whenever a jj command runs. Use the workflows in this skill (refine with `jj squash`/`jj absorb`/`jj describe`) the same way you would in the main workspace.
-
-## 6. When done — clean up
-
-After shipping (see `references/workflow-commit-push-pr.md`):
+Use the [blessed describe/check/new workflow](../SKILL.md#blessed-coding-workflow-describe-first-close-with-new): edit, check, review the full diff, refine the description with `-m`, verify, then `jj new`. Verify the new `@` is empty and undescribed.
 
 ```bash
-cd "$MAIN_REPO"
-jj workspace forget <feature-name>
-rm -rf "$WORKSPACE_PATH"
+jj st
+jj log -r '@ | @-' --no-graph
+jj show @-
+jj log -r @- --no-graph -T 'change_id ++ " " ++ commit_id ++ "\n"'
 ```
 
-`jj workspace forget` removes the workspace from the repo's records but does **not** delete the directory. You delete it separately. **Never run `jj workspace forget` with no arguments** — that would forget the *default* workspace.
+Hand off the completed **`@-` stable change ID**, commit ID, exact changed files, check results, and recovery workspace path. The worker's empty `@` is not the deliverable. Leave the workspace available for review unless cleanup is explicitly approved.
 
-## Troubleshooting
+## 5. Coordinator-only review and approved integration
 
-- **`gh` says "not a git repository"** — `.envrc` isn't loaded. Run `direnv allow` and `cd` back in, or `source .envrc` manually.
-- **"Working copy is stale"** — another workspace rewrote the working-copy commit. Run `jj workspace update-stale` in the affected workspace.
-- **Cannot `cd` into the workspace** — verify `jj workspace list` shows it; if not, the `jj workspace add` failed.
+Inspect from the coordinator workspace without switching the worker's `@`:
 
-## Multi-Agent Discipline
+```bash
+jj workspace list
+jj log -r 'working_copies()'
+jj log -r 'worker-unique@ | worker-unique@-' --no-graph
+jj show <completed-change-id>
+```
 
-If multiple agents are sharing a repo:
+Only the coordinator integrates after approval specifies the operation and exact source/destination change IDs. Follow the [safe mutation pattern](../SKILL.md#safe-mutation-pattern): inspect both changes' full diffs, graph relationships, mutability, bookmarks, and conflicts; state the exact move, use explicit revisions and non-interactive flags, then verify again. Do not incidentally rewrite another worker's `@` or move shared bookmarks. This workflow grants no push or ref-change permission.
 
-- **One bookmark per agent.** Don't share bookmarks across agents.
-- **One workspace per agent.** Filesystem isolation prevents agents from clobbering each other's working copies.
-- **Branch from `main`, not from another agent's bookmark**, unless you really mean to build on top.
-- **Push only your own bookmark.** Use `jj git push -b <my-bookmark>`, not `jj git push --all`.
+## 6. Retain safely before explicit cleanup
+
+Before approved cleanup, run `jj st` and `jj diff` **inside the target workspace** to snapshot and inspect it. Preserve completed change/commit IDs and separately save any ignored/untracked artifacts; snapshots do not guarantee those artifacts are recorded. Confirm integration or a deliberate retention plan before forgetting.
+
+Then, from a retained coordinator workspace, use the exact approved name:
+
+```bash
+jj workspace forget worker-unique
+jj workspace list
+```
+
+Forget removes the workspace record but **keeps the files**. Never automatically delete the directory. Bare `jj workspace forget` targets the **current** workspace, including `default` if current; always supply the intended name.
+
+## Troubleshooting and the interactive wrapper
+
+- **Stale working copy:** run `jj workspace update-stale` in the affected workspace, then repeat full preflight and inspect divergence before continuing.
+- **Unexpected shared rewrite:** inspect `jj op log` and historical state first. `jj op restore` affects shared repository state and can disrupt every workspace; it is not a worker-local reset.
+- **Missing workspace/path:** inspect `jj workspace list` and the chosen path; do not blindly retry creation or delete a directory.
+- **Tools expecting `.git/`:** native jj needs no Git wiring. Separate integration requires explicit approval, not a raw Git workaround.
+
+`piw` is an optional **user-interactive** wrapper, not this retention workflow. It snapshots the caller, creates a workspace with `--revision "$invoking_change"`, offers interactive integration into the invoking change, then forgets **and guardedly deletes** the temporary workspace. Agents must never recursively invoke `piw`; use the assigned native workspace directly.

@@ -119,6 +119,66 @@ jj show @-
 - End the task with the completed, described change at `@-` and a new empty, undescribed `@` for future edits.
 - If the user explicitly requests `jj commit`, use `jj commit -m ...` instead of the separate `jj describe` and final `jj new`. Do not move bookmarks without inspecting them.
 
+## Native workspaces for parallel agents
+
+Use one native jj workspace per worker, never Git worktrees or a shared checkout.
+Files and `@` are isolated; history, bookmarks, and the operation log are **shared**. Bookmarks are optional shared pointers, not workspace-local branches.
+
+### Coordinator: inspect the base, then create
+
+Run the full required preflight in the invoking workspace. Inspect `jj show <base>`
+and its graph before choosing an explicit stable base change ID. Pick an unused
+absolute path **outside** the source tree and a unique workspace name; check
+`jj workspace list` and the filesystem before creating it.
+
+```bash
+jj workspace add /tmp/project-worker-unique --name worker-unique --revision <base>
+cd /tmp/project-worker-unique
+# Repeat full preflight here before describing; classify @ as safe for this task.
+jj root
+jj st
+jj log -r '@ | @-' --no-graph
+jj diff
+jj describe -m "Added <task scope>"
+```
+
+`--revision <base>` creates a **new child** of that base, not a checkout of it.
+Omitting it branches off the invoking `@`'s parent(s), not the invoking `@`.
+After describing, verify status, graph, and diff as in the standard protocol.
+Give each worker its exact path, name, base, scope, and no-integration boundary.
+
+### Worker completion and coordinator integration
+
+Use the blessed describe/check/new workflow inside the assigned workspace only.
+Hand off the completed **`@-` change ID**, commit ID, checks, and recovery path;
+the worker's new empty `@` is not the deliverable. Cross-workspace inspection:
+
+```bash
+jj log -r 'working_copies()'
+jj log -r 'worker-unique@ | worker-unique@-' --no-graph
+jj show <completed-change-id>
+```
+
+Only the coordinator integrates, after approval naming exact source/destination
+change IDs and the operation. Follow the safe mutation pattern below, inspecting
+both diffs, graph, bookmarks, and conflicts; never rewrite another worker's `@`
+or move shared bookmarks incidentally. Reinspect after every approved mutation.
+
+### Recovery, retention, and the interactive wrapper
+
+If stale, run `jj workspace update-stale` in the affected workspace, then repeat
+preflight and inspect divergence. `jj op restore` changes shared repository state
+and can affect **every** workspace; it is not a worker-local reset.
+Before an approved `jj workspace forget <explicit-name>`, snapshot with `jj st`
+and inspect `jj diff` **in that workspace**; record completed IDs and preserve
+ignored/untracked artifacts separately. Bare `forget` targets the **current**
+workspace (including `default` if current). Forget keeps files; never auto-delete.
+
+`piw` is an optional **user-interactive** wrapper: it snapshots the caller,
+branches with `--revision "$invoking_change"`, offers interactive integration,
+then forgets **and guardedly deletes** its temporary workspace. Agents must never
+recursively invoke `piw`. See [details](references/workspaces.md) and [workflow](references/workflow-new-workspace.md).
+
 ## Stack cleanup recommendations
 
 Before the final response, inspect the nearby mutable history. If adjacent commits would be clearer as one logical review unit, suggest a cleanup plan; do not perform it without approval.

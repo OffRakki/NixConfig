@@ -15,50 +15,35 @@ Consequences:
 
 ## Conflicts in the Working Copy
 
-When you check out a conflicted commit, jj writes the conflicts into the working copy as **conflict markers**. When you next run a jj command, jj re-parses the markers and reconstructs the conflict state. So you can resolve a conflict simply by editing the file to remove the markers — no special "mark resolved" command. See `references/conflicts.md` for marker format.
+When you check out a conflicted commit, jj writes the conflicts into the working copy as **conflict markers**. When you next run a jj command, jj re-parses the markers and reconstructs the conflict state. So you can resolve a conflict simply by editing the file to remove the markers — no special "mark resolved" command. See [conflicts](conflicts.md) for marker format.
 
 ## Workspaces — Multiple Working Copies, One Repo
 
 A **workspace** is a working copy + an associated `.jj/` directory. A single repo can have many workspaces, each with its own `@`. This is jj's equivalent of `git worktree`.
 
-Useful for: running long tests in one workspace while continuing to develop in another; one workspace per AI agent; isolating experimental rebases.
+Useful for: running long tests in one workspace while continuing to develop in another; one workspace per AI agent. Files and `@` are isolated, but history, bookmarks, and the operation log are shared: a rewrite or operation restore can affect other workspaces. Bookmarks are optional shared pointers, never workspace-local.
+
+Follow the [canonical quickstart](../SKILL.md#native-workspaces-for-parallel-agents) for preflight and creation, or the [detailed workflow](workflow-new-workspace.md). Use an inspected explicit base, an unused absolute external path, and a unique name:
 
 ```bash
-jj workspace add <path> --name <name>    # create a new workspace
+jj workspace add /tmp/project-worker-unique --name worker-unique --revision <base>
 jj workspace list
-jj workspace root                        # path of the current workspace
-jj workspace forget <name>               # remove from repo (delete files separately)
+jj workspace root
+jj log -r 'worker-unique@ | worker-unique@-' --no-graph
+jj log -r 'working_copies()'
 ```
 
-The new workspace's `.jj/` is linked to the main repo's commit and operation storage. Each workspace has its own `@` referenced as `<name>@` in revsets.
+The new workspace's `.jj/` is linked to the shared commit and operation storage. Each workspace has its own `@` referenced as `<name>@` in revsets. `--revision <base>` creates a new child of the base; omitting it uses the invoking `@`'s parent(s), not `@` itself. Repeat full preflight inside the new workspace before editing.
 
 ### Forgetting and re-adding
 
-`jj workspace forget` removes the workspace from the repo's records but does **not** delete the files on disk. Delete the directory separately.
+Before an approved `jj workspace forget <explicit-name>`, run `jj st` to snapshot and `jj diff` to inspect **inside the target workspace**. Record completed change/commit IDs (normally `@-` after closing with `jj new`) and separately preserve ignored/untracked artifacts. Forget removes the workspace from the repo's records but does **not** delete files. Never automatically delete its directory.
 
-**Don't run `jj workspace forget` with no arguments** — that forgets the *default* workspace.
+**Don't run `jj workspace forget` with no arguments** — that forgets the *current* workspace, including `default` if it is current.
 
 ### Workspaces in colocated repos
 
-`jj workspace add` creates a new workspace with its own `.jj/` but **no `.git/`**. Tools that expect `.git/` (like `gh`) will not work in the new workspace unless you wire them up.
-
-The simplest fix is a `.envrc` (with [direnv](https://direnv.net/)) that points `$GIT_DIR` and `$GIT_WORK_TREE` at the main repo:
-
-```bash
-MAIN_REPO=$(jj root)
-WORKSPACE_PATH="$MAIN_REPO/.worktrees/my-feature"
-mkdir -p "$MAIN_REPO/.worktrees"
-jj workspace add "$WORKSPACE_PATH" --name my-feature
-
-if [[ -d "$MAIN_REPO/.git" ]]; then
-  printf 'export GIT_DIR="%s/.git"\nexport GIT_WORK_TREE="%s"\n' \
-    "$MAIN_REPO" "$WORKSPACE_PATH" > "$WORKSPACE_PATH/.envrc"
-  direnv allow "$WORKSPACE_PATH" 2>/dev/null \
-    || echo "Run 'source .envrc' in $WORKSPACE_PATH for gh CLI support."
-fi
-```
-
-See `references/workflow-new-workspace.md` for the full step-by-step.
+`jj workspace add` creates its own `.jj/` but no `.git/`. Native jj work needs no Git wiring or `.envrc`; use the [canonical quickstart](../SKILL.md#native-workspaces-for-parallel-agents), not nested `.worktrees` recipes. Tools requiring `.git/` need separate, explicitly approved integration; do not run raw Git as a workaround.
 
 ## Stale Working Copy
 
@@ -76,17 +61,15 @@ jj workspace update-stale
 
 …re-syncs the working copy to the current `@`. If the operation that ran in step 3 has been *lost* (e.g. by `jj op abandon`), `update-stale` creates a recovery commit containing the working copy contents parented to the current `@`, so you don't lose anything.
 
-A common cause: workspace A's `@` was rewritten by `jj edit` or `jj squash` in workspace B. Just run `jj workspace update-stale` in A.
+A common cause: workspace A's `@` was rewritten by `jj edit` or `jj squash` in workspace B. Run `jj workspace update-stale` in A, then repeat full preflight and inspect divergence. The operation log is shared: `jj op restore` can affect every workspace, not just the caller.
 
 ## Colocated Repos
 
 A repo where `.jj/` and `.git/` live side-by-side. Both jj and git tools can read it.
 
-- **Use `jj` for mutations** (commit, rebase, push, etc.). This keeps the operation log consistent.
-- **Use `git` for read-only operations** (`git log`, `git diff`) or for things jj has no equivalent for: `git submodule`, `git lfs`, `git bisect` (jj has automated bisect but not interactive), various integrations.
-- After running git commands, the next `jj` command will detect git's changes and import them automatically. You usually don't need `jj git import` explicitly.
-
-If something looks out of sync between the two views, `jj git import` (pull git refs into jj) and `jj git export` (push jj state into git refs) bring them back into agreement.
+- **Use `jj` exclusively for VCS operations**, including inspection. Do not run raw Git even in colocated repos.
+- Git interoperability does not authorize ref changes, pushing, or recovery outside the skill's approval gates.
+- If views appear out of sync, inspect with native jj commands and integrated help before any approved mutation; do not automatically import/export refs.
 
 ## Tracked vs Auto-tracked
 
