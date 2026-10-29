@@ -100,6 +100,13 @@ jj st
 jj diff
 jj log -r '@ | @-' --no-graph
 
+# Refine the description to match the finished change; add context when useful.
+# Bash's $'...' quoting produces real newlines, not literal \n characters.
+jj describe -m $'<final description>\n\n<optional context>'
+jj st
+jj log -r '@ | @-' --no-graph
+jj show @
+
 # Only after checks and review pass, close it by moving to a clean child
 jj new
 jj st
@@ -157,6 +164,75 @@ jj abandon <change-id>
 ```
 
 Do not use a bare `jj squash` when both descriptions may be non-empty; it can request message editing or produce the wrong description. Do not use a destination bookmark as shorthand until `jj log` proves which commit it resolves to.
+
+## Splitting and hunk-level work
+
+For whole-file splits, use native `jj split path/to/file -m "<first description>"`.
+When available, prefer `jj-hunk-tool` for non-interactive hunk selection: inspect
+with `jj-hunk-tool hunks -r <revision>`, then run
+`jj-hunk-tool split <hunk-id>... -r <revision> -m "<first description>"`.
+It supports line ranges such as `<hunk-id>:1-3,7-9`. Check its installed help
+before unfamiliar operations; do not assume this optional tool is installed.
+
+`jj-hunk-tool` also provides `squash` to move selected hunks into another
+revision, `restore` to undo them, `patch` to print them, and `absorb` to route
+them into ancestors that last modified the overlapping lines. For plain fixups,
+native `jj absorb` is often enough: inspect the source and candidate ancestors,
+then use `jj absorb --from <source> --into '<destination-revset>'`. Unroutable
+changes stay in the source revision; an empty, undescribed source may be
+abandoned. Verify status, graph, affected diffs, bookmarks, and conflicts after
+every rewrite. These tools do not bypass the approval rules for stack cleanup.
+
+### Splitting with a constructed intermediate state
+
+Hunk selection partitions existing changed lines. If the split needs content
+absent from both the parent and final states—such as overlapping same-line edits
+or a transitional implementation—construct that intermediate state and recover
+the combined state from the change's evolution log. Use only for an inspected,
+mutable change dedicated to A and B; split unrelated work out first.
+
+```bash
+# Snapshot the original combined state before editing it.
+jj st
+jj show @
+
+# Edit into the intermediate state containing only change A; check it.
+jj diff
+jj describe -m "<change A description>"
+jj st
+jj log -r '@ | @-' --no-graph
+jj show @
+jj new
+jj st
+jj log -r '@ | @-' --no-graph
+jj show @-
+
+# Inspect the older incarnation containing both A and B.
+jj evolog -r @-
+jj show <combined-state-commit-id>
+
+# Restore only the affected path(s); this reapplies B above A.
+jj restore --from <combined-state-commit-id> path/to/file
+jj st
+jj log -r '@ | @-' --no-graph
+jj diff
+
+# Run checks for B, review, and close it using the blessed workflow.
+jj describe -m "<change B description>"
+jj st
+jj log -r '@ | @-' --no-graph
+jj show @
+jj new
+jj st
+jj log -r 'ancestors(@, 4)'
+jj show @-
+```
+
+Use the hexadecimal commit ID from `jj evolog` here: historical incarnations
+share the same change ID. Confirm with `jj show` that the selected incarnation
+contains the intended combined state before restoring. Restore every affected
+path needed for B, but not unrelated paths. Check the intermediate A state and
+the final A+B state, and verify bookmarks and conflicts as usual.
 
 ## Push gate
 
