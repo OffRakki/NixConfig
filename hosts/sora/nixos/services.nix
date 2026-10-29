@@ -1,5 +1,14 @@
 {pkgs, ...}: {
   services = {
+    n8n = {
+      enable = true;
+      environment = {
+        N8N_LISTEN_ADDRESS = "127.0.0.1";
+        N8N_HOST = "localhost";
+        N8N_PROTOCOL = "http";
+        N8N_SECURE_COOKIE = false;
+      };
+    };
     mpd = {
       enable = true;
       user = "rakki";
