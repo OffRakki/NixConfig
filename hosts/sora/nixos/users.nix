@@ -11,6 +11,9 @@
     users = {
       rakki = {
         isNormalUser = true;
+        openssh.authorizedKeys.keys = [
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFjf4oKMc8ZFzSAJXO5YYOQM9alEUxph80pA67ePwiOA rakki@sora"
+        ];
         hashedPasswordFile = config.sops.secrets.soraPass.path;
         extraGroups = [
           "minecraft"
