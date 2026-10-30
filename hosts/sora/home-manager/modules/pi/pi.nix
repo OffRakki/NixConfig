@@ -2,6 +2,7 @@
   pkgs,
   osConfig,
   inputs,
+  lib,
   ...
 }: let
   piPackage = pkgs.pi-coding-agent.overrideAttrs (finalAttrs: _: {
@@ -44,6 +45,11 @@
     '';
   });
   piPackages = import ./packages {inherit piPackage pkgs;};
+  pi-mail = pkgs.writeShellApplication {
+    name = "pi-mail";
+    runtimeInputs = [piPackage pkgs.libnotify];
+    text = lib.replaceStrings ["@notifyExtension@"] ["${./extensions/notify.ts}"] (builtins.readFile ./scripts/pi-mail.sh);
+  };
   piw = pkgs.writeShellApplication {
     name = "piw";
     runtimeInputs = [
@@ -63,6 +69,7 @@ in {
     packages = [
       inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.lean-ctx
       piw
+      pi-mail
     ];
     persistence."/persist".directories = [
       ".pi"
@@ -167,6 +174,7 @@ in {
     # jujutsu backs automatic working-copy snapshots from jj-snapshot.ts.
     extraPackages = with pkgs; [
       nodejs
+      libnotify
       jujutsu
       agent-browser
       chromium
