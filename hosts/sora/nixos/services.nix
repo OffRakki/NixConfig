@@ -1,4 +1,20 @@
-{pkgs, ...}: {
+{pkgs, ...}: let
+  mailbox = "/home/rakki/sync/geral/Ciel/Mailbox";
+in {
+  users.groups.n8n-mailbox.members = ["rakki"];
+  systemd = {
+    tmpfiles.rules = [
+      "d ${mailbox} 2770 rakki n8n-mailbox - -"
+      # Allow traversal, but not listing, of rakki's private home directory.
+      "a+ /home/rakki - - - - g:n8n-mailbox:--x"
+    ];
+    services.n8n.serviceConfig = {
+      SupplementaryGroups = ["n8n-mailbox"];
+      ReadWritePaths = [mailbox];
+      UMask = "0007";
+    };
+  };
+
   services = {
     n8n = {
       enable = true;
@@ -7,6 +23,7 @@
         N8N_HOST = "localhost";
         N8N_PROTOCOL = "http";
         N8N_SECURE_COOKIE = false;
+        N8N_RESTRICT_FILE_ACCESS_TO = mailbox;
       };
     };
     mpd = {
