@@ -46,7 +46,7 @@ in {
           general = {
             resize_on_border = true,
             allow_tearing = false,
-            layout = "monocle",
+            layout = "master",
             border_size = 2,
             gaps_in = 8, gaps_out = 12,
             col = { active_border = "rgba(BFA16Eff)", inactive_border = "rgba(BFA16E44)" },
@@ -463,9 +463,9 @@ in {
         })
         ---------------------------------------------------------------
         ------------------------------ KEYBINDS ---------------------------------
-        -- Cycle all built-in layouts, starting from the configured scrolling layout.
+        -- Cycle all built-in layouts, starting from the configured master layout.
         local layouts = { "scrolling", "dwindle", "master", "monocle" }
-        local layoutIndex = 1
+        local layoutIndex = 3
         hl.bind("${mod} + F1", function()
           layoutIndex = layoutIndex % #layouts + 1
           hl.config({ general = { layout = layouts[layoutIndex] } })
