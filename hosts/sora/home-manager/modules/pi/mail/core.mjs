@@ -1,0 +1,250 @@
+import { createHash, randomUUID } from 'node:crypto';
+import { constants, closeSync, lstatSync, mkdirSync, openSync, realpathSync } from 'node:fs';
+import { isAbsolute, join } from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
+
+export const LIMIT = Object.freeze({ input: 131072, body: 65536, reply: 16384, attachments: 8, attachmentBytes: 10485760 });
+export function canonical(value) {
+  if (value === null || typeof value === 'boolean' || typeof value === 'string') return JSON.stringify(value);
+  if (typeof value === 'number' && Number.isFinite(value)) return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
+  if (value && Object.getPrototypeOf(value) === Object.prototype) {
+    if (Object.keys(value).some(k => ['__proto__', 'constructor', 'prototype'].includes(k))) throw new Error('invalid_key');
+    return `{${Object.keys(value).sort().map(k => `${JSON.stringify(k)}:${canonical(value[k])}`).join(',')}}`;
+  }
+  throw new Error('invalid_json');
+}
+export const digest = value => createHash('sha256').update(canonical(value)).digest('hex');
+export async function bounded(promise, signal) {
+  if (!signal) return promise;
+  signal.throwIfAborted();
+  let abort;
+  const stopped = new Promise((_, reject) => { abort = () => reject(new Error('aborted')); signal.addEventListener('abort', abort, { once: true }); });
+  try { return await Promise.race([promise, stopped]); }
+  finally { signal.removeEventListener('abort', abort); }
+}
+export function closed(value, required, optional = []) {
+  if (!value || Object.getPrototypeOf(value) !== Object.prototype || required.some(k => !Object.hasOwn(value, k)) ||
+      Object.keys(value).some(k => ![...required, ...optional].includes(k))) throw new Error('invalid_schema');
+  canonical(value);
+  return value;
+}
+export function text(value, max, min = 0) {
+  if (typeof value !== 'string' || value.length < min || Buffer.byteLength(value) > max || value.includes('\0')) throw new Error('invalid_text');
+  return value;
+}
+export function address(value) {
+  text(value, 254, 3);
+  if (!/^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?\.[A-Za-z]{2,}$/.test(value)) throw new Error('invalid_address');
+  return value.toLowerCase();
+}
+export function decodeEnvelope(encoded) {
+  text(encoded, LIMIT.input * 2, 4);
+  if (!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(encoded)) throw new Error('invalid_base64');
+  const bytes = Buffer.from(encoded, 'base64');
+  if (bytes.length > LIMIT.input || bytes.toString('base64') !== encoded) throw new Error('invalid_base64');
+  const json = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+  const value = JSON.parse(json);
+  // Canonical transport rejects duplicate keys, extraneous JSON, whitespace and ambiguous representations.
+  if (canonical(value) !== json) throw new Error('noncanonical_json');
+  return value;
+}
+export const encodeEnvelope = value => Buffer.from(canonical(value)).toString('base64');
+export function classify(raw) {
+  const value = closed(JSON.parse(text(raw, 1024, 1)), ['kind']);
+  if (!['reply', 'personal', 'reject'].includes(value.kind)) throw new Error('invalid_classification');
+  return value.kind;
+}
+
+export function validateConfig(config) {
+  closed(config, ['mailbox', 'selfAddress', 'provider', 'scope', 'cwd', 'contextPaths']);
+  text(config.mailbox, 128, 1); address(config.selfAddress);
+  for (const key of ['provider', 'scope']) text(config[key], 200, 1);
+  if (!isAbsolute(config.cwd) || !Array.isArray(config.contextPaths) || config.contextPaths.length > 8 || config.contextPaths.some(path => typeof path !== 'string' || !isAbsolute(path))) throw new Error('invalid_host_config');
+}
+export function formatReply(request, draft) {
+  closed(draft, ['subject', 'body']); text(draft.subject, 512, 1); text(draft.body, LIMIT.reply, 1);
+  if (/[\r\n]/.test(draft.subject)) throw new Error('invalid_reply_subject');
+  const original = request.input;
+  const subject = /^re:/i.test(original.subject) ? original.subject : `Re: ${original.subject}`;
+  text(subject, 512, 1);
+  const quote = original.body.slice(0, 2048).replace(/\r\n?/g, '\n').split('\n').map(line => `> ${line}`).join('\n');
+  const body = `${draft.body}\n\n--- Original message from ${original.from} ---\n${quote}${original.body.length > 2048 ? '\n> [original truncated]' : ''}`;
+  text(body, LIMIT.reply, 1);
+  return { to: original.from, subject, body };
+}
+export function normalize(raw, config) {
+  closed(raw, ['version', 'messageId', 'from', 'subject', 'body', 'autoSubmitted', 'precedence', 'attachments']);
+  if (raw.version !== 1) throw new Error('invalid_version');
+  text(config.mailbox, 128, 1);
+  const self = address(config.selfAddress);
+  const from = address(raw.from);
+  text(raw.subject, 512); text(raw.body, LIMIT.body);
+  if (/[\r\n]/.test(raw.subject)) throw new Error('invalid_subject');
+  if (raw.messageId !== null && !/^<[^<>\s\x00-\x1f\x7f]{1,250}@[^<>\s\x00-\x1f\x7f]{1,250}>$/.test(raw.messageId)) throw new Error('invalid_message_id');
+  text(raw.autoSubmitted, 100); text(raw.precedence, 100);
+  if (!Array.isArray(raw.attachments) || raw.attachments.length > LIMIT.attachments) throw new Error('invalid_attachments');
+  let total = 0;
+  for (const item of raw.attachments) {
+    closed(item, ['name', 'size', 'mime']);
+    text(item.name, 255, 1); text(item.mime, 128, 1);
+    if (!Number.isSafeInteger(item.size) || item.size < 0) throw new Error('invalid_attachment_size');
+    total += item.size;
+  }
+  if (total > LIMIT.attachmentBytes) throw new Error('attachments_too_large');
+  const input = { ...raw, from };
+  // No reliable IMAP UID is assumed. Content identity is a conservative dedup fallback, not sender authentication.
+  // Even a reused Message-ID cannot overwrite a claimed request. Separate content becomes a separate request.
+  const source = digest(input);
+  const id = digest({ mailbox: config.mailbox, source });
+  let rejection = null;
+  if (from === self || (raw.autoSubmitted && raw.autoSubmitted.toLowerCase() !== 'no') || /^(bulk|list|junk)$/i.test(raw.precedence)) rejection = 'loop_suppressed';
+  // No attachment is written, extracted, silently discarded or executed. A configured approved extractor is a future gate.
+  if (raw.attachments.length) rejection = 'attachments_unsupported';
+  return { id, source, mailbox: config.mailbox, input, rejection };
+}
+
+function privatePath(path, directory) {
+  const stat = lstatSync(path);
+  if (stat.isSymbolicLink() || (directory ? !stat.isDirectory() : !stat.isFile()) || stat.uid !== process.getuid() || (stat.mode & 0o777) !== (directory ? 0o700 : 0o600)) throw new Error('insecure_state_permissions');
+}
+export class Store {
+  constructor(directory) {
+    if (!isAbsolute(directory)) throw new Error('absolute_state_required');
+    mkdirSync(directory, { recursive: true, mode: 0o700 });
+    privatePath(directory, true);
+    if (realpathSync(directory) !== directory) throw new Error('symlink_state_parent');
+    const path = join(directory, 'state.sqlite');
+    const fd = openSync(path, constants.O_CREAT | constants.O_RDWR | constants.O_NOFOLLOW, 0o600);
+    closeSync(fd); privatePath(path, false);
+    this.db = new DatabaseSync(path);
+    if (![0, 1, 2].includes(this.db.prepare('PRAGMA user_version').get().user_version)) { this.db.close(); throw new Error('unsupported_state_version'); }
+    this.db.exec(`PRAGMA journal_mode=DELETE; PRAGMA synchronous=FULL; PRAGMA busy_timeout=5000;
+      CREATE TABLE IF NOT EXISTS requests(id TEXT PRIMARY KEY, digest TEXT NOT NULL, input TEXT NOT NULL,
+        status TEXT NOT NULL, reason TEXT, reply TEXT, owner TEXT, context TEXT, kind TEXT);
+      CREATE TABLE IF NOT EXISTS operations(key TEXT PRIMARY KEY, request TEXT NOT NULL, binding TEXT NOT NULL,
+        state TEXT NOT NULL, proposal TEXT, grant TEXT UNIQUE, result TEXT);`);
+    // v1 rows retain one-use states; missing legacy result snapshots cannot be reconstructed safely.
+    if (!this.db.prepare('PRAGMA table_info(operations)').all().some(column => column.name === 'result')) this.db.exec('ALTER TABLE operations ADD COLUMN result TEXT');
+    this.db.exec('PRAGMA user_version=2;');
+  }
+  close() { this.db.close(); }
+  claim(request) {
+    this.db.prepare('INSERT OR IGNORE INTO requests(id,digest,input,status,reason) VALUES(?,?,?,?,?)')
+      .run(request.id, digest(request), canonical(request), request.rejection ? 'rejected' : 'approval_required', request.rejection);
+    const row = this.get(request.id);
+    if (row.digest !== digest(request)) throw new Error('immutable_request_mismatch');
+    return row;
+  }
+  get(id) {
+    if (!/^[a-f0-9]{64}$/.test(id)) throw new Error('invalid_request_id');
+    const row = this.db.prepare('SELECT * FROM requests WHERE id=?').get(id);
+    if (!row) throw new Error('unknown_request');
+    return row;
+  }
+  begin(id) {
+    const owner = randomUUID();
+    const result = this.db.prepare("UPDATE requests SET status='running',owner=?,reason=NULL WHERE id=? AND status='approval_required' AND owner IS NULL").run(owner, id);
+    return result.changes ? owner : null;
+  }
+  finish(id, owner, status, reason = null, reply = null) {
+    if (!['approval_required', 'reply_ready', 'rejected', 'failed'].includes(status)) throw new Error('invalid_status');
+    const result = this.db.prepare('UPDATE requests SET status=?,reason=?,reply=?,owner=NULL WHERE id=? AND owner=? AND status=\'running\'').run(status, reason, reply && canonical(reply), id, owner);
+    if (!result.changes) throw new Error('lost_request_claim');
+    return this.result(id);
+  }
+  result(id) {
+    const row = this.get(id);
+    // A concurrent or interrupted running request is uncertain, never reclaimable automatically.
+    return { version: 1, requestId: id, status: row.status === 'running' ? 'failed' : row.status,
+      reason: row.status === 'running' ? 'run_in_progress_or_uncertain' : row.reason,
+      reply: row.status === 'reply_ready' && row.reply ? JSON.parse(row.reply) : null };
+  }
+  operation(binding) {
+    const key = digest(binding);
+    if (binding.phase === 'tool' && !this.db.prepare('SELECT key FROM operations WHERE key=?').get(key) &&
+        this.db.prepare("SELECT COUNT(*) AS n FROM operations WHERE request=? AND json_extract(binding,'$.phase')='tool'").get(binding.requestId).n >= 32) throw new Error('request_tool_bound_reached');
+    this.db.prepare("INSERT OR IGNORE INTO operations(key,request,binding,state) VALUES(?,?,?,'pending')").run(key, binding.requestId, canonical(binding));
+    return this.db.prepare('SELECT * FROM operations WHERE key=?').get(key);
+  }
+  completedTools(requestId) {
+    const rows = this.db.prepare("SELECT binding,result FROM operations WHERE request=? AND state='complete' ORDER BY rowid").all(requestId)
+      .filter(row => JSON.parse(row.binding).phase === 'tool');
+    if (rows.length > 32 || rows.some(row => !row.result)) throw new Error('completed_result_unavailable');
+    const results = rows.map(row => ({ binding: JSON.parse(row.binding), result: JSON.parse(row.result) }));
+    if (Buffer.byteLength(canonical(results)) > 131072) throw new Error('completed_results_too_large');
+    return results;
+  }
+  transition(key, from, to, grant = null) {
+    return this.db.prepare('UPDATE operations SET state=?,grant=COALESCE(?,grant) WHERE key=? AND state=?').run(to, grant, key, from).changes === 1;
+  }
+}
+
+// This is deliberately NOT an email/caller-supplied decision. Only trusted host code may inject an adapter.
+// A real adapter MUST authenticate its backend, validate its signed schema/expiry/binding and atomically
+// consume the backend's one-use grant. No production endpoint/auth/schema has been established.
+export const unconfiguredApproval = Object.freeze({ configured: false,
+  async createProposal() { return null; }, async fetchDecision() { return { status: 'unconfigured' }; }, async consumeGrant() { return false; } });
+export class Gate {
+  constructor(store, adapter, signal) { this.store = store; this.adapter = adapter; this.signal = signal; this.pending = false; this.failed = false; this.reason = null; }
+  stop(reason, failed = false) { this.pending = !failed; this.failed = failed; this.reason = reason; return false; }
+  async authorize(binding) {
+    this.signal?.throwIfAborted();
+    if (this.pending || this.failed) return false;
+    const row = this.store.operation(binding);
+    if (row.state !== 'pending') return this.stop('operation_replayed_or_uncertain', true);
+    if (!this.adapter?.configured) return this.stop('approval_backend_unconfigured');
+    try {
+      if (!row.proposal) {
+        const proposal = text(await bounded(this.adapter.createProposal(Object.freeze({ digest: row.key, binding: JSON.parse(row.binding) }), this.signal), this.signal), 256, 1);
+        this.signal?.throwIfAborted();
+        this.store.db.prepare("UPDATE operations SET proposal=? WHERE key=? AND state='pending' AND proposal IS NULL").run(proposal, row.key);
+        row.proposal = proposal;
+      }
+      const decision = closed(await bounded(this.adapter.fetchDecision(row.proposal, this.signal), this.signal), ['status'], ['digest', 'grantId', 'expiresAt']);
+      this.signal?.throwIfAborted();
+      if (decision.status === 'pending' || decision.status === 'unconfigured') return this.stop(`approval_${decision.status}`);
+      if (decision.status !== 'approved') {
+        this.store.transition(row.key, 'pending', 'denied');
+        return this.stop('approval_denied_or_unknown', true);
+      }
+      if (decision.digest !== row.key || typeof decision.grantId !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(decision.grantId) || !Number.isSafeInteger(decision.expiresAt) || decision.expiresAt <= Date.now()) return this.stop('invalid_or_expired_grant', true);
+      // Durable reservation BEFORE backend consumption or local effects; crashes here never automatically retry.
+      if (!this.store.transition(row.key, 'pending', 'reserving', decision.grantId)) return this.stop('operation_replayed_or_uncertain', true);
+      const consumed = await bounded(this.adapter.consumeGrant({ proposal: row.proposal, grantId: decision.grantId, digest: row.key, binding: JSON.parse(row.binding) }, this.signal), this.signal);
+      this.signal?.throwIfAborted();
+      if (consumed !== true || !this.store.transition(row.key, 'reserving', 'executing')) return this.stop('grant_consumption_failed', true);
+      return true;
+    } catch { return this.stop('approval_backend_failed', true); }
+  }
+  complete(binding, ok, result = null) {
+    const snapshot = result === null ? null : canonical(result);
+    if (snapshot && Buffer.byteLength(snapshot) > 32768) throw new Error('result_snapshot_too_large');
+    if (!this.store.db.prepare("UPDATE operations SET state=?,result=? WHERE key=? AND state='executing'").run(ok ? 'complete' : 'unknown', snapshot, digest(binding)).changes) throw new Error('operation_state_mismatch');
+    if (!ok) this.stop('tool_failed_or_uncertain', true);
+  }
+}
+
+export function bindingFor(request, config, phase, operation) {
+  return { version: 2, requestId: request.id, mailbox: request.mailbox, source: request.source,
+    provider: config.provider, scope: config.scope, cwd: config.cwd, phase, operation };
+}
+export async function reserveSend(store, id, config, adapter = unconfiguredApproval, signal) {
+  validateConfig(config);
+  const row = store.get(id);
+  if (row.status !== 'reply_ready' || !row.reply) return { status: 'failed', reason: 'reply_not_ready' };
+  const request = JSON.parse(row.input);
+  if (request.mailbox !== config.mailbox) throw new Error('mailbox_mismatch');
+  const reply = JSON.parse(row.reply);
+  // Even a public reply needs exact recipient/body disclosure approval. The draft is never SMTP authorization.
+  const binding = bindingFor(request, config, 'send', { sender: address(config.selfAddress), recipient: reply.to, subject: reply.subject, bodyDigest: digest(reply.body) });
+  const gate = new Gate(store, adapter, signal);
+  if (!await gate.authorize(binding)) return { status: gate.failed ? 'failed' : 'approval_required', reason: gate.reason };
+  return { status: 'send_reserved', reservation: digest(binding), requestId: id, reply };
+}
+export function finishSend(store, id, reservation, outcome) {
+  if (!['sent', 'unknown'].includes(outcome)) throw new Error('invalid_send_outcome');
+  const row = store.db.prepare('SELECT * FROM operations WHERE key=? AND request=?').get(reservation, id);
+  if (!row || JSON.parse(row.binding).phase !== 'send' || !store.transition(reservation, 'executing', outcome === 'sent' ? 'sent' : 'send_unknown')) throw new Error('send_replayed_or_uncertain');
+  return { status: outcome === 'sent' ? 'sent' : 'send_unknown', requestId: id };
+}

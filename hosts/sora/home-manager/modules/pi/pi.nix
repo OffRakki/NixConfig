@@ -63,6 +63,7 @@ in {
     packages = [
       inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.lean-ctx
       piw
+      (import ./mail {inherit pkgs piPackage;})
     ];
     persistence."/persist".directories = [
       ".pi"
@@ -70,6 +71,10 @@ in {
       ".config/lean-ctx"
       ".local/share/lean-ctx"
       ".codex"
+      {
+        directory = ".local/state/mail-assistant";
+        mode = "0700";
+      }
     ];
   };
   xdg.desktopEntries.pi-coding-agent = {
