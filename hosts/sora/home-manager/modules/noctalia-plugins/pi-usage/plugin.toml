@@ -1,0 +1,14 @@
+id           = "local/pi-usage"
+name         = "Pi Usage"
+version      = "0.1.0"
+plugin_api   = 8
+author       = "local"
+license      = "MIT"
+icon         = "chart-donut-3"
+description  = "Shows subscription limits from pi-usage's local cache, the same data Pi's powerbar displays."
+tags         = ["bar", "ai", "indicator"]
+dependencies = ["jq", "sh"]
+
+[[widget]]
+id    = "bar"
+entry = "bar_widget.luau"

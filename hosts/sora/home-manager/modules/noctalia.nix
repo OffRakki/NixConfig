@@ -157,7 +157,7 @@ in {
             members = ["notifications" "todos" "davemhammer/tailscale:status" "battery"];
           }
         ];
-        end = ["tray" "privacy" "group:hardware-controls" "group:status-tools" "clock"];
+        end = ["local/pi-usage:bar" "tray" "privacy" "group:hardware-controls" "group:status-tools" "clock"];
         monitor.dp2 = {
           match = "DP-2";
           position = "bottom";
@@ -270,13 +270,19 @@ in {
         };
       };
       plugins = {
-        enabled = ["davemhammer/tailscale" "dotnetrob/cat"];
+        enabled = ["davemhammer/tailscale" "dotnetrob/cat" "local/pi-usage"];
         auto_update = "none";
         source = [
           {
             name = "community";
             kind = "path";
             location = "${communityPlugins}";
+            enabled = true;
+          }
+          {
+            name = "local";
+            kind = "path";
+            location = "${./noctalia-plugins}";
             enabled = true;
           }
         ];
