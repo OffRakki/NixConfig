@@ -9,7 +9,7 @@ import { bindingFor, bounded, canonical, classify, closed, decodeEnvelope, diges
 // mail-assistant-runner process CANONICAL_BASE64 [ABSOLUTE_PRIVATE_STATE_DIRECTORY]
 // mail-assistant-runner status REQUEST_SHA256 [ABSOLUTE_PRIVATE_STATE_DIRECTORY]
 // There is intentionally no CLI option/env flag accepting approval, credentials, adapter paths or model IDs.
-// Production integration remains UNCONFIGURED until a reviewed authenticated adapter and host config exist.
+// This standalone CLI stays offline. The production wrapper uses production.mjs and its fixed Nix host config.
 // Native bash has the host user's permissions: approval is NOT a sandbox or a restriction on consequences.
 export async function sdkModules(root = process.env.PI_PACKAGE_ROOT) {
   if (!root || !isAbsolute(root)) throw new Error('sdk_root_required');
@@ -122,6 +122,15 @@ export async function runMail({ store, raw, id, config, approval = unconfiguredA
   let gate;
   try {
     signal.throwIfAborted();
+    // Poll persisted proposals before loading credentials or making another model call.
+    for (const pending of store.db.prepare("SELECT key,proposal FROM operations WHERE request=? AND state='pending' AND proposal IS NOT NULL").all(request.id)) {
+      const decision = await bounded(approval.fetchDecision(pending.proposal, signal), signal);
+      if (decision.status === 'pending') return store.finish(request.id, owner, 'approval_required', 'approval_pending');
+      if (decision.status !== 'approved' || decision.digest !== pending.key || !Number.isSafeInteger(decision.expiresAt) || decision.expiresAt <= Date.now()) {
+        store.transition(pending.key, 'pending', 'denied');
+        return store.finish(request.id, owner, 'failed', 'approval_denied_or_expired');
+      }
+    }
     const { sdk } = await sdkModules(sdkRoot);
     // Provider factory must use explicit credentials/storage. The runner never reads ambient auth/models stores.
     const { modelRuntime, model } = await bounded(provider(signal), signal);

@@ -3,7 +3,10 @@ import { access, mkdir, mkdtemp, readFile, rm, writeFile, symlink } from 'node:f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { bindingFor, digest, finishSend, normalize, reserveSend, Store } from '../mail/core.mjs';
+import { randomBytes } from 'node:crypto';
+import { createApprovalServer, passwordHash } from '../mail/approval-server.mjs';
+import { createApprovalAdapter, productionCli } from '../mail/production.mjs';
+import { bindingFor, digest, encodeEnvelope, finishSend, normalize, reserveSend, Store } from '../mail/core.mjs';
 import { runMail, sdkModules } from '../mail/runner.mjs';
 
 assert.ok(process.env.PI_PACKAGE_ROOT, 'Set PI_PACKAGE_ROOT to the pinned SDK root');
@@ -228,8 +231,39 @@ test('SDK draft disclosure is separately authorized exactly and interrupted send
   const reserved = await reserveSend(store, result.requestId, config, approval);
   assert.equal(reserved.status, 'send_reserved');
   const request = normalize(raw(), config);
-  const expected = bindingFor(request, config, 'send', { sender: config.selfAddress, recipient: raw().from, subject: 'Re: Fixture', bodyDigest: digest(result.reply.body) });
+  const expected = bindingFor(request, config, 'send', { sender: config.selfAddress, recipient: raw().from, subject: 'Re: Fixture', body: result.reply.body, bodyDigest: digest(result.reply.body) });
   assert.equal(reserved.reservation, digest(expected));
   assert.equal((await reserveSend(store, result.requestId, config, approval)).status, 'failed');
   assert.equal(finishSend(store, result.requestId, reserved.reservation, 'unknown').status, 'send_unknown');
 }));
+
+test('production CLI drives real SDK and HTTP owner approval without real credentials/model/SMTP', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'mail-production-smoke-'));
+  const token = randomBytes(48).toString('base64url'); const password = randomBytes(32).toString('base64url');
+  const app = createApprovalServer({ directory: join(directory, 'site'), apiToken: token, ownerHash: await passwordHash(password), port: 0 });
+  const endpoint = await app.listen();
+  const faux = ai.fauxProvider({ provider: 'openai-codex', models: [{ id: 'gpt-6.1-sol', contextWindow: 32768, maxTokens: 4096 }] });
+  const modelRuntime = await sdk.ModelRuntime.create({ credentials: new ai.InMemoryCredentialStore(), modelsPath: null, refreshOnCreate: false, allowModelNetwork: false }); modelRuntime.registerNativeProvider(faux.provider);
+  const config = { mailbox: 'fixture@example.test', selfAddress: 'assistant@example.test', provider: 'openai-codex/gpt-6.1-sol', scope: 'test', cwd: directory, contextPaths: [] };
+  const host = { config, stateDirectory: join(directory, 'runner'), authPath: '/NEVER_READ', tokenFile: '/NEVER_READ', endpoint: 'http://127.0.0.1:8765' };
+  const deps = { approval: createApprovalAdapter({ token, endpoint }), provider: async () => ({ modelRuntime, model: faux.getModel() }) };
+  const cli = args => productionCli(args, host, deps);
+  const http = (path, cookie, form) => fetch(endpoint + path, { redirect: 'manual', method: form ? 'POST' : 'GET', headers: { ...(cookie ? { Cookie: cookie } : {}), ...(form ? { Origin: endpoint, 'Content-Type': 'application/x-www-form-urlencoded' } : {}) }, body: form ? new URLSearchParams(form).toString() : undefined });
+  try {
+    faux.setResponses([message('{"kind":"reply"}'), message('{"subject":"Draft","body":"Full production fixture private send preview"}')]);
+    const result = await cli(['process', encodeEnvelope(raw())]); assert.equal(result.status, 'reply_ready'); assert.equal(faux.state.callCount, 2);
+    assert.equal((await cli(['resume', result.requestId])).status, 'reply_ready'); assert.equal(faux.state.callCount, 2);
+    assert.equal((await cli(['status', result.requestId])).status, 'reply_ready');
+    const reserve = encodeEnvelope({ requestId: result.requestId });
+    assert.equal((await cli(['send-reserve', reserve])).status, 'approval_required');
+    const pre = await http('/login'); const preCookie = pre.headers.get('set-cookie').split(';')[0]; const preCsrf = /name="csrf" value="([a-f0-9]+)"/.exec(await pre.text())[1];
+    const logged = await http('/login', preCookie, { csrf: preCsrf, username: 'lucky', password }); assert.equal(logged.status, 303); const cookie = logged.headers.get('set-cookie').split(';')[0];
+    const dashboard = await (await http('/', cookie)).text(); assert.match(dashboard, /Full production fixture private send preview/);
+    const csrf = /name="csrf" value="([a-f0-9]+)"/.exec(dashboard)[1]; const proposal = app.store.db.prepare('SELECT id FROM approval_proposals').get().id;
+    assert.equal((await http('/decide', cookie, { csrf, id: proposal, decision: 'approved' })).status, 303);
+    const approved = await cli(['send-reserve', reserve]); assert.equal(approved.status, 'send_reserved'); assert.equal(approved.version, 1); assert.equal(approved.reason, null); assert.deepEqual(approved.reply, result.reply);
+    const finish = encodeEnvelope({ requestId: result.requestId, reservation: approved.reservation, outcome: 'unknown' });
+    assert.equal((await cli(['send-finish', finish])).status, 'send_unknown');
+    await assert.rejects(cli(['send-finish', finish])); assert.equal((await cli(['send-reserve', reserve])).status, 'failed'); assert.equal(faux.state.callCount, 2);
+  } finally { await app.close(); await rm(directory, { recursive: true, force: true }); }
+});

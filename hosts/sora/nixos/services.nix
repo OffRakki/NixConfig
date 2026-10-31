@@ -1,6 +1,7 @@
 {pkgs, ...}: let
   mailbox = "/home/rakki/sync/geral/Ciel/Mailbox";
 in {
+  imports = [./mail-approval.nix];
   users.groups.n8n-mailbox.members = ["rakki"];
   systemd = {
     tmpfiles.rules = [
