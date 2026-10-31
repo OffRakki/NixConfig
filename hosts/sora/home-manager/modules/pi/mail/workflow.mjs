@@ -1,6 +1,6 @@
 // Builds a separate inactive workflow. Credential references are supplied by the authenticated
 // installer, never exported credential secrets. IMAP starts disabled to avoid processing Mail's inbox twice.
-const runner = '/etc/profiles/per-user/rakki/bin/mail-assistant-runner';
+const runner = '/home/rakki/.nix-profile/bin/mail-assistant-runner';
 const code = fn => `return (${fn.toString()})();`;
 
 export function prepareEnvelope() {
@@ -19,7 +19,8 @@ export function prepareEnvelope() {
   function canonical(v) {
     if (v === null || typeof v === 'boolean' || typeof v === 'string' || (typeof v === 'number' && Number.isFinite(v))) return JSON.stringify(v);
     if (Array.isArray(v)) return '[' + v.map(canonical).join(',') + ']';
-    if (v && Object.getPrototypeOf(v) === Object.prototype && !Object.keys(v).some(k => ['__proto__', 'prototype', 'constructor'].includes(k))) return '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + canonical(v[k])).join(',') + '}';
+    // n8n's task-runner inputs may come from another VM realm; prototype identity is not a JSON validity check.
+    if (v && typeof v === 'object' && !Object.keys(v).some(k => ['__proto__', 'prototype', 'constructor'].includes(k))) return '{' + Object.keys(v).sort().map(k => JSON.stringify(k) + ':' + canonical(v[k])).join(',') + '}';
     throw new Error('invalid_json');
   }
   const json = canonical(raw);

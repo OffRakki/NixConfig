@@ -47,9 +47,12 @@ test('HTTP API requires bearer auth, exact Host, immutable digest and closed sch
 test('login CSRF/Origin, hashed rotating sessions, escaped dashboard and logout revocation', async () => fixture(async ({ http, login, proposal, adapter, app }) => {
   const pre = await http('/login'); const page = await pre.text(); const cookie = pre.headers.get('set-cookie').split(';')[0];
   assert.match(pre.headers.get('set-cookie'), /HttpOnly; SameSite=Strict/); assert.ok(!pre.headers.get('set-cookie').includes('Secure')); assert.equal(pre.headers.get('cache-control'), 'no-store');
+  // Browsers serialize a null Origin for form navigation under no-referrer; retain the origin only for same-origin requests.
+  assert.equal(pre.headers.get('referrer-policy'), 'same-origin');
   const csrf = /name="csrf" value="([a-f0-9]+)"/.exec(page)[1];
   assert.equal((await http('/login', { method: 'POST', cookie, form: { csrf: 'wrong', username: 'lucky', password: 'wrong' } })).status, 403);
   assert.equal((await http('/login', { method: 'POST', cookie, origin: 'http://evil.test', form: { csrf, username: 'lucky', password: 'wrong' } })).status, 403);
+  assert.equal((await http('/login', { method: 'POST', cookie, origin: 'null', form: { csrf, username: 'lucky', password: 'wrong' } })).status, 403);
   await adapter().createProposal(proposal({ name: 'read', args: { path: '<script>bad</script>' } }));
   const owner = await login();
   assert.equal((await http('/', { cookie: owner.preCookie })).status, 303);
