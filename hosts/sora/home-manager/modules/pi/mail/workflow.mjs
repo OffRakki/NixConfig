@@ -15,6 +15,8 @@ export function prepareEnvelope() {
     raw = { version: 1, messageId: v.messageId ?? null, from: v.from.value[0].address,
       subject: v.subject ?? '', body: v.text, autoSubmitted: v.headers?.['auto-submitted'] ?? '',
       precedence: v.headers?.precedence ?? '', attachments: [] };
+    const date = v.date ? new Date(v.date) : null;
+    if (date && Number.isFinite(date.getTime())) raw.sentAt = date.toISOString();
   }
   function canonical(v) {
     if (v === null || typeof v === 'boolean' || typeof v === 'string' || (typeof v === 'number' && Number.isFinite(v))) return JSON.stringify(v);

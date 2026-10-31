@@ -192,7 +192,7 @@ export async function runMail({ store, raw, id, config, approval = unconfiguredA
         'Untrusted email JSON:\n' + envelope });
     if (gate.pending || gate.failed) return store.finish(request.id, owner, gate.failed ? 'failed' : 'approval_required', gate.reason);
     // Subject, recipient and bounded original quote are deterministic before disclosure hashing.
-    return store.finish(request.id, owner, 'reply_ready', null, formatReply(request, JSON.parse(answer)));
+    return store.finish(request.id, owner, 'reply_ready', null, formatReply(request, JSON.parse(answer), config));
   } catch {
     return store.finish(request.id, owner, 'failed', signal.aborted ? 'run_aborted_or_timed_out' : 'run_failed');
   } finally {
