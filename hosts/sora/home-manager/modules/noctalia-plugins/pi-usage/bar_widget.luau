@@ -42,7 +42,7 @@ local function windowState(window, now)
     local resetAt = parseIso(window.resetAt)
     if resetAt ~= nil and resetAt <= now then return nil, "reset" end
     return math.max(0, math.min(100, tonumber(window.usedPercent) or 0)),
-        resetAt and ("resets in " .. duration(resetAt - now)) or ""
+        resetAt and ("↻ " .. duration(resetAt - now)) or ""
 end
 
 local function render()
@@ -54,7 +54,6 @@ local function render()
         local fetched = (tonumber(entry.fetchedAt) or 0) / 1000
         local stale = now - fetched > STALE_SEC
         local parts = {}
-        local lines = {}
         for _, window in ipairs(usage.windows or {}) do
             local pct, note = windowState(window, now)
             local label = shortLabel(window.label)
@@ -63,25 +62,24 @@ local function render()
                     track = "on_surface/0.16", radius = 6, width = 22, height = 5 })
                 parts[#parts + 1] = ui.label({ text = string.format("%s %d%%", label, math.floor(pct + 0.5)),
                     fontSize = 11, fontWeight = "semibold", color = stale and "on_surface_variant" or "on_surface", maxLines = 1 })
-                lines[#lines + 1] = string.format("%s: %d%% used, %s", window.label, math.floor(pct + 0.5), note)
+                tooltip[#tooltip + 1] = { key = window.label, value = string.format("%d%% · %s", math.floor(pct + 0.5), note) }
             else
                 parts[#parts + 1] = ui.label({ text = label .. " —", fontSize = 11, color = "on_surface_variant", maxLines = 1 })
-                lines[#lines + 1] = string.format("%s: window reset since last Pi refresh", window.label)
+                tooltip[#tooltip + 1] = { key = window.label, value = "reset" }
             end
         end
-        if stale then lines[#lines + 1] = "Cache is " .. duration(now - fetched) .. " old" end
+        if stale then tooltip[#tooltip + 1] = { key = "Cache", value = duration(now - fetched) .. " old" } end
 
         if i > 1 then segments[#segments + 1] = ui.box({ width = 1, height = 15, fill = "outline/0.35" }) end
         segments[#segments + 1] = ui.row({ key = "p" .. i, align = "center", gap = 5 }, {
             ui.glyph({ name = usage.provider == "anthropic" and "message-chatbot" or "brand-openai", size = 13, color = "primary" }),
             ui.row({ align = "center", gap = 6 }, parts),
         })
-        tooltip[#tooltip + 1] = { key = usage.displayName or usage.provider or "Provider", value = table.concat(lines, "\n") }
     end
 
     if #segments == 0 then
         segments[1] = ui.label({ text = "Pi usage —", fontSize = 11, color = "on_surface_variant" })
-        tooltip[1] = { key = "Pi Usage", value = "No pi-usage cache yet. Start Pi." }
+        tooltip[1] = { key = "Pi Usage", value = "No cache yet" }
     end
 
     barWidget.render(ui.row({ gap = 7, align = "center" }, segments))
