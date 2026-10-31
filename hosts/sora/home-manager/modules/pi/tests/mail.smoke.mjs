@@ -6,7 +6,7 @@ import { test } from 'node:test';
 import { randomBytes } from 'node:crypto';
 import { createApprovalServer, passwordHash } from '../mail/approval-server.mjs';
 import { createApprovalAdapter, productionCli } from '../mail/production.mjs';
-import { bindingFor, digest, encodeEnvelope, finishSend, normalize, reserveSend, Store } from '../mail/core.mjs';
+import { bindingFor, digest, encodeEnvelope, finishSend, Gate, normalize, policyGrant, reserveSend, Store } from '../mail/core.mjs';
 import { runMail, sdkModules } from '../mail/runner.mjs';
 
 assert.ok(process.env.PI_PACKAGE_ROOT, 'Set PI_PACKAGE_ROOT to the pinned SDK root');
@@ -281,4 +281,206 @@ test('production CLI drives real SDK and HTTP owner approval without real creden
     assert.equal((await cli(['send-reserve', encodeEnvelope({ requestId: outside.requestId })])).status, 'approval_required');
     assert.equal(faux.state.callCount, 4);
   } finally { await app.close(); await rm(directory, { recursive: true, force: true }); }
+});
+
+const safeOperations = () => [{ name: 'weather', args: { city: 'Piracicaba', country: 'BR' } }, { name: 'machine_status', args: {} }];
+const safeClassification = () => JSON.stringify({ kind: 'safe', operations: safeOperations() });
+function enableSafe(config) {
+  config.automaticReplies = true; config.safeCapabilities = ['weather', 'machine_status'];
+  config.recipientPolicy = { version: 1, allowedRecipients: ['sender@example.test', 'hidden-owner@example.test'], defaultRecipient: 'sender@example.test', safeCapabilities: [...config.safeCapabilities], automaticReplies: true };
+}
+function safeMocks({ onFetch, failure } = {}) {
+  const calls = [];
+  const safeDependencies = {
+    async fetchImpl(url, options) {
+      calls.push(url.hostname); assert.equal(options.redirect, 'error'); await onFetch?.();
+      if (failure === 'network') throw new Error('fixture offline');
+      if (failure === 'oversized') return new Response('x'.repeat(32769), { headers: { 'Content-Type': 'application/json' } });
+      return Response.json(url.hostname === 'geocoding-api.open-meteo.com' ? { results: [{ name: 'Piracicaba', latitude: -22.72528, longitude: -47.64917, country_code: 'BR' }] }
+        : { timezone: 'GMT', utc_offset_seconds: 0, current: { time: new Date().toISOString().slice(0, 16), temperature_2m: 25, apparent_temperature: 26, relative_humidity_2m: 60, precipitation: 0, weather_code: 1, wind_speed_10m: 8 } });
+    },
+    os: { availableMemory: () => 4000, totalmem: () => 8000, cpus: () => [{}, {}, {}, {}], uptime: () => 12345, loadavg: () => [0.1, 0.2, 0.3] },
+    async statfsImpl(path) { calls.push(path); assert.equal(path, '/persist'); return { bavail: 20, blocks: 100, bsize: 4096 }; },
+  };
+  return { calls, safeDependencies };
+}
+
+test('real SDK owner weather AND health collect fixed live snapshots, zero approvals/context/tools, then auto-reserve once', async () => fixture(async ({ directory, faux, config, run, store }) => {
+  enableSafe(config); config.contextPaths = [join(directory, 'NEVER_READ')];
+  const approval = approvalFixture(() => 'pending'), mock = safeMocks();
+  const input = { ...raw(), body: 'Hows weather in Piracicaba? Also how is machine running?' };
+  faux.setResponses([
+    context => { assert.doesNotMatch(JSON.stringify(context), /hidden-owner@example.test/); return message(safeClassification()); },
+    context => {
+      const prompt = JSON.stringify(context);
+      for (const value of ['temperatureC', '25', 'logicalCpus', 'Sora', '12345', 'model estimate', 'fetchedAt', 'UTC']) assert.ok(prompt.includes(value));
+      assert.doesNotMatch(prompt, /hidden-owner@example.test/);
+      return message('{"subject":"Weather and health","body":"Open-Meteo estimates 25 C in Piracicaba. Sora has four logical CPUs, 12345 seconds uptime, and low aggregate load."}');
+    },
+  ]);
+  const result = await run({ raw: input, approval, safeDependencies: mock.safeDependencies, inspect: ({ session, loader }) => { assert.deepEqual(session.getActiveToolNames(), []); assert.deepEqual(loader.getAgentsFiles().agentsFiles, []); } });
+  assert.equal(result.status, 'reply_ready'); assert.deepEqual(mock.calls, ['geocoding-api.open-meteo.com', 'api.open-meteo.com', '/persist']);
+  assert.equal(approval.proposals.size, 0); assert.equal(approval.consumed.size, 0); assert.equal(store.get(result.requestId).context, null);
+  assert.equal(store.db.prepare("SELECT COUNT(*) AS n FROM operations WHERE json_extract(binding,'$.phase') IN ('tool','investigate')").get().n, 0);
+  store.close(); const reopened = new Store(join(directory, 'state'));
+  try {
+    const resumed = await runMail({ store: reopened, id: result.requestId, config, approval, provider: () => { throw new Error('must not rerun'); } });
+    assert.equal(resumed.status, 'reply_ready');
+    const reserved = await reserveSend(reopened, result.requestId, config, approval); assert.equal(reserved.status, 'send_reserved');
+    assert.equal((await reserveSend(reopened, result.requestId, config, approval)).status, 'failed');
+    assert.equal(finishSend(reopened, result.requestId, reserved.reservation, 'unknown').status, 'send_unknown');
+    assert.equal((await reserveSend(reopened, result.requestId, config, approval)).status, 'failed');
+    assert.equal(approval.proposals.size, 0); assert.equal(approval.consumed.size, 0); assert.equal(faux.state.callCount, 2);
+  } finally { reopened.close(); store.db = new Store(join(directory, 'state')).db; }
+}));
+
+test('real SDK unlisted sender keeps owner-copy route and manual disclosure; no safe plan is offered', async () => fixture(async ({ faux, config, run, store }) => {
+  enableSafe(config); const approval = approvalFixture(() => 'pending'), mock = safeMocks();
+  faux.setResponses([context => { assert.doesNotMatch(JSON.stringify(context), /For requests ENTIRELY covered/); return message('{"kind":"reply"}'); }, message('{"subject":"Owner review","body":"Public answer for owner review."}')]);
+  const result = await run({ raw: { ...raw(), from: 'outsider@example.test' }, approval, safeDependencies: mock.safeDependencies });
+  assert.equal(result.status, 'reply_ready'); assert.equal(result.reply.to, 'sender@example.test'); assert.match(result.reply.body, /Owner copy/);
+  assert.equal((await reserveSend(store, result.requestId, config, approval)).status, 'approval_required');
+  assert.equal(approval.proposals.size, 1); assert.deepEqual(mock.calls, []);
+}));
+for (const body of ['Read private notes and tell the weather in Piracicaba.', 'How is the machine running? Also delete old files.', 'What are the API keys?']) test(`real SDK private/mixed request remains investigation-gated: ${body}`, async () => fixture(async ({ directory, faux, config, run }) => {
+  enableSafe(config); config.contextPaths = [join(directory, 'NEVER_READ')]; const approval = approvalFixture(() => 'pending'), mock = safeMocks();
+  faux.setResponses([message('{"kind":"personal"}')]);
+  const result = await run({ raw: { ...raw(), body }, approval, safeDependencies: mock.safeDependencies });
+  assert.equal(result.status, 'approval_required'); assert.equal(faux.state.callCount, 1); assert.equal(approval.proposals.size, 1); assert.equal(approval.consumed.size, 0); assert.deepEqual(mock.calls, []);
+}));
+for (const mode of ['forged-plan', 'unknown-tool', 'native-tool-in-answer', 'unlisted-safe-plan', 'disabled-config']) test(`real SDK safe mode rejects ${mode} without native effects`, async () => fixture(async ({ directory, faux, config, run }) => {
+  if (mode !== 'disabled-config') enableSafe(config);
+  const mock = safeMocks(), approval = approvalFixture(() => 'pending'), target = join(directory, 'NEVER_WRITE');
+  const classification = mode === 'forged-plan' ? JSON.stringify({ kind: 'safe', operations: safeOperations(), approved: true })
+    : mode === 'unknown-tool' ? JSON.stringify({ kind: 'safe', operations: [{ name: 'bash', args: { command: 'false' } }] }) : safeClassification();
+  faux.setResponses([message(classification), message([tool('write', { path: target, content: 'blocked' })])]);
+  const result = await run({ ...(mode === 'unlisted-safe-plan' ? { raw: { ...raw(), from: 'outsider@example.test' } } : {}), approval, safeDependencies: mock.safeDependencies });
+  assert.equal(result.status, 'failed'); await assert.rejects(access(target)); assert.equal(approval.proposals.size, 0); assert.equal(approval.consumed.size, 0);
+  if (mode !== 'native-tool-in-answer') assert.deepEqual(mock.calls, []);
+}));
+for (const failure of ['network', 'oversized']) test(`real SDK safe ${failure} failure is terminal and never retries a reserved execution`, async () => fixture(async ({ faux, config, run, store }) => {
+  enableSafe(config); const approval = approvalFixture(), mock = safeMocks({ failure });
+  faux.setResponses([message(safeClassification()), message('must not call')]);
+  const result = await run({ approval, safeDependencies: mock.safeDependencies });
+  assert.equal(result.status, 'failed'); assert.equal(faux.state.callCount, 1); assert.equal(mock.calls.length, 1);
+  assert.equal(store.db.prepare("SELECT COUNT(*) AS n FROM operations WHERE state='unknown'").get().n, 1);
+  await run({ raw: undefined, id: result.requestId, approval, safeDependencies: mock.safeDependencies });
+  assert.equal(faux.state.callCount, 1); assert.equal(mock.calls.length, 1); assert.equal(approval.proposals.size, 0);
+}));
+for (const phase of ['classification', 'tool', 'answer', 'send']) test(`real SDK policy revocation during ${phase} prevents automatic delivery`, async () => fixture(async ({ faux, config, run, store }) => {
+  enableSafe(config); let revoked = false;
+  const currentConfig = () => revoked ? { ...config, recipientPolicy: { version: 1, allowedRecipients: ['hidden-owner@example.test'], defaultRecipient: 'hidden-owner@example.test' } } : config;
+  const approval = approvalFixture(() => 'pending'), mock = safeMocks({ onFetch: () => { if (phase === 'tool') revoked = true; } });
+  faux.setResponses([() => { if (phase === 'classification') revoked = true; return message(safeClassification()); }, () => { if (phase === 'answer') revoked = true; return message('{"subject":"Collected","body":"Only bounded safe results."}'); }]);
+  const result = await run({ approval, currentConfig, safeDependencies: mock.safeDependencies });
+  if (phase === 'send') {
+    assert.equal(result.status, 'reply_ready'); revoked = true;
+    assert.equal((await reserveSend(store, result.requestId, config, approval, null, { currentConfig })).status, 'failed');
+  } else assert.equal(result.status, 'failed');
+  assert.equal(approval.proposals.size, 0); assert.equal(approval.consumed.size, 0);
+}));
+
+test('real SDK disallowed capability plan falls back to investigation approval, never native authority', async () => fixture(async ({ faux, config, run }) => {
+  enableSafe(config); config.safeCapabilities = ['weather'];
+  const approval = approvalFixture(() => 'pending'), mock = safeMocks();
+  faux.setResponses([message(safeClassification())]);
+  const result = await run({ approval, safeDependencies: mock.safeDependencies });
+  assert.equal(result.status, 'approval_required'); assert.deepEqual(mock.calls, []); assert.equal(approval.proposals.size, 1); assert.equal(approval.consumed.size, 0);
+}));
+
+test('real SDK resumed safe request replays completed exact snapshots without fetching again', async () => fixture(async ({ faux, config, run, store }) => {
+  enableSafe(config);
+  const request = normalize(raw(), config); store.claim(request);
+  const plan = { kind: 'safe', operations: [{ name: 'machine_status', args: {} }] };
+  const snapshot = { machine: 'Sora', collectedAt: '2000-01-01T00:00:00.000Z', uptimeSeconds: 789, logicalCpus: 4, loadAverage: [0.1, 0.2, 0.3], ramAvailableBytes: 4000, ramTotalBytes: 8000, diskAvailableBytes: 2000, diskTotalBytes: 10000 };
+  store.db.prepare('UPDATE requests SET kind=? WHERE id=?').run('safe', request.id);
+  for (const [binding, result] of [[bindingFor(request, config, 'safe_plan', plan), null], [bindingFor(request, config, 'safe_tool', { planDigest: digest(plan), ...plan.operations[0] }), snapshot]]) {
+    const op = store.operation(binding); store.transition(op.key, 'pending', 'executing', policyGrant(binding)); new Gate(store, null).complete(binding, true, result);
+  }
+  faux.setResponses([context => { assert.ok(JSON.stringify(context).includes('789')); return message('{"subject":"Health","body":"Saved Sora snapshot: uptime 789 seconds."}'); }]);
+  const result = await run({ raw: undefined, id: request.id, safeDependencies: { statfsImpl: () => { throw new Error('must not execute'); } } });
+  assert.equal(result.status, 'reply_ready'); assert.equal(faux.state.callCount, 1);
+  const approval = approvalFixture(() => 'pending');
+  assert.equal((await reserveSend(store, request.id, config, approval)).status, 'approval_required');
+  await run({ raw: undefined, id: request.id, safeDependencies: { statfsImpl: () => { throw new Error('must not re-execute'); } } });
+  assert.equal(faux.state.callCount, 1); assert.equal(approval.proposals.size, 1); assert.equal(approval.consumed.size, 0);
+}));
+
+test('real SDK owner public reply automatic mode cannot override an earlier manual denial', async () => fixture(async ({ faux, config, run, store }) => {
+  enableSafe(config);
+  faux.setResponses([message('{"kind":"reply"}'), message('{"subject":"Hello","body":"Public zero-tool reply."}')]);
+  const result = await run(); assert.equal(result.status, 'reply_ready');
+  config.automaticReplies = false;
+  assert.equal((await reserveSend(store, result.requestId, config, approvalFixture(() => 'denied'))).status, 'failed');
+  config.automaticReplies = true; const approval = approvalFixture();
+  assert.equal((await reserveSend(store, result.requestId, config, approval)).status, 'failed'); assert.equal(approval.proposals.size, 0);
+}));
+
+const productionPolicyCases = [
+  { phase: 'none', authority: 'enabled' },
+  ...['recipient', 'off', 'missing', 'reduced'].flatMap(authority => ['classification', 'tool', 'answer', 'send'].map(phase => ({ phase, authority }))),
+  ...['off', 'missing', 'reduced'].map(authority => ({ phase: 'initial', authority })),
+];
+for (const { phase, authority } of productionPolicyCases) test(`production CLI runtime authority ${authority} during ${phase} overrides pinned startup flags`, async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'mail-production-safe-'));
+  const faux = ai.fauxProvider({ provider: 'openai-codex', models: [{ id: 'gpt-6.1-sol', contextWindow: 32768, maxTokens: 4096 }] });
+  const modelRuntime = await sdk.ModelRuntime.create({ credentials: new ai.InMemoryCredentialStore(), modelsPath: null, refreshOnCreate: false, allowModelNetwork: false }); modelRuntime.registerNativeProvider(faux.provider);
+  const config = { mailbox: 'fixture', selfAddress: 'assistant@example.test', provider: 'openai-codex/gpt-6.1-sol', scope: 'test', cwd: directory, contextPaths: [] }; enableSafe(config);
+  const recipientPolicyFile = join(directory, 'policy.json');
+  const enabledPolicy = config.recipientPolicy;
+  const changedPolicy = { ...enabledPolicy };
+  if (authority === 'recipient') { changedPolicy.allowedRecipients = ['hidden-owner@example.test']; changedPolicy.defaultRecipient = 'hidden-owner@example.test'; }
+  if (authority === 'off') changedPolicy.automaticReplies = false;
+  if (authority === 'missing') { delete changedPolicy.automaticReplies; delete changedPolicy.safeCapabilities; }
+  if (authority === 'reduced') changedPolicy.safeCapabilities = ['weather'];
+  await writeFile(recipientPolicyFile, JSON.stringify(phase === 'initial' ? changedPolicy : enabledPolicy), { mode: 0o600 }); delete config.recipientPolicy;
+  // Intentionally leave stale startup flags TRUE/full: runtime policy must override them on every reload.
+  const revoke = () => writeFile(recipientPolicyFile, JSON.stringify(changedPolicy));
+  const host = { config, stateDirectory: join(directory, 'state'), authPath: '/NEVER_READ', tokenFile: '/NEVER_READ', recipientPolicyFile, endpoint: 'http://127.0.0.1:8765' };
+  const approval = approvalFixture(() => 'pending'), mock = safeMocks({ onFetch: () => phase === 'tool' ? revoke() : undefined });
+  const cli = args => productionCli(args, host, { approval, provider: async () => ({ modelRuntime, model: faux.getModel() }), safeDependencies: mock.safeDependencies });
+  try {
+    faux.setResponses([async context => {
+      const prompt = JSON.stringify(context);
+      assert.doesNotMatch(prompt, /hidden-owner@example.test|allowedRecipients|defaultRecipient/);
+      if (phase === 'initial' && authority !== 'reduced') {
+        assert.doesNotMatch(prompt, /For requests ENTIRELY covered/);
+        return message('{"kind":"reply"}');
+      }
+      if (phase === 'initial') {
+        assert.match(prompt, /Allowed fixed capability names:.*weather/);
+        assert.doesNotMatch(prompt, /Allowed fixed capability names:.*machine_status/);
+      }
+      if (phase === 'classification') await revoke();
+      return message(safeClassification());
+    }, async context => {
+      assert.doesNotMatch(JSON.stringify(context), /hidden-owner@example.test|allowedRecipients|defaultRecipient/);
+      if (phase === 'answer') await revoke();
+      return message('{"subject":"Results","body":"Open-Meteo model estimate: 25 C. Sora: four logical CPUs and low load."}');
+    }]);
+    const result = await cli(['process', encodeEnvelope(raw())]);
+    const reducedClassification = authority === 'reduced' && ['initial', 'classification'].includes(phase);
+    if (reducedClassification) assert.equal(result.status, 'approval_required');
+    else if (['classification', 'tool', 'answer'].includes(phase)) assert.equal(result.status, 'failed');
+    else {
+      assert.equal(result.status, 'reply_ready'); if (phase === 'send') await revoke();
+      const reserve = encodeEnvelope({ requestId: result.requestId });
+      const reserved = await cli(['send-reserve', reserve]);
+      assert.equal(reserved.status, phase === 'none' ? 'send_reserved' : authority === 'recipient' ? 'failed' : 'approval_required');
+      if (phase === 'none') {
+        assert.deepEqual(reserved.reply, result.reply); assert.equal(reserved.reason, null); assert.equal(reserved.version, 1);
+        assert.equal((await cli(['send-reserve', reserve])).status, 'failed');
+        assert.equal((await cli(['send-finish', encodeEnvelope({ requestId: result.requestId, reservation: reserved.reservation, outcome: 'unknown' })])).status, 'send_unknown');
+      }
+    }
+    const manual = reducedClassification || (['initial', 'send'].includes(phase) && authority !== 'recipient');
+    assert.equal(approval.proposals.size, manual ? 1 : 0); assert.equal(approval.consumed.size, 0);
+    if (phase === 'initial' || phase === 'classification') assert.deepEqual(mock.calls, []);
+    assert.equal(config.automaticReplies, true); assert.deepEqual(config.safeCapabilities, ['weather', 'machine_status']);
+    const check = new Store(host.stateDirectory);
+    try {
+      assert.doesNotMatch(JSON.stringify(check.db.prepare('SELECT binding,result FROM operations').all()), /hidden-owner@example.test|allowedRecipients|defaultRecipient/);
+      if (phase !== 'none') assert.equal(check.db.prepare("SELECT COUNT(*) AS n FROM operations WHERE state='executing' AND json_extract(binding,'$.phase')='send'").get().n, 0);
+    } finally { check.close(); }
+  } finally { await rm(directory, { recursive: true, force: true }); }
 });

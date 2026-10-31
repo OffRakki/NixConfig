@@ -70,7 +70,12 @@ export async function productionCli(args, host, dependencies = {}) {
   try {
     if (args[0] === 'status') return store.result(args[1]);
     // The secret policy is host-only data: never mail input, a model prompt, or a Nix-store value.
-    const config = { ...host.config, recipientPolicy: loadRecipientPolicy(host.recipientPolicyFile) };
+    const currentConfig = () => {
+      const recipientPolicy = loadRecipientPolicy(host.recipientPolicyFile);
+      // Runtime policy owns ALL automatic authority, including defaults-off legacy policies.
+      return { ...host.config, recipientPolicy, safeCapabilities: recipientPolicy.safeCapabilities, automaticReplies: recipientPolicy.automaticReplies };
+    };
+    const config = currentConfig();
     // Credentials are loaded only for real commands, never help/selftest or status.
     const backend = dependencies.approval ?? createApprovalAdapter({ token: readFileSync(host.tokenFile, 'utf8').trim(), endpoint: host.endpoint });
     const currentRecipientAllowed = binding => binding.phase !== 'send' || deliveryRecipient(JSON.parse(store.get(binding.requestId).input), {
@@ -85,13 +90,13 @@ export async function productionCli(args, host, dependencies = {}) {
     } };
     if (['process', 'resume'].includes(args[0])) {
       if (args[0] === 'resume') store.get(args[1]);
-      return await runMail({ store, ...(args[0] === 'process' ? { raw: decodeEnvelope(args[1]) } : { id: args[1] }), config, approval, provider: dependencies.provider ?? productionProvider(host.authPath, dependencies.sdkRoot), sdkRoot: dependencies.sdkRoot });
+      return await runMail({ store, ...(args[0] === 'process' ? { raw: decodeEnvelope(args[1]) } : { id: args[1] }), config, approval, provider: dependencies.provider ?? productionProvider(host.authPath, dependencies.sdkRoot), sdkRoot: dependencies.sdkRoot, currentConfig, safeDependencies: dependencies.safeDependencies });
     }
     const payload = decodeEnvelope(args[1]);
     closed(payload, args[0] === 'send-reserve' ? ['requestId'] : ['requestId', 'reservation', 'outcome']);
     store.get(payload.requestId);
     if (args[0] === 'send-reserve') {
-      const result = await reserveSend(store, payload.requestId, config, approval, AbortSignal.timeout(10000));
+      const result = await reserveSend(store, payload.requestId, config, approval, AbortSignal.timeout(10000), { currentConfig });
       return { version: 1, requestId: payload.requestId, status: result.status, reason: result.reason ?? null, reply: result.reply ?? null, ...(result.reservation ? { reservation: result.reservation } : {}) };
     }
     if (!/^[a-f0-9]{64}$/.test(payload.reservation)) throw new Error('invalid_reservation');

@@ -2,6 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { constants, closeSync, lstatSync, mkdirSync, openSync, realpathSync } from 'node:fs';
 import { isAbsolute, join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
+import { SAFE_NAMES, safeFresh, safePlan } from './safe.mjs';
 
 export const LIMIT = Object.freeze({ input: 131072, body: 65536, reply: 16384, attachments: 8, attachmentBytes: 10485760 });
 export function canonical(value) {
@@ -50,19 +51,27 @@ export function decodeEnvelope(encoded) {
   return value;
 }
 export const encodeEnvelope = value => Buffer.from(canonical(value)).toString('base64');
-export function classify(raw) {
-  const value = closed(JSON.parse(text(raw, 1024, 1)), ['kind']);
+export function classify(raw, allowSafe = false) {
+  const parsed = JSON.parse(text(raw, 1024, 1));
+  if (allowSafe && parsed?.kind === 'safe') return safePlan(parsed);
+  const value = closed(parsed, ['kind']);
   if (!['reply', 'personal', 'reject'].includes(value.kind)) throw new Error('invalid_classification');
   return value.kind;
 }
 
+function validateSafeAuthority(config) {
+  if (config.automaticReplies !== undefined && typeof config.automaticReplies !== 'boolean') throw new Error('invalid_host_config');
+  if (config.safeCapabilities !== undefined && (!Array.isArray(config.safeCapabilities) || config.safeCapabilities.length > 2 || new Set(config.safeCapabilities).size !== config.safeCapabilities.length || config.safeCapabilities.some(name => !SAFE_NAMES.includes(name)))) throw new Error('invalid_host_config');
+}
 export function validateRecipientPolicy(policy) {
-  closed(policy, ['version', 'allowedRecipients', 'defaultRecipient']);
+  closed(policy, ['version', 'allowedRecipients', 'defaultRecipient'], ['safeCapabilities', 'automaticReplies']);
+  validateSafeAuthority(policy);
   if (policy.version !== 1 || !Array.isArray(policy.allowedRecipients) || policy.allowedRecipients.length < 1 || policy.allowedRecipients.length > 32) throw new Error('invalid_recipient_policy');
   const allowedRecipients = policy.allowedRecipients.map(address);
   const defaultRecipient = address(policy.defaultRecipient);
   if (new Set(allowedRecipients).size !== allowedRecipients.length || !allowedRecipients.includes(defaultRecipient)) throw new Error('invalid_recipient_policy');
-  return Object.freeze({ version: 1, allowedRecipients: Object.freeze(allowedRecipients), defaultRecipient });
+  return Object.freeze({ version: 1, allowedRecipients: Object.freeze(allowedRecipients), defaultRecipient,
+    safeCapabilities: Object.freeze([...(policy.safeCapabilities ?? [])]), automaticReplies: policy.automaticReplies ?? false });
 }
 export function deliveryRecipient(request, config) {
   // Offline fixtures may omit a policy. Production always loads its required runtime secret.
@@ -72,7 +81,8 @@ export function deliveryRecipient(request, config) {
   return policy.allowedRecipients.includes(from) ? from : policy.defaultRecipient;
 }
 export function validateConfig(config) {
-  closed(config, ['mailbox', 'selfAddress', 'provider', 'scope', 'cwd', 'contextPaths'], ['recipientPolicy']);
+  closed(config, ['mailbox', 'selfAddress', 'provider', 'scope', 'cwd', 'contextPaths'], ['recipientPolicy', 'safeCapabilities', 'automaticReplies']);
+  validateSafeAuthority(config);
   if (config.recipientPolicy) validateRecipientPolicy(config.recipientPolicy);
   text(config.mailbox, 128, 1); address(config.selfAddress);
   for (const key of ['provider', 'scope']) text(config[key], 200, 1);
@@ -252,7 +262,45 @@ export function bindingFor(request, config, phase, operation) {
     provider: config.provider, scope: config.scope, cwd: config.cwd, phase, operation,
     requestPreview: { from: request.input.from, subject: request.input.subject, body: Buffer.byteLength(request.input.body) > 8190 ? Buffer.from(request.input.body).subarray(0, 8170).toString('utf8') + '\n[truncated]' : request.input.body } };
 }
-export async function reserveSend(store, id, config, adapter = unconfiguredApproval, signal) {
+// Policy grants are generated only by the host, never accepted from mail or model output.
+export const policyGrant = binding => `host-safe-v1:${digest(binding)}`;
+export function ownerSafe(request, config, operations = []) {
+  validateConfig(config);
+  return config.automaticReplies === true && Array.isArray(config.safeCapabilities) && Boolean(config.recipientPolicy) &&
+    validateRecipientPolicy(config.recipientPolicy).allowedRecipients.includes(request.input.from) &&
+    deliveryRecipient(request, config) === request.input.from && operations.every(op => config.safeCapabilities.includes(op.name));
+}
+export function automaticEligible(store, request, config, reply, now = Date.now()) {
+  if (!ownerSafe(request, config) || reply.to !== request.input.from) return false;
+  const row = store.get(request.id);
+  if (row.context !== null || !['safe', 'reply'].includes(row.kind)) return false;
+  const operations = store.db.prepare('SELECT * FROM operations WHERE request=?').all(request.id);
+  if (operations.some(op => !['safe_plan', 'safe_tool', 'safe_reply', 'send'].includes(JSON.parse(op.binding).phase))) return false;
+  const provenance = operations.filter(op => JSON.parse(op.binding).phase !== 'send');
+  const plans = provenance.filter(op => JSON.parse(op.binding).phase === 'safe_plan');
+  let plan = null;
+  if (row.kind === 'safe') {
+    if (plans.length !== 1) return false;
+    plan = safePlan(JSON.parse(plans[0].binding).operation);
+    if (!ownerSafe(request, config, plan.operations)) return false;
+  } else if (plans.length || provenance.some(op => JSON.parse(op.binding).phase === 'safe_tool')) return false;
+  const expected = [
+    ...(plan ? [bindingFor(request, config, 'safe_plan', plan), ...plan.operations.map(op => bindingFor(request, config, 'safe_tool', { planDigest: digest(plan), ...op }))] : []),
+    bindingFor(request, config, 'safe_reply', { kind: row.kind, planDigest: plan ? digest(plan) : null, replyDigest: digest(reply) }),
+  ];
+  if (provenance.length !== expected.length) return false;
+  return expected.every(binding => {
+    const op = provenance.find(entry => entry.key === digest(binding));
+    if (!op || op.binding !== canonical(binding) || op.grant !== policyGrant(binding) || op.state !== 'complete') return false;
+    if (binding.phase === 'safe_tool') {
+      if (!op.result) return false;
+      if (!safeFresh(binding.operation, JSON.parse(op.result), now)) return false;
+    }
+    return true;
+  });
+}
+export async function reserveSend(store, id, config, adapter = unconfiguredApproval, signal, { currentConfig = () => config, now = Date.now } = {}) {
+  config = currentConfig();
   validateConfig(config);
   const row = store.get(id);
   if (row.status !== 'reply_ready' || !row.reply) return { status: 'failed', reason: 'reply_not_ready' };
@@ -261,8 +309,27 @@ export async function reserveSend(store, id, config, adapter = unconfiguredAppro
   const reply = JSON.parse(row.reply);
   // Revalidate against CURRENT policy before even proposing/consuming a grant. Never silently reroute a persisted draft.
   if (config.recipientPolicy && reply.to !== deliveryRecipient(request, config)) return { status: 'failed', reason: 'recipient_policy_mismatch' };
-  // Even a public reply needs exact recipient/body disclosure approval. The draft is never SMTP authorization.
   const binding = bindingFor(request, config, 'send', { sender: address(config.selfAddress), recipient: reply.to, subject: reply.subject, body: reply.body, bodyDigest: digest(reply.body) });
+  // Never override ANY existing site proposal or non-pending delivery, even if safe mode was enabled later.
+  const deliveries = store.db.prepare('SELECT * FROM operations WHERE request=?').all(id).filter(op => JSON.parse(op.binding).phase === 'send');
+  if (deliveries.some(op => op.state !== 'pending')) return { status: 'failed', reason: 'operation_replayed_or_uncertain' };
+  if (!deliveries.length && automaticEligible(store, request, config, reply, now())) {
+    signal?.throwIfAborted();
+    const fresh = currentConfig();
+    if (!automaticEligible(store, request, fresh, reply, now()) || digest(bindingFor(request, fresh, 'send', binding.operation)) !== digest(binding)) return { status: 'failed', reason: 'automatic_policy_changed' };
+    // One atomic insert also excludes concurrent/manual deliveries with a DIFFERENT binding. An existing
+    // pending row without a proposal may be awaiting its backend response; it is never auto-adopted.
+    const key = digest(binding);
+    const reserved = store.db.prepare(`INSERT OR IGNORE INTO operations(key,request,binding,state,grant)
+      SELECT ?,?,?,'reserving',? WHERE NOT EXISTS
+      (SELECT 1 FROM operations WHERE request=? AND json_extract(binding,'$.phase')='send')`)
+      .run(key, id, canonical(binding), policyGrant(binding), id).changes;
+    if (!reserved) return { status: 'failed', reason: 'operation_replayed_or_uncertain' };
+    // Re-read runtime policy at the reservation boundary too. Failed/uncertain reservations are terminal.
+    if (!automaticEligible(store, request, currentConfig(), reply, now()) || !store.transition(key, 'reserving', 'executing')) return { status: 'failed', reason: 'automatic_policy_changed' };
+    return { status: 'send_reserved', reservation: key, requestId: id, reply };
+  }
+  // Legacy, non-owner, private and previously proposed replies retain exact disclosure approval.
   const gate = new Gate(store, adapter, signal);
   if (!await gate.authorize(binding)) return { status: gate.failed ? 'failed' : 'approval_required', reason: gate.reason };
   return { status: 'send_reserved', reservation: digest(binding), requestId: id, reply };
