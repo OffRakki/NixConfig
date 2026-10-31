@@ -35,6 +35,13 @@
 in {
   home.packages = [pkgs.ddcutil];
 
+  # Stable paths: Noctalia copies plugin sources into its GUI-owned settings.toml,
+  # so raw store paths there would pin stale plugin versions across rebuilds.
+  xdg.configFile = {
+    "noctalia/plugin-sources/community".source = communityPlugins;
+    "noctalia/plugin-sources/local".source = ./noctalia-plugins;
+  };
+
   home.persistence."/persist".directories = [
     ".config/noctalia"
     ".cache/noctalia"
@@ -276,13 +283,13 @@ in {
           {
             name = "community";
             kind = "path";
-            location = "${communityPlugins}";
+            location = "${config.xdg.configHome}/noctalia/plugin-sources/community";
             enabled = true;
           }
           {
             name = "local";
             kind = "path";
-            location = "${./noctalia-plugins}";
+            location = "${config.xdg.configHome}/noctalia/plugin-sources/local";
             enabled = true;
           }
         ];
