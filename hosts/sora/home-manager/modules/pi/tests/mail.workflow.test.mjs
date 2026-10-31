@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { runInNewContext } from 'node:vm';
 import { decodeEnvelope } from '../mail/core.mjs';
 import { buildMailWorkflow, prepareEnvelope, prepareOutcome, prepareResume, prepareSend, retrySend, validateDraft, validateSend, workflowSdkCode } from '../mail/workflow.mjs';
 
@@ -22,7 +23,7 @@ test('inactive graph has working manual entry, separately disabled IMAP, and bou
   for (const node of graph.nodes.filter(node => node.type === 'n8n-nodes-base.ssh')) {
     assert.equal(node.disabled, undefined); assert.equal(node.retryOnFail, false);
     assert.deepEqual(node.credentials, { sshPrivateKey: creds });
-    assert.match(node.parameters.command, /^=\/etc\/profiles\/per-user\/rakki\/bin\/mail-assistant-runner (process|resume|send-reserve|send-finish) '\{\{ \$json\.(payload|requestId) \}\}'$/);
+    assert.match(node.parameters.command, /^=\/home\/rakki\/\.nix-profile\/bin\/mail-assistant-runner (process|resume|send-reserve|send-finish) '\{\{ \$json\.(payload|requestId) \}\}'$/);
   }
   assert.equal(byName.get('Send approved email').retryOnFail, false);
   assert.equal(byName.get('Send approved email').onError, 'continueErrorOutput');
@@ -52,6 +53,15 @@ test('manual and real resolved envelopes use the same canonical inert transport'
   assert.throws(() => run(prepareEnvelope, { ...resolved, text: undefined }));
   const code = buildMailWorkflow().nodes.find(n => n.name === 'Prepare envelope').parameters.jsCode;
   assert.throws(() => new Function('$input', 'Buffer', code)({ all: () => [{ json: raw(), binary: { attachment: {} } }] }, Buffer), /attachments_unsupported/);
+});
+
+test('n8n cross-realm and null-prototype JSON inputs preserve canonical transport', () => {
+  const otherRealm = runInNewContext(`JSON.parse(${JSON.stringify(JSON.stringify(raw()))})`);
+  assert.notEqual(Object.getPrototypeOf(otherRealm), Object.prototype);
+  assert.deepEqual(decodeEnvelope(run(prepareEnvelope, otherRealm)[0].json.payload), raw());
+  const noPrototype = Object.assign(Object.create(null), raw());
+  assert.deepEqual(decodeEnvelope(run(prepareEnvelope, noPrototype)[0].json.payload), raw());
+  assert.throws(() => run(prepareEnvelope, { ...raw(), constructor: 'forbidden' }), /invalid_json/);
 });
 
 test('runner drafts and resume commands reject failure, invalid identifiers and expired waits', () => {

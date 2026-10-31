@@ -39,6 +39,7 @@ in {
       after = ["mail-approval-credentials.service"];
       serviceConfig = {
         DynamicUser = true;
+        User = "mail-approval-web";
         StateDirectory = "mail-approval";
         StateDirectoryMode = "0700";
         UMask = "0077";
