@@ -25,6 +25,7 @@ in
     mkdir -p "$out/bin" "$out/share/mail-assistant"
     cp ${./core.mjs} "$out/share/mail-assistant/core.mjs"
     cp ${./runner.mjs} "$out/share/mail-assistant/runner.mjs"
+    cp ${./safe.mjs} "$out/share/mail-assistant/safe.mjs"
     cp ${./production.mjs} "$out/share/mail-assistant/production.mjs"
     cp ${./approval-server.mjs} "$out/share/mail-assistant/approval-server.mjs"
     cp ${./Mail.candidate.json} "$out/share/mail-assistant/Mail.candidate.json"

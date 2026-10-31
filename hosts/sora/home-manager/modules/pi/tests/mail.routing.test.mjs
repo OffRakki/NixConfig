@@ -29,6 +29,14 @@ test('recipient policy is closed, canonical, bounded and defaults only to an all
   for (const p of [null, { ...policy(), version: 2 }, { ...policy(), approved: true }, { ...policy(), allowedRecipients: [] }, { ...policy(), allowedRecipients: Array(33).fill('owner@example.test') }, { ...policy(), defaultRecipient: 'outside@example.test' }, { ...policy(), allowedRecipients: ['OWNER@example.test', 'owner@example.test'] }, { ...policy(), allowedRecipients: ['owner@example.test\nBcc: outside@example.test'] }]) assert.throws(() => validateRecipientPolicy(p));
 });
 
+test('runtime automatic authority is optional, defaults off, typed and limited to fixed capabilities', () => {
+  assert.deepEqual(validateRecipientPolicy(policy()), { ...policy(), safeCapabilities: [], automaticReplies: false });
+  const enabled = { ...policy(), safeCapabilities: ['weather', 'machine_status'], automaticReplies: true };
+  assert.deepEqual(validateRecipientPolicy(enabled), enabled);
+  assert.ok(Object.isFrozen(validateRecipientPolicy(enabled).safeCapabilities));
+  for (const changed of [{ automaticReplies: 'true' }, { automaticReplies: null }, { safeCapabilities: null }, { safeCapabilities: 'weather' }, { safeCapabilities: ['bash'] }, { safeCapabilities: ['weather', 'weather'] }, { safeCapabilities: ['weather', 'machine_status', 'read'] }]) assert.throws(() => validateRecipientPolicy({ ...policy(), ...changed }));
+});
+
 test('each listed From replies only to that address; outsiders get an owner copy with labeled context', () => {
   const c = config('/tmp');
   for (const from of c.recipientPolicy.allowedRecipients) {
@@ -64,7 +72,7 @@ test('adding display dates cannot replay an existing legacy request', async () =
 test('runtime policy loads a private SOPS-style symlink and fails closed for missing, public or malformed files', async () => fixture(async directory => {
   const path = join(directory, 'policy.json'), link = join(directory, 'secret-link');
   await writeFile(path, JSON.stringify(policy()), { mode: 0o600 }); await symlink(path, link);
-  assert.deepEqual(loadRecipientPolicy(link), policy());
+  assert.deepEqual(loadRecipientPolicy(link), { ...policy(), safeCapabilities: [], automaticReplies: false });
   assert.throws(() => loadRecipientPolicy(join(directory, 'missing')));
   assert.throws(() => loadRecipientPolicy('/nix/store/forbidden.json'), /runtime_recipient_policy_required/);
   assert.throws(() => loadRecipientPolicy('relative'), /runtime_recipient_policy_required/);
