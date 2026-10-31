@@ -18,6 +18,7 @@ in {
   services = {
     n8n = {
       enable = true;
+      package = pkgs.callPackage ./n8n {};
       environment = {
         N8N_LISTEN_ADDRESS = "127.0.0.1";
         N8N_HOST = "localhost";
