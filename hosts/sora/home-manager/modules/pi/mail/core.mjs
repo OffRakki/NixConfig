@@ -182,7 +182,7 @@ export class Store {
 
 // This is deliberately NOT an email/caller-supplied decision. Only trusted host code may inject an adapter.
 // A real adapter MUST authenticate its backend, validate its signed schema/expiry/binding and atomically
-// consume the backend's one-use grant. No production endpoint/auth/schema has been established.
+// consume the backend's one-use grant. The production adapter lives in production.mjs.
 export const unconfiguredApproval = Object.freeze({ configured: false,
   async createProposal() { return null; }, async fetchDecision() { return { status: 'unconfigured' }; }, async consumeGrant() { return false; } });
 export class Gate {
@@ -226,8 +226,9 @@ export class Gate {
 }
 
 export function bindingFor(request, config, phase, operation) {
-  return { version: 2, requestId: request.id, mailbox: request.mailbox, source: request.source,
-    provider: config.provider, scope: config.scope, cwd: config.cwd, phase, operation };
+  return { version: 3, requestId: request.id, mailbox: request.mailbox, source: request.source,
+    provider: config.provider, scope: config.scope, cwd: config.cwd, phase, operation,
+    requestPreview: { from: request.input.from, subject: request.input.subject, body: Buffer.byteLength(request.input.body) > 8190 ? Buffer.from(request.input.body).subarray(0, 8170).toString('utf8') + '\n[truncated]' : request.input.body } };
 }
 export async function reserveSend(store, id, config, adapter = unconfiguredApproval, signal) {
   validateConfig(config);
@@ -237,7 +238,7 @@ export async function reserveSend(store, id, config, adapter = unconfiguredAppro
   if (request.mailbox !== config.mailbox) throw new Error('mailbox_mismatch');
   const reply = JSON.parse(row.reply);
   // Even a public reply needs exact recipient/body disclosure approval. The draft is never SMTP authorization.
-  const binding = bindingFor(request, config, 'send', { sender: address(config.selfAddress), recipient: reply.to, subject: reply.subject, bodyDigest: digest(reply.body) });
+  const binding = bindingFor(request, config, 'send', { sender: address(config.selfAddress), recipient: reply.to, subject: reply.subject, body: reply.body, bodyDigest: digest(reply.body) });
   const gate = new Gate(store, adapter, signal);
   if (!await gate.authorize(binding)) return { status: gate.failed ? 'failed' : 'approval_required', reason: gate.reason };
   return { status: 'send_reserved', reservation: digest(binding), requestId: id, reply };
