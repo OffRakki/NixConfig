@@ -78,8 +78,9 @@ export function retrySend() {
   return [{ json: { payload: Buffer.from(JSON.stringify({ requestId: v.requestId })).toString('base64') } }];
 }
 
-export function prepareOutcome(outcome, lookup) {
-  const v = lookup('Validate send reservation').item.json;
+export function prepareOutcome(outcome, reservations) {
+  if (!Array.isArray(reservations) || reservations.length !== 1) throw new Error('one_delivery_reservation_required');
+  const v = reservations[0].json;
   if (v.status !== 'send_reserved' || !/^[a-f0-9]{64}$/.test(v.requestId) || !/^[a-f0-9]{64}$/.test(v.reservation) || !['sent', 'unknown'].includes(outcome)) throw new Error('invalid_delivery_reservation');
   const payload = JSON.stringify({ outcome, requestId: v.requestId, reservation: v.reservation });
   return [{ json: { payload: Buffer.from(payload).toString('base64') } }];
@@ -121,8 +122,10 @@ export function buildMailWorkflow({ ssh, imap, smtp, recipient = 'me@ore.rs' } =
   add('Send approved email', 'n8n-nodes-base.emailSend', 2.1,
     { fromEmail: 'ciel@ore.rs', toEmail: '={{ $json.reply.to }}', subject: '={{ $json.reply.subject }}', emailFormat: 'text', text: '={{ $json.reply.body }}', options: { appendAttribution: false } },
     [2200, 0], { retryOnFail: false, onError: 'continueErrorOutput', ...(smtp ? { credentials: { smtp } } : { disabled: true }) });
-  js('Prepare sent receipt', `return (${prepareOutcome.toString()})('sent', $);`, [2420, 0]);
-  js('Prepare uncertain receipt', `return (${prepareOutcome.toString()})('unknown', $);`, [2420, 260]);
+  // Keep the literal $ selector visible to n8n's task-runner dependency scanner.
+  // The latest run (-1) is the reservation, not the first pending approval poll; SMTP drops paired-item lineage.
+  js('Prepare sent receipt', `return (${prepareOutcome.toString()})('sent', $('Validate send reservation').all(0, -1));`, [2420, 0]);
+  js('Prepare uncertain receipt', `return (${prepareOutcome.toString()})('unknown', $('Validate send reservation').all(0, -1));`, [2420, 260]);
   sshNode('Record delivery outcome', `=${runner} send-finish '{{ $json.payload }}'`, [2640, 0]);
   add('Stopped — inspect status', 'n8n-nodes-base.noOp', 1, {}, [1320, 500]);
   add('How to test', 'n8n-nodes-base.stickyNote', 1, { content: '## Mail approval test\nClick **Run approval test**. Open http://127.0.0.1:8765/ and log in to review pending requests. Nothing sends until the exact delivery is approved. Edit the sample email to request a personal action; investigation and each tool require separate approval.\n\nIMAP remains disabled because the existing Mail workflow still processes that inbox. This workflow remains unpublished. Denied or expired requests stop; uncertain actions/delivery never retry automatically.', height: 280, width: 600 }, [0, -350]);

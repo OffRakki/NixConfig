@@ -87,11 +87,36 @@ test('send polling uses only canonical request identity, never unreviewed model 
 });
 
 test('delivery receipts preserve reserved identity and conservatively record uncertain SMTP', () => {
-  const lookup = () => ({ item: { json: { status: 'send_reserved', requestId: id, reservation } } });
+  const reserved = [{ json: { status: 'send_reserved', requestId: id, reservation } }];
   for (const outcome of ['sent', 'unknown']) {
-    const payload = prepareOutcome(outcome, lookup)[0].json.payload;
+    const payload = prepareOutcome(outcome, reserved)[0].json.payload;
     assert.deepEqual(decodeEnvelope(payload), { outcome, requestId: id, reservation });
   }
-  assert.throws(() => prepareOutcome('sent', () => ({ item: { json: { status: 'approval_required', requestId: id } } })));
-  assert.throws(() => prepareOutcome('retry', lookup));
+  assert.throws(() => prepareOutcome('sent', [{ json: { status: 'approval_required', requestId: id } }]));
+  assert.throws(() => prepareOutcome('retry', reserved));
+  for (const invalid of [undefined, [], [...reserved, ...reserved]]) assert.throws(() => prepareOutcome('sent', invalid), /one_delivery_reservation_required/);
+});
+
+test('emitted receipts expose the literal dependency and use the latest poll without SMTP item lineage', () => {
+  const graph = buildMailWorkflow();
+  const pending = [{ json: { status: 'approval_required', requestId: id } }];
+  const reserved = [{ json: { status: 'send_reserved', requestId: id, reservation } }];
+  const history = [pending, pending, reserved];
+  for (const [name, outcome] of [['Prepare sent receipt', 'sent'], ['Prepare uncertain receipt', 'unknown']]) {
+    const source = graph.nodes.find(n => n.name === name).parameters.jsCode;
+    assert.match(source, /\$\('Validate send reservation'\)\.all\(0, -1\)/);
+    const lookup = node => {
+      assert.equal(node, 'Validate send reservation');
+      return {
+        get item() { throw new Error('SMTP has no paired item'); },
+        all(branch, runIndex) {
+          assert.equal(branch, 0); assert.equal(runIndex, -1);
+          return history.at(runIndex);
+        },
+      };
+    };
+    const result = new Function('$', 'Buffer', source)(lookup, Buffer);
+    assert.deepEqual(decodeEnvelope(result[0].json.payload), { outcome, requestId: id, reservation });
+    assert.throws(() => new Function('$', 'Buffer', source)(() => ({ all: () => pending }), Buffer), /invalid_delivery_reservation/);
+  }
 });
