@@ -40,6 +40,11 @@
       owner = "rakki";
     };
 
+    secrets.mailRecipientPolicy = {
+      sopsFile = ../home-manager/modules/pi/private.yaml;
+      owner = "rakki";
+      mode = "0400";
+    };
     secrets.lucky-info = {
       sopsFile = ../home-manager/modules/pi/private.yaml;
       owner = "rakki";

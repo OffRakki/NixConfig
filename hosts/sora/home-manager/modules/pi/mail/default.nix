@@ -1,6 +1,7 @@
 {
   pkgs,
   piPackage,
+  recipientPolicyFile,
 }: let
   hostConfig = pkgs.writeText "mail-assistant-host.json" (builtins.toJSON {
     config = {
@@ -13,6 +14,7 @@
     };
     stateDirectory = "/home/rakki/.local/state/mail-assistant";
     authPath = "/home/rakki/.pi/agent/auth.json";
+    inherit recipientPolicyFile;
     tokenFile = "/var/lib/mail-approval-credentials/api-key";
     endpoint = "http://127.0.0.1:8765";
   });

@@ -56,25 +56,45 @@ export function classify(raw) {
   return value.kind;
 }
 
+export function validateRecipientPolicy(policy) {
+  closed(policy, ['version', 'allowedRecipients', 'defaultRecipient']);
+  if (policy.version !== 1 || !Array.isArray(policy.allowedRecipients) || policy.allowedRecipients.length < 1 || policy.allowedRecipients.length > 32) throw new Error('invalid_recipient_policy');
+  const allowedRecipients = policy.allowedRecipients.map(address);
+  const defaultRecipient = address(policy.defaultRecipient);
+  if (new Set(allowedRecipients).size !== allowedRecipients.length || !allowedRecipients.includes(defaultRecipient)) throw new Error('invalid_recipient_policy');
+  return Object.freeze({ version: 1, allowedRecipients: Object.freeze(allowedRecipients), defaultRecipient });
+}
+export function deliveryRecipient(request, config) {
+  // Offline fixtures may omit a policy. Production always loads its required runtime secret.
+  const from = address(request.input.from);
+  if (!config?.recipientPolicy) return from;
+  const policy = validateRecipientPolicy(config.recipientPolicy);
+  return policy.allowedRecipients.includes(from) ? from : policy.defaultRecipient;
+}
 export function validateConfig(config) {
-  closed(config, ['mailbox', 'selfAddress', 'provider', 'scope', 'cwd', 'contextPaths']);
+  closed(config, ['mailbox', 'selfAddress', 'provider', 'scope', 'cwd', 'contextPaths'], ['recipientPolicy']);
+  if (config.recipientPolicy) validateRecipientPolicy(config.recipientPolicy);
   text(config.mailbox, 128, 1); address(config.selfAddress);
   for (const key of ['provider', 'scope']) text(config[key], 200, 1);
   if (!isAbsolute(config.cwd) || !Array.isArray(config.contextPaths) || config.contextPaths.length > 8 || config.contextPaths.some(path => typeof path !== 'string' || !isAbsolute(path))) throw new Error('invalid_host_config');
 }
-export function formatReply(request, draft) {
+export function formatReply(request, draft, config, now = Date.now()) {
   closed(draft, ['subject', 'body']); text(draft.subject, 512, 1); text(draft.body, LIMIT.reply, 1);
   if (/[\r\n]/.test(draft.subject)) throw new Error('invalid_reply_subject');
   const original = request.input;
   const subject = /^re:/i.test(original.subject) ? original.subject : `Re: ${original.subject}`;
   text(subject, 512, 1);
   const quote = original.body.slice(0, 2048).replace(/\r\n?/g, '\n').split('\n').map(line => `> ${line}`).join('\n');
-  const body = `${draft.body}\n\n--- Original message from ${original.from} ---\n${quote}${original.body.length > 2048 ? '\n> [original truncated]' : ''}`;
+  const to = deliveryRecipient(request, config);
+  const ownerCopy = to !== original.from;
+  const context = ownerCopy ? `Owner copy — NOT sent to the original sender.\nOriginal sender (unverified From): ${original.from}\nOriginal subject: ${original.subject}\nMessage date (sender supplied): ${original.sentAt ?? 'not provided'}\nProcessed by assistant (UTC): ${new Date(now).toISOString()}\n\n--- Draft answer ---\n` : '';
+  const body = `${context}${draft.body}\n\n--- Original message from ${original.from} ---\n${quote}${original.body.length > 2048 ? '\n> [original truncated]' : ''}`;
   text(body, LIMIT.reply, 1);
-  return { to: original.from, subject, body };
+  return { to, subject, body };
 }
 export function normalize(raw, config) {
-  closed(raw, ['version', 'messageId', 'from', 'subject', 'body', 'autoSubmitted', 'precedence', 'attachments']);
+  closed(raw, ['version', 'messageId', 'from', 'subject', 'body', 'autoSubmitted', 'precedence', 'attachments'], ['sentAt']);
+  if (raw.sentAt !== undefined && raw.sentAt !== null && (typeof raw.sentAt !== 'string' || !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(raw.sentAt) || !Number.isFinite(Date.parse(raw.sentAt)) || new Date(raw.sentAt).toISOString() !== raw.sentAt)) throw new Error('invalid_message_date');
   if (raw.version !== 1) throw new Error('invalid_version');
   text(config.mailbox, 128, 1);
   const self = address(config.selfAddress);
@@ -95,7 +115,9 @@ export function normalize(raw, config) {
   const input = { ...raw, from };
   // No reliable IMAP UID is assumed. Content identity is a conservative dedup fallback, not sender authentication.
   // Even a reused Message-ID cannot overwrite a claimed request. Separate content becomes a separate request.
-  const source = digest(input);
+  // Optional display metadata must not turn an already-processed legacy email into a fresh request.
+  const { sentAt, ...identityInput } = input;
+  const source = digest(identityInput);
   const id = digest({ mailbox: config.mailbox, source });
   let rejection = null;
   if (from === self || (raw.autoSubmitted && raw.autoSubmitted.toLowerCase() !== 'no') || /^(bulk|list|junk)$/i.test(raw.precedence)) rejection = 'loop_suppressed';
@@ -237,6 +259,8 @@ export async function reserveSend(store, id, config, adapter = unconfiguredAppro
   const request = JSON.parse(row.input);
   if (request.mailbox !== config.mailbox) throw new Error('mailbox_mismatch');
   const reply = JSON.parse(row.reply);
+  // Revalidate against CURRENT policy before even proposing/consuming a grant. Never silently reroute a persisted draft.
+  if (config.recipientPolicy && reply.to !== deliveryRecipient(request, config)) return { status: 'failed', reason: 'recipient_policy_mismatch' };
   // Even a public reply needs exact recipient/body disclosure approval. The draft is never SMTP authorization.
   const binding = bindingFor(request, config, 'send', { sender: address(config.selfAddress), recipient: reply.to, subject: reply.subject, body: reply.body, bodyDigest: digest(reply.body) });
   const gate = new Gate(store, adapter, signal);

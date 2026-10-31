@@ -63,7 +63,10 @@ in {
     packages = [
       inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.lean-ctx
       piw
-      (import ./mail {inherit pkgs piPackage;})
+      (import ./mail {
+        inherit pkgs piPackage;
+        recipientPolicyFile = osConfig.sops.secrets.mailRecipientPolicy.path;
+      })
     ];
     persistence."/persist".directories = [
       ".pi"

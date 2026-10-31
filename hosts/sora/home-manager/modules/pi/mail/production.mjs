@@ -1,6 +1,7 @@
-import { readFileSync } from 'node:fs';
+import { closeSync, constants, fstatSync, openSync, readFileSync } from 'node:fs';
+import { isAbsolute } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { canonical, closed, decodeEnvelope, digest, finishSend, reserveSend, Store, text, validateConfig } from './core.mjs';
+import { canonical, closed, decodeEnvelope, deliveryRecipient, digest, finishSend, reserveSend, Store, text, validateConfig, validateRecipientPolicy } from './core.mjs';
 import { equal, signDecision, validateProposal } from './approval-server.mjs';
 import { cli as offlineCli, runMail, sdkModules } from './runner.mjs';
 
@@ -50,25 +51,47 @@ export function productionProvider(authPath, sdkRoot) {
     return { modelRuntime, model };
   };
 }
+export function loadRecipientPolicy(path) {
+  if (typeof path !== 'string' || !isAbsolute(path) || path.startsWith('/nix/store/')) throw new Error('runtime_recipient_policy_required');
+  // sops-nix uses a symlink to its runtime generation: validate the opened target, not the link.
+  const fd = openSync(path, constants.O_RDONLY | constants.O_NONBLOCK);
+  try {
+    const stat = fstatSync(fd);
+    if (!stat.isFile() || ![0, process.getuid()].includes(stat.uid) || (stat.mode & 0o077) || stat.size > 16384) throw new Error('insecure_recipient_policy');
+    return validateRecipientPolicy(JSON.parse(readFileSync(fd, 'utf8')));
+  } finally { closeSync(fd); }
+}
 export async function productionCli(args, host, dependencies = {}) {
   if (args.length === 1 && ['--help', '--selftest'].includes(args[0])) return args[0] === '--selftest' ? offlineCli(args) : { version: 1, status: 'configured', usage: 'mail-assistant-runner process CANONICAL_BASE64 | resume REQUEST_SHA256 | status REQUEST_SHA256 | send-reserve CANONICAL_BASE64 | send-finish CANONICAL_BASE64 | --selftest' };
-  closed(host, ['config', 'stateDirectory', 'authPath', 'tokenFile', 'endpoint']); validateConfig(host.config);
+  closed(host, ['config', 'stateDirectory', 'authPath', 'tokenFile', 'endpoint', 'recipientPolicyFile']); validateConfig(host.config);
   if (host.endpoint !== 'http://127.0.0.1:8765' || host.config.provider !== 'openai-codex/gpt-6.1-sol') throw new Error('invalid_production_config');
   if (args.length !== 2 || !['process', 'resume', 'status', 'send-reserve', 'send-finish'].includes(args[0])) throw new Error('invalid_cli_arguments');
   const store = new Store(host.stateDirectory);
   try {
     if (args[0] === 'status') return store.result(args[1]);
+    // The secret policy is host-only data: never mail input, a model prompt, or a Nix-store value.
+    const config = { ...host.config, recipientPolicy: loadRecipientPolicy(host.recipientPolicyFile) };
     // Credentials are loaded only for real commands, never help/selftest or status.
-    const approval = dependencies.approval ?? createApprovalAdapter({ token: readFileSync(host.tokenFile, 'utf8').trim(), endpoint: host.endpoint });
+    const backend = dependencies.approval ?? createApprovalAdapter({ token: readFileSync(host.tokenFile, 'utf8').trim(), endpoint: host.endpoint });
+    const currentRecipientAllowed = binding => binding.phase !== 'send' || deliveryRecipient(JSON.parse(store.get(binding.requestId).input), {
+      recipientPolicy: loadRecipientPolicy(host.recipientPolicyFile),
+    }) === binding.operation.recipient;
+    const approval = { ...backend, async consumeGrant(value, signal) {
+      // A policy revoked while awaiting the owner's decision must never consume a grant or reserve SMTP.
+      if (!currentRecipientAllowed(value.binding)) return false;
+      const consumed = await backend.consumeGrant(value, signal);
+      // Also close the async backend-consumption window before committing the local reservation.
+      return consumed === true && currentRecipientAllowed(value.binding);
+    } };
     if (['process', 'resume'].includes(args[0])) {
       if (args[0] === 'resume') store.get(args[1]);
-      return await runMail({ store, ...(args[0] === 'process' ? { raw: decodeEnvelope(args[1]) } : { id: args[1] }), config: host.config, approval, provider: dependencies.provider ?? productionProvider(host.authPath, dependencies.sdkRoot), sdkRoot: dependencies.sdkRoot });
+      return await runMail({ store, ...(args[0] === 'process' ? { raw: decodeEnvelope(args[1]) } : { id: args[1] }), config, approval, provider: dependencies.provider ?? productionProvider(host.authPath, dependencies.sdkRoot), sdkRoot: dependencies.sdkRoot });
     }
     const payload = decodeEnvelope(args[1]);
     closed(payload, args[0] === 'send-reserve' ? ['requestId'] : ['requestId', 'reservation', 'outcome']);
     store.get(payload.requestId);
     if (args[0] === 'send-reserve') {
-      const result = await reserveSend(store, payload.requestId, host.config, approval, AbortSignal.timeout(10000));
+      const result = await reserveSend(store, payload.requestId, config, approval, AbortSignal.timeout(10000));
       return { version: 1, requestId: payload.requestId, status: result.status, reason: result.reason ?? null, reply: result.reply ?? null, ...(result.reservation ? { reservation: result.reservation } : {}) };
     }
     if (!/^[a-f0-9]{64}$/.test(payload.reservation)) throw new Error('invalid_reservation');
