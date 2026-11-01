@@ -7,7 +7,8 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { Script } from 'node:vm';
 import { bindingFor, canonical, digest, encodeEnvelope, normalize, reserveSend, Store } from '../mail/core.mjs';
-import { createApprovalServer, passwordHash } from '../mail/approval-server.mjs';
+import { createApprovalServer, dashboardQuery, fuzzyScore, passwordHash } from '../mail/approval-server.mjs';
+import { viewURL } from '../mail/approval-ui.mjs';
 import { createApprovalAdapter, productionCli } from '../mail/production.mjs';
 import { runMail } from '../mail/runner.mjs';
 
@@ -32,6 +33,70 @@ async function fixture(fn) {
   try { await fn({ app: () => app, directory, config, request, proposal, http, login, adapter, advance: ms => { clock += ms; }, restart: async ({ rotatePassword = false } = {}) => { await app.close(); app = createApprovalServer({ directory: join(directory, 'site'), apiToken: token, ownerHash: rotatePassword ? await passwordHash(`${password}-rotated`) : ownerHash, port: 0, now: () => clock }); endpoint = await app.listen(); } }); }
   finally { await app.close(); await rm(directory, { recursive: true, force: true }); }
 }
+
+test('dashboard filter parsing is closed, bounded and round-trips pagination URLs', () => {
+  assert.deepEqual(dashboardQuery('/'), { index: 0, size: 32, q: '', status: 'all' });
+  const view = { index: 3, size: 64, q: 'hash & São Paulo', status: 'pending' };
+  assert.deepEqual(dashboardQuery(viewURL(view)), view);
+  for (const target of ['//evil.test/', '/login', '/?size=0', '/?size=9999', '/?size=016', '/?status=unknown', '/?q=one&q=two', '/?size=16&size=32', '/?unexpected=x', '/?q=%00', '/?q=x%0Ay', '/?q=' + 'x'.repeat(257), '/?q=' + Array(17).fill('a').join('+'), '/page/1000000', '/#fragment', '/?q=%0Afoo', '/?q=foo%0A', '/?q=foo\n', 'https://evil.test/']) assert.throws(() => dashboardQuery(target), target);
+});
+test('fuzzy scoring finds hashes, case/accent variants and non-contiguous content, preferring exact matches', () => {
+  assert.ok(fuzzyScore('qrtrly bdgt', 'quarterly budget report') > 0);
+  assert.ok(fuzzyScore('SAO PAULO', 'São Paulo') > 0);
+  assert.ok(fuzzyScore('abc123', 'SHA256: abc123ef') > 0);
+  assert.ok(fuzzyScore('budget', 'budget') > fuzzyScore('bdgt', 'budget'));
+  assert.equal(fuzzyScore('budget missingword', 'quarterly budget'), 0);
+  assert.equal(fuzzyScore('zzzzz', 'quarterly budget'), 0);
+  assert.equal(fuzzyScore('', 'anything'), 1);
+});
+test('queue search spans all stored contents, filters states and applies page sizes before rendering', async () => fixture(async ({ http, login, proposal, adapter, app }) => {
+  const owner = await login();
+  const ids = [];
+  for (let i = 0; i < 40; i++) {
+    const p = proposal({ name: 'read', args: { path: i === 0 ? 'archive/quarterly-budget-report.txt' : `fixture-${i}`, note: i === 0 ? 'São Paulo' : '' } });
+    await adapter().createProposal(p); ids.push(p.digest);
+  }
+  app().store.db.prepare("UPDATE approval_proposals SET state='denied' WHERE id=?").run(ids[1]);
+  const cards = html => (html.match(/<section class="request" id="proposal-/g) ?? []).length;
+  const initial = await (await http('/', owner)).text();
+  assert.equal(cards(initial), 32);
+  assert.ok(!initial.includes(`id="proposal-${ids[0]}"`));
+  assert.match(initial, /border-radius:0!important/);
+  assert.match(initial, /name="status"/); assert.match(initial, /name="size"/);
+  const fuzzy = await (await http('/?q=qrtrly+bdgt', owner)).text();
+  assert.equal(cards(fuzzy), 1); assert.ok(fuzzy.includes(`id="proposal-${ids[0]}"`));
+  for (const q of [ids[0], 'SAO PAULO', 'archive/quarterly-budget-report.txt']) {
+    const html = await (await http('/?q=' + encodeURIComponent(q), owner)).text();
+    assert.equal(cards(html), 1); assert.ok(html.includes(`id="proposal-${ids[0]}"`));
+  }
+  const denied = await (await http('/?status=denied', owner)).text();
+  assert.equal(cards(denied), 1); assert.ok(denied.includes(`id="proposal-${ids[1]}"`));
+  const small = await (await http('/?size=16&status=pending', owner)).text();
+  assert.equal(cards(small), 16); assert.match(small, /of 39 matching requests/);
+  assert.match(small, /href="\/page\/1\?status=pending&amp;size=16"/);
+  const last = await (await http('/page/2?size=16', owner)).text();
+  assert.equal(cards(last), 8); assert.match(last, /33–40 of 40/);
+  assert.equal(cards(await (await http('/?size=128', owner)).text()), 40);
+  const empty = await (await http('/?q=notarealwordzzzzzzzzzzzzzz', owner)).text();
+  assert.equal(cards(empty), 0); assert.match(empty, /No requests in this view/);
+  const attack = await (await http('/?q=' + encodeURIComponent('\"><img src=x onerror=alert(1)>'), owner)).text();
+  assert.ok(!attack.includes('<img src=x')); assert.match(attack, /&lt;img/);
+  for (const path of ['/?size=9999', '/?q=a&q=b', '/?unknown=x', '/page/1?status=oops']) assert.equal((await http(path, owner)).status, 400);
+  assert.equal((await http('/?q=budget')).status, 303);
+  assert.equal((await http('/api/v1/proposals?q=budget', { auth: true })).status, 403);
+}));
+test('decisions preserve a validated filtered view and reject open redirects before changing state', async () => fixture(async ({ http, login, proposal, adapter }) => {
+  const owner = await login(), p = proposal({ name: 'read', args: { path: 'return-fixture' } });
+  await adapter().createProposal(p);
+  const form = { csrf: owner.csrf, id: p.digest, decision: 'denied' };
+  for (const returnTo of ['//evil.test/', 'https://evil.test/', '/login', '/?size=9999', '/?q=one&q=two']) {
+    assert.equal((await http('/decide', { ...owner, method: 'POST', form: { ...form, returnTo } })).status, 400);
+    assert.equal((await adapter().fetchDecision(p.digest)).status, 'pending');
+  }
+  const returnTo = '/page/1?status=pending&size=16&q=return';
+  const result = await http('/decide', { ...owner, method: 'POST', form: { ...form, returnTo } });
+  assert.equal(result.status, 303); assert.equal(result.headers.get('location'), returnTo);
+}));
 
 test('HTTP API requires bearer auth, exact Host, immutable digest and closed schema', async () => fixture(async ({ http, proposal, adapter }) => {
   const p = proposal({ name: 'write', args: { path: 'fixture', content: 'test' } });
@@ -108,7 +173,8 @@ test('live dashboard polls authenticated pages and reflects new, decided and exp
   const source = await script.text();
   assert.doesNotThrow(() => new Script(source));
   assert.match(source, /setInterval\(refresh, 3000\)/);
-  assert.match(source, /fetch\(location.pathname/);
+  assert.match(source, /desiredURL = location.pathname \+ location.search/);
+  assert.match(source, /fetch\(url/);
   const initial = await http('/', owner);
   const html = await initial.text();
   assert.match(html, /id="proposals"/);

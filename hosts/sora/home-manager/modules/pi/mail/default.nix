@@ -28,6 +28,7 @@ in
     cp ${./safe.mjs} "$out/share/mail-assistant/safe.mjs"
     cp ${./production.mjs} "$out/share/mail-assistant/production.mjs"
     cp ${./approval-server.mjs} "$out/share/mail-assistant/approval-server.mjs"
+    cp ${./approval-ui.mjs} "$out/share/mail-assistant/approval-ui.mjs"
     cp ${./Mail.candidate.json} "$out/share/mail-assistant/Mail.candidate.json"
     makeWrapper ${pkgs.nodejs_24}/bin/node "$out/bin/mail-assistant-runner" \
       --add-flags "$out/share/mail-assistant/production.mjs --config-file ${hostConfig}" \
