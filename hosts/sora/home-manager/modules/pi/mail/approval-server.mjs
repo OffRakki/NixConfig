@@ -42,6 +42,47 @@ function page(title, body) {
   :root{color-scheme:light dark;font:16px/1.5 system-ui}body{max-width:960px;margin:2rem auto;padding:0 1rem}section{border:1px solid #8886;border-radius:8px;padding:1.25rem;margin:1rem 0}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.5 ui-monospace,monospace}label{display:block;margin:1rem 0}input{display:block;padding:.5rem;font:inherit}button{padding:.65rem 1rem;margin:.5rem .5rem .5rem 0;font:inherit;cursor:pointer}button[value=approved]{border:2px solid #39955b}button[value=denied]{border:2px solid #bc5555}h2{overflow-wrap:anywhere}details{margin:1rem 0}nav a{margin-right:1rem}
   </style><body><h1>${escape(title)}</h1>${body}</body></html>`;
 }
+const dashboardScript = `
+const list = document.getElementById('proposals');
+const status = document.getElementById('live-status');
+let busy = false;
+async function refresh() {
+  if (busy || document.hidden) return;
+  busy = true;
+  try {
+    const response = await fetch(location.pathname, { cache: 'no-store', signal: AbortSignal.timeout(10000) });
+    if (response.redirected) { location.assign('/login'); return; }
+    if (!response.ok) throw new Error('refresh_failed');
+    const next = new DOMParser().parseFromString(await response.text(), 'text/html').getElementById('proposals');
+    if (!next) throw new Error('invalid_dashboard');
+    // Keep existing cards (including expanded details and focused buttons) unless their state changed.
+    const keep = new Set();
+    let cursor = list.firstElementChild;
+    for (const incoming of [...next.children]) {
+      const existing = document.getElementById(incoming.id);
+      let card = existing;
+      if (!existing || existing.dataset.state !== incoming.dataset.state) {
+        if (existing) {
+          const open = [...existing.querySelectorAll('details')].map(detail => detail.open);
+          incoming.querySelectorAll('details').forEach((detail, index) => { detail.open = open[index]; });
+          existing.replaceWith(incoming);
+          if (cursor === existing) cursor = incoming;
+        }
+        card = incoming;
+      }
+      if (card !== cursor) list.insertBefore(card, cursor);
+      cursor = card.nextElementSibling;
+      keep.add(card.id);
+    }
+    for (const card of [...list.children]) if (!keep.has(card.id)) card.remove();
+    status.textContent = 'Live updates on — checking every 3 seconds.';
+  } catch {
+    status.textContent = 'Connection interrupted — retrying automatically.';
+  } finally { busy = false; }
+}
+setInterval(refresh, 3000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) void refresh(); });
+`;
 function proposalPreview(row) {
   const binding = JSON.parse(row.binding), op = binding.operation;
   const preview = binding.phase === 'send'
@@ -94,7 +135,7 @@ export function createApprovalServer({ directory, apiToken, ownerHash, port = 87
     return row;
   }
   const server = createServer({ maxHeaderSize: 8192, requestTimeout: 10000, headersTimeout: 5000, keepAliveTimeout: 1000 }, async (req, res) => {
-    res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'");
+    res.setHeader('Content-Security-Policy', "default-src 'none'; script-src 'self'; connect-src 'self'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'");
     res.setHeader('X-Frame-Options', 'DENY'); res.setHeader('X-Content-Type-Options', 'nosniff'); res.setHeader('Cache-Control', 'no-store'); res.setHeader('Referrer-Policy', 'same-origin');
     const send = (code, value, html = false) => { res.writeHead(code, { 'Content-Type': html ? 'text/html; charset=utf-8' : 'application/json' }); res.end(html ? value : canonical(value)); };
     try {
@@ -131,6 +172,11 @@ export function createApprovalServer({ directory, apiToken, ownerHash, port = 87
       }
       if (req.method === 'GET' && req.url === '/healthz') return send(200, { status: 'ok' });
       const current = session(req);
+      if (req.method === 'GET' && req.url === '/dashboard.js') {
+        if (!current?.owner) return send(401, { error: 'owner_required' });
+        res.writeHead(200, { 'Content-Type': 'text/javascript; charset=utf-8' });
+        return res.end(dashboardScript);
+      }
       if (req.method === 'GET' && req.url === '/login') {
         if (current?.owner) { res.writeHead(303, { Location: '/' }); return res.end(); }
         if (current) db.prepare('DELETE FROM approval_sessions WHERE id=?').run(current.id);
@@ -175,7 +221,7 @@ export function createApprovalServer({ directory, apiToken, ownerHash, port = 87
         const rows = db.prepare('SELECT * FROM approval_proposals ORDER BY rowid DESC LIMIT 32 OFFSET ?').all(index * 32);
         const anti = csrf(current.token);
         const form = (action, fields, buttons) => `<form method="post" action="${action}"><input type="hidden" name="csrf" value="${anti}">${fields}${buttons}</form>`;
-        return send(200, page('Mail approval — lucky', form('/logout', '', '<button>Log out</button>') + `<p>Page ${index + 1}. Review the complete canonical operation and request before approving. Refresh to poll.</p><nav><a href="/">Latest</a> <a href="/page/${Math.max(0, index - 1)}">Newer</a> <a href="/page/${Math.min(999999, index + 1)}">Older</a></nav>` + rows.map(row => `<section><h2>${escape(row.state)} — ${escape(row.id)}</h2><p>Expires ${escape(new Date(row.expires).toISOString())}</p>${proposalPreview(row)}${row.state === 'pending' ? form('/decide', `<input type="hidden" name="id" value="${row.id}">`, '<button name="decision" value="approved">Approve exact operation once</button><button name="decision" value="denied">Deny</button>') : ''}</section>`).join('')), true);
+        return send(200, page('Mail approval — lucky', form('/logout', '', '<button>Log out</button>') + `<p>Page ${index + 1}. Review the complete canonical operation and request before approving. <span id="live-status" role="status">Live updates on — checking every 3 seconds.</span><noscript> JavaScript is disabled; refresh to check for new requests.</noscript></p><nav><a href="/">Latest</a> <a href="/page/${Math.max(0, index - 1)}">Newer</a> <a href="/page/${Math.min(999999, index + 1)}">Older</a></nav>` + `<div id="proposals">` + rows.map(row => `<section id="proposal-${row.id}" data-state="${escape(row.state)}"><h2>${escape(row.state)} — ${escape(row.id)}</h2><p>Expires ${escape(new Date(row.expires).toISOString())}</p>${proposalPreview(row)}${row.state === 'pending' ? form('/decide', `<input type="hidden" name="id" value="${row.id}">`, '<button name="decision" value="approved">Approve exact operation once</button><button name="decision" value="denied">Deny</button>') : ''}</section>`).join('') + '</div><script src="/dashboard.js" defer></script>'), true);
       }
       return send(404, { error: 'not_found' });
     } catch { if (!res.headersSent) send(400, { error: 'invalid_request' }); else res.destroy(); }
