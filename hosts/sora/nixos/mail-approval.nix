@@ -1,8 +1,12 @@
-{pkgs, ...}: let
+{
+  config,
+  pkgs,
+  ...
+}: let
   source = ../home-manager/modules/pi/mail;
   credentials = "/var/lib/mail-approval-credentials";
   login = pkgs.writeShellScriptBin "mail-approval-login" ''
-    exec ${pkgs.nodejs_24}/bin/node ${source}/provision.mjs show-login ${credentials}
+    printf '%s\n' 'Username: lucky' 'URL: http://localhost:8765' 'Password: your mailApprovalPass value in SOPS secrets.yaml.'
   '';
 in {
   users.groups.mail-approval.members = ["rakki"];
@@ -17,14 +21,16 @@ in {
   ];
   systemd.services = {
     mail-approval-credentials = {
-      description = "Initialize private runtime mail approval credentials";
+      description = "Derive private mail approval credentials from SOPS";
       wantedBy = ["multi-user.target"];
       before = ["mail-approval.service"];
+      after = ["sops-install-secrets.service"];
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
         UMask = "0077";
-        ExecStart = "${pkgs.nodejs_24}/bin/node ${source}/provision.mjs init ${credentials}";
+        LoadCredential = ["owner-password:${config.sops.secrets.mailApprovalPass.path}"];
+        ExecStart = "${pkgs.nodejs_24}/bin/node ${source}/provision.mjs init ${credentials} %d/owner-password";
         ProtectSystem = "strict";
         ReadWritePaths = [credentials];
         ProtectHome = true;

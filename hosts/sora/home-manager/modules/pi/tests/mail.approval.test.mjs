@@ -29,7 +29,7 @@ async function fixture(fn) {
     return { cookie: ownerCookie, csrf: /name="csrf" value="([a-f0-9]+)"/.exec(page)[1], preCookie: cookie, preCsrf: csrf };
   }
   const adapter = () => createApprovalAdapter({ token, endpoint });
-  try { await fn({ app: () => app, directory, config, request, proposal, http, login, adapter, advance: ms => { clock += ms; }, restart: async () => { await app.close(); app = createApprovalServer({ directory: join(directory, 'site'), apiToken: token, ownerHash, port: 0, now: () => clock }); endpoint = await app.listen(); } }); }
+  try { await fn({ app: () => app, directory, config, request, proposal, http, login, adapter, advance: ms => { clock += ms; }, restart: async ({ rotatePassword = false } = {}) => { await app.close(); app = createApprovalServer({ directory: join(directory, 'site'), apiToken: token, ownerHash: rotatePassword ? await passwordHash(`${password}-rotated`) : ownerHash, port: 0, now: () => clock }); endpoint = await app.listen(); } }); }
   finally { await app.close(); await rm(directory, { recursive: true, force: true }); }
 }
 
@@ -145,6 +145,18 @@ test('signed approved grants consume atomically once across concurrency and rest
   assert.equal((await stat(join(directory, 'site'))).mode & 0o777, 0o700); assert.equal((await stat(join(directory, 'site', 'state.sqlite'))).mode & 0o777, 0o600);
   assert.equal(app().store.db.prepare('SELECT COUNT(*) AS n FROM approval_proposals').get().n, 1);
 }));
+test('password rotation revokes owner sessions while retaining runner API credentials', async () => fixture(async ({ login, http, restart, adapter, proposal }) => {
+  const owner = await login();
+  const p = proposal({ name: 'read', args: { path: 'rotation-fixture' } });
+  await adapter().createProposal(p);
+  await restart();
+  assert.equal((await http('/', owner)).status, 200);
+  await restart({ rotatePassword: true });
+  assert.equal((await http('/', owner)).status, 303);
+  assert.equal((await http('/dashboard.js', owner)).status, 401);
+  assert.equal((await adapter().fetchDecision(p.digest)).status, 'pending');
+}));
+
 test('denied and expired proposals never grant, reset expiry or become approved', async () => fixture(async ({ proposal, adapter, login, http, advance }) => {
   const p = proposal({ name: 'read', args: { path: 'denied' } }); await adapter().createProposal(p); const owner = await login();
   assert.equal((await http('/decide', { ...owner, method: 'POST', form: { csrf: owner.csrf, id: p.digest, decision: 'denied' } })).status, 303);
