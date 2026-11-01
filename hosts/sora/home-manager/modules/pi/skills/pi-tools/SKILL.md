@@ -84,6 +84,18 @@ Fresh sessions start on the subscription; resumed sessions retain their route.
 Provider spending limits must be managed separately; this extension is not a
 hard dollar cap. Activation reapplies the Nix-owned routing fields.
 
+## Home Manager model-file collisions
+
+Discovery can atomically replace `models.json` with a regular file. With the
+fixed `.backup` extension, another activation can then fail at `checkLinkTargets`.
+`pi.nix` sets `force = true` on the existing **absolute-keyed** Home Manager entry
+`${config.programs.pi-coding-agent.configDir}/models.json`, so activation reasserts
+Nix ownership of this generated file. Other collision checks remain enabled.
+Do not add a second relative-keyed entry for the same target, disable all backup
+checks, or edit runtime JSON. Before first forcing an existing file, preserve
+both it and any `.backup` in a private local-state directory (0700/0600), never
+in the source repository. Repeatedly moving the backup is only a temporary fix.
+
 ## Local Ollama models
 
 `pi.nix` declares `pi-ollama.json` and the `ollama/*` model scope.
