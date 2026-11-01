@@ -22,7 +22,8 @@ export function validatePasswordHash(value) {
 export function validateProposal(value) {
   closed(value, ['digest', 'binding']);
   if (!/^[a-f0-9]{64}$/.test(value.digest) || digest(value.binding) !== value.digest) throw new Error('binding_mismatch');
-  const b = closed(value.binding, ['version', 'requestId', 'mailbox', 'source', 'provider', 'scope', 'cwd', 'phase', 'operation', 'requestPreview']);
+  const b = closed(value.binding, ['version', 'requestId', 'mailbox', 'source', 'provider', 'scope', 'cwd', 'phase', 'operation', 'requestPreview'], ['profileDigest']);
+  if (b.profileDigest !== undefined && !/^[a-f0-9]{64}$/.test(b.profileDigest)) throw new Error('invalid_profile_digest');
   if (b.version !== 3 || !/^[a-f0-9]{64}$/.test(b.requestId) || !/^[a-f0-9]{64}$/.test(b.source) || !['tool', 'send', 'investigate'].includes(b.phase)) throw new Error('invalid_binding');
   for (const key of ['mailbox', 'provider', 'scope', 'cwd']) text(b[key], 4096, 1);
   closed(b.requestPreview, ['from', 'subject', 'body']);

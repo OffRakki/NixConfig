@@ -81,7 +81,15 @@ export function deliveryRecipient(request, config) {
   return policy.allowedRecipients.includes(from) ? from : policy.defaultRecipient;
 }
 export function validateConfig(config) {
-  closed(config, ['mailbox', 'selfAddress', 'provider', 'scope', 'cwd', 'contextPaths'], ['recipientPolicy', 'safeCapabilities', 'automaticReplies']);
+  closed(config, ['mailbox', 'selfAddress', 'provider', 'scope', 'cwd', 'contextPaths'], ['recipientPolicy', 'safeCapabilities', 'automaticReplies', 'assistantProfile']);
+  if (config.assistantProfile !== undefined) {
+    const profile = closed(config.assistantProfile, ['personaFile', 'skillPaths', 'extensionPaths'], ['shellPath', 'browserConfigFile', 'browserNativeConfigFile']);
+    for (const key of ['shellPath', 'browserConfigFile', 'browserNativeConfigFile']) if (profile[key] !== undefined && (typeof profile[key] !== 'string' || !isAbsolute(profile[key]))) throw new Error('invalid_assistant_profile');
+    if (typeof profile.personaFile !== 'string' || !isAbsolute(profile.personaFile)) throw new Error('invalid_assistant_profile');
+    for (const key of ['skillPaths', 'extensionPaths']) {
+      if (!Array.isArray(profile[key]) || profile[key].length > 32 || profile[key].some(path => typeof path !== 'string' || !isAbsolute(path))) throw new Error('invalid_assistant_profile');
+    }
+  }
   validateSafeAuthority(config);
   if (config.recipientPolicy) validateRecipientPolicy(config.recipientPolicy);
   text(config.mailbox, 128, 1); address(config.selfAddress);
@@ -155,7 +163,9 @@ export class Store {
       CREATE TABLE IF NOT EXISTS requests(id TEXT PRIMARY KEY, digest TEXT NOT NULL, input TEXT NOT NULL,
         status TEXT NOT NULL, reason TEXT, reply TEXT, owner TEXT, context TEXT, kind TEXT);
       CREATE TABLE IF NOT EXISTS operations(key TEXT PRIMARY KEY, request TEXT NOT NULL, binding TEXT NOT NULL,
-        state TEXT NOT NULL, proposal TEXT, grant TEXT UNIQUE, result TEXT);`);
+        state TEXT NOT NULL, proposal TEXT, grant TEXT UNIQUE, result TEXT);
+      CREATE TABLE IF NOT EXISTS request_runtime(request TEXT PRIMARY KEY,route TEXT NOT NULL,
+        fallback_used INTEGER NOT NULL DEFAULT 0,tool_attempted INTEGER NOT NULL DEFAULT 0);`);
     // v1 rows retain one-use states; missing legacy result snapshots cannot be reconstructed safely.
     if (!this.db.prepare('PRAGMA table_info(operations)').all().some(column => column.name === 'result')) this.db.exec('ALTER TABLE operations ADD COLUMN result TEXT');
     this.db.exec('PRAGMA user_version=2;');
@@ -198,6 +208,25 @@ export class Store {
         this.db.prepare("SELECT COUNT(*) AS n FROM operations WHERE request=? AND json_extract(binding,'$.phase')='tool'").get(binding.requestId).n >= 32) throw new Error('request_tool_bound_reached');
     this.db.prepare("INSERT OR IGNORE INTO operations(key,request,binding,state) VALUES(?,?,?,'pending')").run(key, binding.requestId, canonical(binding));
     return this.db.prepare('SELECT * FROM operations WHERE key=?').get(key);
+  }
+  runtime(requestId, primaryRoute) {
+    this.get(requestId);
+    this.db.prepare('INSERT OR IGNORE INTO request_runtime(request,route) VALUES(?,?)').run(requestId, primaryRoute);
+    return this.db.prepare('SELECT * FROM request_runtime WHERE request=?').get(requestId);
+  }
+  markToolAttempt(requestId) {
+    this.db.prepare('UPDATE request_runtime SET tool_attempted=1 WHERE request=?').run(requestId);
+  }
+  reserveFallback(requestId) {
+    // Durable one-use reservation before resolving credentials or attempting the paid route.
+    // Legacy ledgers have no runtime row, so also inspect persisted operation history.
+    return this.db.prepare(`UPDATE request_runtime SET fallback_used=1 WHERE request=? AND fallback_used=0 AND tool_attempted=0
+      AND NOT EXISTS (SELECT 1 FROM operations WHERE request=? AND json_extract(binding,'$.phase') IN ('tool','safe_tool'))`)
+      .run(requestId, requestId).changes === 1;
+  }
+  setRuntimeRoute(requestId, route) {
+    text(route, 200, 1);
+    this.db.prepare('UPDATE request_runtime SET route=? WHERE request=? AND fallback_used=1').run(route, requestId);
   }
   completedTools(requestId) {
     const rows = this.db.prepare("SELECT binding,result FROM operations WHERE request=? AND state='complete' ORDER BY rowid").all(requestId)
@@ -259,7 +288,8 @@ export class Gate {
 
 export function bindingFor(request, config, phase, operation) {
   return { version: 3, requestId: request.id, mailbox: request.mailbox, source: request.source,
-    provider: config.provider, scope: config.scope, cwd: config.cwd, phase, operation,
+    provider: config.provider, scope: config.scope, cwd: config.cwd,
+    ...(config.assistantProfile ? { profileDigest: digest(config.assistantProfile) } : {}), phase, operation,
     requestPreview: { from: request.input.from, subject: request.input.subject, body: Buffer.byteLength(request.input.body) > 8190 ? Buffer.from(request.input.body).subarray(0, 8170).toString('utf8') + '\n[truncated]' : request.input.body } };
 }
 // Policy grants are generated only by the host, never accepted from mail or model output.

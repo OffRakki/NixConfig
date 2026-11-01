@@ -41,14 +41,28 @@ export function createApprovalAdapter({ token, endpoint = 'http://127.0.0.1:8765
     },
   };
 }
-export function productionProvider(authPath, sdkRoot) {
+export function productionProvider(authPath, sdkRoot, apiKeyFile) {
   if (authPath !== '/home/rakki/.pi/agent/auth.json') throw new Error('invalid_auth_path');
   return async signal => {
     const { sdk } = await sdkModules(sdkRoot);
     const modelRuntime = await sdk.ModelRuntime.create({ authPath, modelsPath: null, refreshOnCreate: false, allowModelNetwork: false, signal });
     const model = modelRuntime.getModel('openai-codex', 'gpt-6.1-sol');
     if (!model) throw new Error('configured_model_unavailable');
-    return { modelRuntime, model };
+    return { modelRuntime, model, ...(apiKeyFile ? { fallback: async signal => {
+      signal?.throwIfAborted();
+      if (!isAbsolute(apiKeyFile) || apiKeyFile.startsWith('/nix/store/')) throw new Error('runtime_api_key_required');
+      const fd = openSync(apiKeyFile, constants.O_RDONLY | constants.O_NONBLOCK);
+      let key;
+      try {
+        const stat = fstatSync(fd);
+        if (!stat.isFile() || ![0, process.getuid()].includes(stat.uid) || (stat.mode & 0o077) || stat.size > 4096) throw new Error('insecure_api_key_file');
+        key = text(readFileSync(fd, 'utf8').trim(), 4096, 1);
+      } finally { closeSync(fd); }
+      const next = modelRuntime.getModel('openai', 'gpt-6.1-sol');
+      if (!next) throw new Error('fallback_model_unavailable');
+      await modelRuntime.setRuntimeApiKey('openai', key);
+      return next;
+    } } : {}) };
   };
 }
 export function loadRecipientPolicy(path) {
@@ -63,7 +77,7 @@ export function loadRecipientPolicy(path) {
 }
 export async function productionCli(args, host, dependencies = {}) {
   if (args.length === 1 && ['--help', '--selftest'].includes(args[0])) return args[0] === '--selftest' ? offlineCli(args) : { version: 1, status: 'configured', usage: 'mail-assistant-runner process CANONICAL_BASE64 | resume REQUEST_SHA256 | status REQUEST_SHA256 | send-reserve CANONICAL_BASE64 | send-finish CANONICAL_BASE64 | --selftest' };
-  closed(host, ['config', 'stateDirectory', 'authPath', 'tokenFile', 'endpoint', 'recipientPolicyFile']); validateConfig(host.config);
+  closed(host, ['config', 'stateDirectory', 'authPath', 'tokenFile', 'endpoint', 'recipientPolicyFile'], ['apiKeyFile']); validateConfig(host.config);
   if (host.endpoint !== 'http://127.0.0.1:8765' || host.config.provider !== 'openai-codex/gpt-6.1-sol') throw new Error('invalid_production_config');
   if (args.length !== 2 || !['process', 'resume', 'status', 'send-reserve', 'send-finish'].includes(args[0])) throw new Error('invalid_cli_arguments');
   const store = new Store(host.stateDirectory);
@@ -90,7 +104,7 @@ export async function productionCli(args, host, dependencies = {}) {
     } };
     if (['process', 'resume'].includes(args[0])) {
       if (args[0] === 'resume') store.get(args[1]);
-      return await runMail({ store, ...(args[0] === 'process' ? { raw: decodeEnvelope(args[1]) } : { id: args[1] }), config, approval, provider: dependencies.provider ?? productionProvider(host.authPath, dependencies.sdkRoot), sdkRoot: dependencies.sdkRoot, currentConfig, safeDependencies: dependencies.safeDependencies });
+      return await runMail({ store, ...(args[0] === 'process' ? { raw: decodeEnvelope(args[1]) } : { id: args[1] }), config, approval, provider: dependencies.provider ?? productionProvider(host.authPath, dependencies.sdkRoot, host.apiKeyFile), sdkRoot: dependencies.sdkRoot, currentConfig, safeDependencies: dependencies.safeDependencies });
     }
     const payload = decodeEnvelope(args[1]);
     closed(payload, args[0] === 'send-reserve' ? ['requestId'] : ['requestId', 'reservation', 'outcome']);
