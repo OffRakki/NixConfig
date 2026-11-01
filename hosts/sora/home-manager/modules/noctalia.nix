@@ -138,7 +138,7 @@ in {
       bar.main = {
         position = "top";
         thickness = 30;
-        background_opacity = 0.93;
+        background_opacity = 0.0;
         margin_ends = 3;
         margin_edge = 3;
         padding = 2;
