@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   osConfig,
   inputs,
@@ -335,6 +336,9 @@ in {
     };
   };
   home.file = {
+    # Discovery extensions can atomically replace models.json with a regular file.
+    # Reassert Nix ownership without failing on an existing .backup file.
+    "${config.programs.pi-coding-agent.configDir}/models.json".force = true;
     ".pi/agent/package-inventory.json".source = ./packages/inventory.json;
     ".pi/agent/pi-ollama.json".text = builtins.toJSON {
       baseUrl = "http://127.0.0.1:11434";
