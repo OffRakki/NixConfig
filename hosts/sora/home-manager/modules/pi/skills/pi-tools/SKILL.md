@@ -37,7 +37,8 @@ Runtime files under `~/.pi/agent/` are outputs, not sources; never edit them.
 | `pi-codex-image-gen` | `codex_generate_image` and `imagegen` |
 | `pi-context-view` | `/context` usage map and `/context injections` inspector |
 | `pi-intercom` | `intercom` and cross-session coordination |
-| `pi-invisible-continue` | automatic agent-loop continuation |
+| `pi-invisible-continue` | manual invisible `/continue` command |
+| `pi-multi-account` | subscription-to-API failover, quota display, and `/multi-account` controls |
 | `pi-subagents` | `subagents_enable`, `subagent`, `bg_wait`, and packaged agents |
 | `pi-web-access` | `web_enable`, `web_search`, `source_check`, `fetch_content`, and `get_search_content` |
 | `rinco-pi-sakura` | Sakura Macaron theme and animated header |
@@ -66,6 +67,22 @@ be treated as authorization; sender headers alone do not prove identity.
 Keep prompts base64-encoded across the SSH command boundary. Validate the
 session ID and base64 alphabet in n8n before shell interpolation. This prevents
 shell injection through these arguments, not prompt injection or misleading replies.
+
+## Subscription-first OpenAI failover
+
+`pi.nix` keeps `openai-codex/gpt-6.1-sol` as the startup default and activates
+a writable `provider-failover.json` restricted to that subscription route and
+`openai/gpt-6.1-sol`. OpenAI API credentials resolve from the existing SOPS
+secret; never paste keys into source or account config.
+Automatic discovery and child proxy publication are disabled to avoid unrelated
+paid routes and extension rewrites of Nix-managed model configuration.
+API fallback is deliberately authorized, but subscription recovery does not
+automatically switch a healthy API session back. Use
+`/multi-account switch openai-codex/gpt-6.1-sol` after the reset;
+`/multi-account status` and `/multi-account limits refresh` inspect routing/quota.
+Fresh sessions start on the subscription; resumed sessions retain their route.
+Provider spending limits must be managed separately; this extension is not a
+hard dollar cap. Activation reapplies the Nix-owned routing fields.
 
 ## Local Ollama models
 

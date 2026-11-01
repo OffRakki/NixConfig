@@ -94,6 +94,13 @@
       "capabilities": ["extension", "session-control"]
     },
     {
+      "name": "pi-multi-account",
+      "version": "1.27.1",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "network", "filesystem", "credentials", "session-control", "ui"]
+    },
+    {
       "name": "pi-subagents",
       "version": "0.74.0",
       "source": "npm",
