@@ -140,7 +140,10 @@ in {
       antigravitySubscription = false;
       followLastSuccessfulModel = false;
       contextGuard = false;
+      recoverLargeContext = false;
       debugLog = false;
+      # Avoid awaited quota-network probes at startup; manual limits refresh still works.
+      showUsage = false;
       fallbacks = [
         "openai-codex/gpt-6.1-sol"
         "openai/gpt-6.1-sol"

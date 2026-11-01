@@ -45,6 +45,30 @@ text = replace_once(
 )
 subagent_aliases.write_text(text)
 
+# Suppress only the informational startup banner; keep actionable warnings.
+failover_index = root / "pi-multi-account/index.ts"
+text = failover_index.read_text()
+text = replace_once(
+    text,
+    '\t\tctx.ui.notify(\n'
+    '\t\t\tsubagentChild\n'
+    '\t\t\t\t? `pi-multi-account v${VERSION} loaded in passive pi-subagents child mode. Model routing remains owned by the parent runner.`\n'
+    '\t\t\t\t: `pi-multi-account v${VERSION} loaded (${config.enabled ? "enabled" : "disabled"}). ${rotation.length} account(s) in rotation. Config: ${CONFIG_PATH}`,\n'
+    '\t\t\t"info",\n'
+    '\t\t);\n',
+    "",
+)
+text = replace_once(
+    text,
+    '\t\t\t} else if (!seamlessResume) {\n'
+    '\t\t\t\tctx.ui?.notify?.(\n'
+    '\t\t\t\t\t`pi-multi-account v${VERSION}: seamless in-place resume (pi.continueAgent) is not available on this Pi build — automatic recovery resumes from the preserved task context in a fresh turn. Temporary errors keep the same provider/model; confirmed quota limits retain failover. This is the expected fallback, not an error.`,\n'
+    '\t\t\t\t\t"info",\n'
+    '\t\t\t\t);\n',
+    "",
+)
+failover_index.write_text(text)
+
 # Pi 1.0 supplies TypeBox; use its host alias instead of a private runtime copy.
 orchestrator = root / "@groeponline/pi-agent-orchestrator"
 manifest_path = orchestrator / "package.json"
