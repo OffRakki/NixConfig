@@ -40,6 +40,11 @@
       owner = "rakki";
     };
 
+    secrets.mailApprovalPass = {
+      mode = "0400";
+      restartUnits = ["mail-approval-credentials.service" "mail-approval.service"];
+    };
+
     secrets.mailRecipientPolicy = {
       sopsFile = ../home-manager/modules/pi/private.yaml;
       owner = "rakki";

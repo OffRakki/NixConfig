@@ -110,20 +110,22 @@ export function createApprovalServer({ directory, apiToken, ownerHash, port = 87
     CREATE TABLE IF NOT EXISTS approval_sessions(id TEXT PRIMARY KEY,csrf TEXT NOT NULL,owner INTEGER NOT NULL,expires INTEGER NOT NULL);`);
   let host = `127.0.0.1:${port}`; let attemptStart = 0; let attempts = 0; let authenticating = false;
   const csrf = token => createHmac('sha256', apiToken).update(`csrf:${token}`).digest('hex');
+  // Password rotation invalidates existing sessions without changing the runner API token.
+  const sessionId = token => hash(`${ownerHash}:${token}`);
   function session(req) {
     const cookie = req.headers.cookie ?? '';
     if (cookie.length > 4096) return null;
     const matches = cookie.split(';').map(part => part.trim()).filter(part => part.startsWith('mail_session='));
     if (matches.length !== 1 || !/^mail_session=[A-Za-z0-9_-]{43}$/.test(matches[0])) return null;
     const token = matches[0].slice(13);
-    const row = db.prepare('SELECT * FROM approval_sessions WHERE id=? AND expires>?').get(hash(token), now());
+    const row = db.prepare('SELECT * FROM approval_sessions WHERE id=? AND expires>?').get(sessionId(token), now());
     return row ? { ...row, token } : null;
   }
   function newSession(res, owner) {
     db.prepare('DELETE FROM approval_sessions WHERE expires<=?').run(now());
     if (db.prepare('SELECT COUNT(*) AS n FROM approval_sessions').get().n >= 512) throw new Error('session_limit');
     const token = random(); const anti = csrf(token);
-    db.prepare('INSERT INTO approval_sessions VALUES(?,?,?,?)').run(hash(token), hash(anti), owner ? 1 : 0, now() + (owner ? 8 * 3600000 : 600000));
+    db.prepare('INSERT INTO approval_sessions VALUES(?,?,?,?)').run(sessionId(token), hash(anti), owner ? 1 : 0, now() + (owner ? 8 * 3600000 : 600000));
     res.setHeader('Set-Cookie', `mail_session=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${owner ? 28800 : 600}`);
     return anti;
   }
