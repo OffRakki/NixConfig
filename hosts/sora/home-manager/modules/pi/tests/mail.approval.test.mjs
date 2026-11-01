@@ -20,12 +20,12 @@ async function fixture(fn) {
   const config = { mailbox: 'owner@example.test', selfAddress: 'assistant@example.test', provider: 'faux/offline', scope: 'test', cwd: directory, contextPaths: [] };
   const request = normalize(raw(), config);
   const proposal = operation => { const binding = bindingFor(request, config, 'tool', operation); return { digest: digest(binding), binding }; };
-  const http = async (path, { method = 'GET', cookie, form, data, auth = false, origin, headers = {} } = {}) => fetch(endpoint + path, { method, redirect: 'manual', headers: { ...(cookie ? { Cookie: cookie } : {}), ...(auth ? { Authorization: `Bearer ${token}` } : {}), ...(form ? { 'Content-Type': 'application/x-www-form-urlencoded', Origin: origin ?? endpoint } : {}), ...(data ? { 'Content-Type': 'application/json' } : {}), ...headers }, body: form ? new URLSearchParams(form).toString() : data ? canonical(data) : undefined });
-  async function login() {
-    const pre = await http('/login'); const html = await pre.text(); const cookie = pre.headers.get('set-cookie').split(';')[0]; const csrf = /name="csrf" value="([a-f0-9]+)"/.exec(html)[1];
-    const logged = await http('/login', { method: 'POST', cookie, form: { username: 'lucky', password, csrf } }); assert.equal(logged.status, 303);
+  const http = async (path, { method = 'GET', cookie, form, data, auth = false, origin, headers = {}, hostname = '127.0.0.1' } = {}) => fetch(endpoint.replace('127.0.0.1', hostname) + path, { method, redirect: 'manual', headers: { ...(cookie ? { Cookie: cookie } : {}), ...(auth ? { Authorization: `Bearer ${token}` } : {}), ...(form ? { 'Content-Type': 'application/x-www-form-urlencoded', Origin: origin ?? endpoint } : {}), ...(data ? { 'Content-Type': 'application/json' } : {}), ...headers }, body: form ? new URLSearchParams(form).toString() : data ? canonical(data) : undefined });
+  async function login(hostname = '127.0.0.1', origin) {
+    const pre = await http('/login', { hostname }); const html = await pre.text(); const cookie = pre.headers.get('set-cookie').split(';')[0]; const csrf = /name="csrf" value="([a-f0-9]+)"/.exec(html)[1];
+    const logged = await http('/login', { method: 'POST', cookie, hostname, origin, form: { username: 'lucky', password, csrf } }); assert.equal(logged.status, 303);
     const ownerCookie = logged.headers.get('set-cookie').split(';')[0]; assert.notEqual(cookie, ownerCookie);
-    const dashboard = await http('/', { cookie: ownerCookie }); const page = await dashboard.text();
+    const dashboard = await http('/', { cookie: ownerCookie, hostname }); const page = await dashboard.text();
     return { cookie: ownerCookie, csrf: /name="csrf" value="([a-f0-9]+)"/.exec(page)[1], preCookie: cookie, preCsrf: csrf };
   }
   const adapter = () => createApprovalAdapter({ token, endpoint });
@@ -45,6 +45,38 @@ test('HTTP API requires bearer auth, exact Host, immutable digest and closed sch
   assert.equal(await adapter().createProposal(p), p.digest); assert.equal(await adapter().createProposal(p), p.digest);
   assert.equal((await adapter().fetchDecision(p.digest)).status, 'pending');
 }));
+test('localhost supports login, polling and decisions but rejects other hosts and cross-alias origins', async () => fixture(async ({ http, login, proposal, adapter }) => {
+  const endpoint = new URL((await http('/healthz')).url);
+  const localhost = `localhost:${endpoint.port}`;
+  const local = (path, options = {}) => http(path, { ...options, hostname: 'localhost' });
+  assert.equal((await local('/healthz')).status, 200);
+  for (const host of ['evil.test', `localhost.evil.test:${endpoint.port}`, 'localhost:1', `${endpoint.host}.evil.test`]) {
+    const response = await new Promise((resolve, reject) => {
+      const req = httpRequest({ hostname: endpoint.hostname, port: endpoint.port, path: '/', headers: { Host: host } }, res => { res.resume(); resolve(res.statusCode); });
+      req.on('error', reject); req.end();
+    });
+    assert.equal(response, 403);
+  }
+  const pre = await local('/login');
+  const cookie = pre.headers.get('set-cookie').split(';')[0];
+  const csrf = /name="csrf" value="([a-f0-9]+)"/.exec(await pre.text())[1];
+  // CSRF is checked before the password: valid same-origin requests reach password validation.
+  const form = { csrf, username: 'lucky', password: 'incorrect-fixture' };
+  assert.equal((await local('/login', { method: 'POST', cookie, form })).status, 403);
+  assert.equal((await local('/login', { method: 'POST', cookie, origin: `http://${localhost}`, form })).status, 401);
+  assert.equal((await http('/login', { method: 'POST', cookie, origin: `http://${localhost}`, form })).status, 403);
+  const owner = await login('localhost', `http://${localhost}`);
+  assert.equal((await local('/dashboard.js', owner)).status, 200);
+  const p = proposal({ name: 'read', args: { path: 'localhost-fixture' } });
+  await adapter().createProposal(p);
+  assert.match(await (await local('/', owner)).text(), new RegExp(p.digest));
+  const decision = { csrf: owner.csrf, id: p.digest, decision: 'denied' };
+  assert.equal((await local('/decide', { ...owner, method: 'POST', form: decision })).status, 403);
+  assert.equal((await local('/decide', { ...owner, method: 'POST', origin: `http://${localhost}`, form: decision })).status, 303);
+  assert.equal((await adapter().fetchDecision(p.digest)).status, 'denied');
+  assert.equal((await local('/logout', { ...owner, method: 'POST', origin: `http://${localhost}`, form: { csrf: owner.csrf } })).status, 303);
+}));
+
 test('login CSRF/Origin, hashed rotating sessions, escaped dashboard and logout revocation', async () => fixture(async ({ http, login, proposal, adapter, app }) => {
   const pre = await http('/login'); const page = await pre.text(); const cookie = pre.headers.get('set-cookie').split(';')[0];
   assert.match(pre.headers.get('set-cookie'), /HttpOnly; SameSite=Strict/); assert.ok(!pre.headers.get('set-cookie').includes('Secure')); assert.equal(pre.headers.get('cache-control'), 'no-store');
