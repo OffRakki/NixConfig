@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { canonical, closed, digest, Store, text } from './core.mjs';
+import { dashboardScript, pageSizes, renderDashboard, renderLogin, states } from './approval-ui.mjs';
 
 const derive = promisify(scrypt);
 const random = () => randomBytes(32).toString('base64url');
@@ -36,59 +37,44 @@ export function validateProposal(value) {
   return value;
 }
 export const signDecision = (value, token) => createHmac('sha256', token).update(canonical(value)).digest('hex');
-const escape = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-function page(title, body) {
-  return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escape(title)}</title><style>
-  :root{color-scheme:light dark;font:16px/1.5 system-ui}body{max-width:960px;margin:2rem auto;padding:0 1rem}section{border:1px solid #8886;border-radius:8px;padding:1.25rem;margin:1rem 0}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.5 ui-monospace,monospace}label{display:block;margin:1rem 0}input{display:block;padding:.5rem;font:inherit}button{padding:.65rem 1rem;margin:.5rem .5rem .5rem 0;font:inherit;cursor:pointer}button[value=approved]{border:2px solid #39955b}button[value=denied]{border:2px solid #bc5555}h2{overflow-wrap:anywhere}details{margin:1rem 0}nav a{margin-right:1rem}
-  </style><body><h1>${escape(title)}</h1>${body}</body></html>`;
+export function dashboardQuery(target) {
+  text(target, 2048, 1);
+  const match = /^\/(?:page\/([0-9]{1,6}))?(?:\?([^#]*))?$/.exec(target);
+  if (!match || /[\x00-\x20\x7f]/.test(target)) throw new Error('invalid_dashboard_path');
+  const params = new URLSearchParams(match[2] ?? '');
+  const keys = [...params.keys()];
+  if (new Set(keys).size !== keys.length || keys.some(key => !['q', 'size', 'status'].includes(key))) throw new Error('invalid_filters');
+  const rawQuery = text(params.get('q') ?? '', 256);
+  const q = rawQuery.trim();
+  const size = params.get('size') ?? '32', status = params.get('status') ?? 'all';
+  if (!pageSizes.map(String).includes(size) || !['all', ...states].includes(status) || /[\x00-\x1f\x7f]/.test(rawQuery) || q.split(/\s+/).length > 16) throw new Error('invalid_filters');
+  return { index: Number(match[1] ?? 0), size: Number(size), q, status };
 }
-const dashboardScript = `
-const list = document.getElementById('proposals');
-const status = document.getElementById('live-status');
-let busy = false;
-async function refresh() {
-  if (busy || document.hidden) return;
-  busy = true;
-  try {
-    const response = await fetch(location.pathname, { cache: 'no-store', signal: AbortSignal.timeout(10000) });
-    if (response.redirected) { location.assign('/login'); return; }
-    if (!response.ok) throw new Error('refresh_failed');
-    const next = new DOMParser().parseFromString(await response.text(), 'text/html').getElementById('proposals');
-    if (!next) throw new Error('invalid_dashboard');
-    // Keep existing cards (including expanded details and focused buttons) unless their state changed.
-    const keep = new Set();
-    let cursor = list.firstElementChild;
-    for (const incoming of [...next.children]) {
-      const existing = document.getElementById(incoming.id);
-      let card = existing;
-      if (!existing || existing.dataset.state !== incoming.dataset.state) {
-        if (existing) {
-          const open = [...existing.querySelectorAll('details')].map(detail => detail.open);
-          incoming.querySelectorAll('details').forEach((detail, index) => { detail.open = open[index]; });
-          existing.replaceWith(incoming);
-          if (cursor === existing) cursor = incoming;
-        }
-        card = incoming;
+const fold = value => value.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase();
+export function fuzzyScore(query, document) {
+  if (!query) return 1;
+  const source = fold(document), terms = fold(query).trim().split(/\s+/);
+  let words, score = 0;
+  for (const term of terms) {
+    if (source.includes(term)) { score += 1000; continue; }
+    words ??= source.split(/[\s"{}\[\],]+/u);
+    let best = 0;
+    for (const word of words) {
+      if (word.length < term.length || word.length > 4096) continue;
+      let cursor = 0, first = -1, end = -1;
+      for (const char of term) {
+        end = word.indexOf(char, cursor);
+        if (end < 0) break;
+        if (first < 0) first = end;
+        cursor = end + char.length;
       }
-      if (card !== cursor) list.insertBefore(card, cursor);
-      cursor = card.nextElementSibling;
-      keep.add(card.id);
+      const span = end - first + 1;
+      if (end >= 0 && span <= Math.max(12, term.length * 3)) best = Math.max(best, 500 - (span - term.length) * 10);
     }
-    for (const card of [...list.children]) if (!keep.has(card.id)) card.remove();
-    status.textContent = 'Live updates on — checking every 3 seconds.';
-  } catch {
-    status.textContent = 'Connection interrupted — retrying automatically.';
-  } finally { busy = false; }
-}
-setInterval(refresh, 3000);
-document.addEventListener('visibilitychange', () => { if (!document.hidden) void refresh(); });
-`;
-function proposalPreview(row) {
-  const binding = JSON.parse(row.binding), op = binding.operation;
-  const preview = binding.phase === 'send'
-    ? `<h3>Email to send</h3><p>From: ${escape(op.sender)}<br>To: ${escape(op.recipient)}<br>Subject: ${escape(op.subject)}</p><pre>${escape(op.body)}</pre>`
-    : `<h3>${binding.phase === 'investigate' ? 'Personal-context investigation' : 'Tool operation'}</h3><pre>${escape(JSON.stringify(op, null, 2))}</pre>`;
-  return `${preview}<details><summary>Original request</summary><p>From: ${escape(binding.requestPreview.from)}<br>Subject: ${escape(binding.requestPreview.subject)}</p><pre>${escape(binding.requestPreview.body)}</pre></details><details><summary>Full immutable authorization binding</summary><pre>${escape(JSON.stringify(binding, null, 2))}</pre></details>`;
+    if (!best) return 0;
+    score += best;
+  }
+  return score;
 }
 async function body(req) {
   const type = req.headers['content-type'];
@@ -108,6 +94,7 @@ export function createApprovalServer({ directory, apiToken, ownerHash, port = 87
   const store = new Store(directory); const db = store.db;
   db.exec(`CREATE TABLE IF NOT EXISTS approval_proposals(id TEXT PRIMARY KEY,binding TEXT NOT NULL,state TEXT NOT NULL,expires INTEGER NOT NULL,grant TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS approval_sessions(id TEXT PRIMARY KEY,csrf TEXT NOT NULL,owner INTEGER NOT NULL,expires INTEGER NOT NULL);`);
+  db.function('approval_score', { deterministic: true }, (query, id, binding) => fuzzyScore(query, `${id} ${binding}`));
   let host = `127.0.0.1:${port}`; let attemptStart = 0; let attempts = 0; let authenticating = false;
   const csrf = token => createHmac('sha256', apiToken).update(`csrf:${token}`).digest('hex');
   // Password rotation invalidates existing sessions without changing the runner API token.
@@ -142,7 +129,9 @@ export function createApprovalServer({ directory, apiToken, ownerHash, port = 87
     const send = (code, value, html = false) => { res.writeHead(code, { 'Content-Type': html ? 'text/html; charset=utf-8' : 'application/json' }); res.end(html ? value : canonical(value)); };
     try {
       const names = req.rawHeaders.filter((_, i) => i % 2 === 0).map(s => s.toLowerCase());
-      if (['host', 'origin', 'authorization', 'content-length', 'cookie'].some(k => names.filter(n => n === k).length > 1) || ![host, `localhost:${server.address().port}`].includes(req.headers.host) || !req.url.startsWith('/') || req.url.includes('?')) return send(403, { error: 'request_rejected' });
+      const path = req.url.split('?')[0];
+      const dashboard = path === '/' || /^\/page\/[0-9]{1,6}$/.test(path);
+      if (['host', 'origin', 'authorization', 'content-length', 'cookie'].some(k => names.filter(n => n === k).length > 1) || ![host, `localhost:${server.address().port}`].includes(req.headers.host) || !req.url.startsWith('/') || (req.url.includes('?') && !(req.method === 'GET' && dashboard))) return send(403, { error: 'request_rejected' });
       if (!['GET', 'POST'].includes(req.method)) return send(405, { error: 'method_rejected' });
       const api = req.url.startsWith('/api/');
       if (api) {
@@ -183,7 +172,7 @@ export function createApprovalServer({ directory, apiToken, ownerHash, port = 87
         if (current?.owner) { res.writeHead(303, { Location: '/' }); return res.end(); }
         if (current) db.prepare('DELETE FROM approval_sessions WHERE id=?').run(current.id);
         const anti = newSession(res, false);
-        return send(200, page('Mail approval — owner login', `<form method="post" action="/login"><input type="hidden" name="csrf" value="${anti}"><label>Username <input name="username" autocomplete="username" required></label><label>Password <input type="password" name="password" autocomplete="current-password" required maxlength="256"></label><button>Log in</button></form>`), true);
+        return send(200, renderLogin(anti), true);
       }
       if (req.method === 'POST') {
         if (req.headers.origin !== `http://${req.headers.host}` || !current) return send(403, { error: 'csrf_rejected' });
@@ -208,22 +197,28 @@ export function createApprovalServer({ directory, apiToken, ownerHash, port = 87
           res.setHeader('Set-Cookie', 'mail_session=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0'); res.writeHead(303, { Location: '/login' }); return res.end();
         }
         if (req.url === '/decide') {
-          closed(value, ['csrf', 'id', 'decision']);
+          closed(value, ['csrf', 'id', 'decision'], ['returnTo']);
+          const returnTo = value.returnTo ?? '/';
+          dashboardQuery(returnTo);
           if (!['approved', 'denied'].includes(value.decision)) throw new Error('invalid_decision');
           getProposal(value.id);
           const changed = db.prepare("UPDATE approval_proposals SET state=? WHERE id=? AND state='pending' AND expires>?").run(value.decision, value.id, now()).changes;
           if (!changed) return send(409, { error: 'decision_immutable' });
-          res.writeHead(303, { Location: '/' }); return res.end();
+          res.writeHead(303, { Location: returnTo }); return res.end();
         }
       }
-      if (req.method === 'GET' && (req.url === '/' || /^\/page\/[0-9]{1,6}$/.test(req.url))) {
+      if (req.method === 'GET' && dashboard) {
         if (!current?.owner) { res.writeHead(303, { Location: '/login' }); return res.end(); }
+        const view = dashboardQuery(req.url);
         db.prepare("UPDATE approval_proposals SET state='expired' WHERE state IN ('pending','approved') AND expires<=?").run(now());
-        const index = req.url === '/' ? 0 : Number(req.url.slice(6));
-        const rows = db.prepare('SELECT * FROM approval_proposals ORDER BY rowid DESC LIMIT 32 OFFSET ?').all(index * 32);
-        const anti = csrf(current.token);
-        const form = (action, fields, buttons) => `<form method="post" action="${action}"><input type="hidden" name="csrf" value="${anti}">${fields}${buttons}</form>`;
-        return send(200, page('Mail approval — lucky', form('/logout', '', '<button>Log out</button>') + `<p>Page ${index + 1}. Review the complete canonical operation and request before approving. <span id="live-status" role="status">Live updates on — checking every 3 seconds.</span><noscript> JavaScript is disabled; refresh to check for new requests.</noscript></p><nav><a href="/">Latest</a> <a href="/page/${Math.max(0, index - 1)}">Newer</a> <a href="/page/${Math.min(999999, index + 1)}">Older</a></nav>` + `<div id="proposals">` + rows.map(row => `<section id="proposal-${row.id}" data-state="${escape(row.state)}"><h2>${escape(row.state)} — ${escape(row.id)}</h2><p>Expires ${escape(new Date(row.expires).toISOString())}</p>${proposalPreview(row)}${row.state === 'pending' ? form('/decide', `<input type="hidden" name="id" value="${row.id}">`, '<button name="decision" value="approved">Approve exact operation once</button><button name="decision" value="denied">Deny</button>') : ''}</section>`).join('') + '</div><script src="/dashboard.js" defer></script>'), true);
+        const { index, size, q, status } = view;
+        const counts = Object.fromEntries(db.prepare('SELECT state, COUNT(*) AS n FROM approval_proposals GROUP BY state').all().map(row => [row.state, row.n]));
+        const total = db.prepare("SELECT COUNT(*) AS n FROM approval_proposals WHERE (?='all' OR state=?) AND (?='' OR approval_score(?,id,binding)>0)").get(status, status, q, q).n;
+        const rows = db.prepare(`WITH ranked AS MATERIALIZED (
+          SELECT id,binding,state,expires,rowid AS sequence,approval_score(?,id,binding) AS score
+          FROM approval_proposals WHERE (?='all' OR state=?))
+          SELECT * FROM ranked WHERE score>0 ORDER BY score DESC,sequence DESC LIMIT ? OFFSET ?`).all(q, status, status, size, index * size);
+        return send(200, renderDashboard({ rows, counts, total, ...view, csrf: csrf(current.token) }), true);
       }
       return send(404, { error: 'not_found' });
     } catch { if (!res.headersSent) send(400, { error: 'invalid_request' }); else res.destroy(); }
