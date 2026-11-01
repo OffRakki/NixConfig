@@ -33,7 +33,7 @@
       };
     };
   };
-  gmail = email: patterns: {
+  gmail = email: {
     address = email;
     userName = email;
     realName = "Fernando Marques";
@@ -49,15 +49,18 @@
       enable = true;
       smtpAuth = "xoauth2";
     };
-    mbsync = (sync "XOAUTH2") // {inherit patterns;};
+    mbsync = (sync "XOAUTH2") // {
+      # Discover labels automatically without duplicate archives or junk folders.
+      patterns = ["*" "![Gmail]/All Mail" "![Gmail]/Spam" "![Gmail]/Trash"];
+    };
   };
 in {
   accounts.email = {
     maildirBasePath = "Mail";
     accounts = {
-      offrakki = gmail "offrakki@gmail.com" ["INBOX" "Linkedin" "LumisCards" "Nota Fiscal" "NuBank" "Riot" "Spotify" "Steam" "Twitch" "[Notion]" "[Gmail]/Drafts" "[Gmail]/Important" "[Gmail]/Sent Mail" "[Gmail]/Starred"];
-      fernandomarques1505 = gmail "fernandomarques1505@gmail.com" ["INBOX" "Archive" "Mailspring/Snoozed" "Notes" "Personal" "Receipts" "Work" "[Gmail]/Drafts" "[Gmail]/Important" "[Gmail]/Sent Mail" "[Gmail]/Starred"];
-      contato = gmail "fernando12.contato@gmail.com" ["INBOX" "[Gmail]/Drafts" "[Gmail]/Important" "[Gmail]/Sent Mail" "[Gmail]/Starred"];
+      offrakki = gmail "offrakki@gmail.com";
+      fernandomarques1505 = gmail "fernandomarques1505@gmail.com";
+      contato = gmail "fernando12.contato@gmail.com";
 
       me = {
         address = "me@ore.rs";

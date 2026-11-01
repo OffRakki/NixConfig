@@ -50,14 +50,6 @@ in {
 
   programs.aerc = {
     enable = true;
-    extraBinds = {
-      global = {
-        "$include" = "${config.programs.aerc.package}/share/aerc/binds.conf";
-        "<C-c>" = ":quit<Enter>";
-        "<C-q>" = ":quit<Enter>";
-      };
-      messages.q = ":quit<Enter>";
-    };
     extraConfig = {
       general.unsafe-accounts-conf = true;
       compose.address-book-cmd = "khard email --remove-first-line --parsable %s";
@@ -205,6 +197,12 @@ in {
       };
     };
   };
+
+  # Keep every upstream binding; only remove the three quit confirmations.
+  home.file."${config.xdg.configHome}/aerc/binds.conf".source = pkgs.runCommand "aerc-binds.conf" {} ''
+    cp ${config.programs.aerc.package}/share/aerc/binds.conf "$out"
+    substituteInPlace "$out" --replace-fail ":prompt 'Quit?' quit<Enter>" ":quit<Enter>"
+  '';
 
   home.file."${config.xdg.configHome}/aerc/aerc.conf".onChange = reload ":reload -C";
   home.file."${config.xdg.configHome}/aerc/stylesets/colorscheme".onChange =

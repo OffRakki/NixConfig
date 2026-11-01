@@ -2,11 +2,6 @@
   nixpkgs = {
     overlays = [
       inputs.nix-minecraft.overlay
-      (_: prev: {
-        aerc = prev.aerc.overrideAttrs (old: {
-          patches = (old.patches or []) ++ [./aerc-config-includes.patch];
-        });
-      })
       inputs.millennium.overlays.default
       (final: _: {
         inputs =
