@@ -1,25 +1,10 @@
 {
   config,
-  lib,
   osConfig,
   pkgs,
   ...
 }: let
-  token = email: "${config.xdg.configHome}/aerc/tokens/${email}";
   safe = builtins.replaceStrings ["@"] ["-at-"];
-  refreshToken = pkgs.writeShellScript "aerc-token-refresh" ''
-    ${lib.getExe pkgs.python3} - "$1" <<'PY'
-    import json, sys, urllib.parse, urllib.request
-    data = json.load(open(sys.argv[1]))
-    payload = urllib.parse.urlencode({
-        "client_id": data["client_id"],
-        "client_secret": data["client_secret"],
-        "refresh_token": data["refresh_token"],
-        "grant_type": "refresh_token",
-    }).encode()
-    print(json.load(urllib.request.urlopen("https://oauth2.googleapis.com/token", payload))["access_token"])
-    PY
-  '';
   sync = auth: {
     enable = true;
     create = "both";
@@ -33,35 +18,10 @@
       };
     };
   };
-  gmail = email: {
-    address = email;
-    userName = email;
-    realName = "Fernando Marques";
-    flavor = "gmail.com";
-    passwordCommand = "${refreshToken} ${token email}";
-    folders = {
-      inbox = "INBOX";
-      sent = null;
-      drafts = null;
-    };
-    maildir.path = safe email;
-    aerc = {
-      enable = true;
-      smtpAuth = "xoauth2";
-    };
-    mbsync = (sync "XOAUTH2") // {
-      # Discover labels automatically without duplicate archives or junk folders.
-      patterns = ["*" "![Gmail]/All Mail" "![Gmail]/Spam" "![Gmail]/Trash"];
-    };
-  };
 in {
   accounts.email = {
     maildirBasePath = "Mail";
     accounts = {
-      offrakki = gmail "offrakki@gmail.com";
-      fernandomarques1505 = gmail "fernandomarques1505@gmail.com";
-      contato = gmail "fernando12.contato@gmail.com";
-
       me = {
         address = "me@ore.rs";
         userName = "me@ore.rs";
@@ -152,10 +112,7 @@ in {
     };
   };
 
-  programs.mbsync = {
-    enable = true;
-    package = pkgs.isync.override {withCyrusSaslXoauth2 = true;};
-  };
+  programs.mbsync.enable = true;
   services.mbsync = {
     enable = true;
     package = config.programs.mbsync.package;
