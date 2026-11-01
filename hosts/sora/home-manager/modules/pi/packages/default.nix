@@ -16,6 +16,7 @@
     "pi-context-view"
     "pi-intercom"
     "pi-invisible-continue"
+    "pi-multi-account"
     "pi-subagents"
     "pi-web-access"
     "rinco-pi-sakura"
@@ -24,7 +25,7 @@
     pname = package.name;
     inherit (package) version;
     src = ./.;
-    npmDepsHash = "sha256-ksmKArEjxSfv2iebTH5s2IFIViZx7wsHKKv8xKPvEqg=";
+    npmDepsHash = "sha256-R1B86wKcMW52QZ/BDhzWppqFn/w+YvamIr10hEnxNXo=";
     npmFlags = ["--legacy-peer-deps"];
     dontNpmBuild = true;
     installPhase = ''
@@ -63,6 +64,8 @@
       if (runtimeErrors.length) throw new Error(JSON.stringify(runtimeErrors));
       process.exit(0);
       JS
+      ${pkgs.nodejs}/bin/node ${../tests/failover.smoke.mjs} \
+        ${piPackage}/lib/node_modules/pi-monorepo "$out"
       runHook postInstallCheck
     '';
   };

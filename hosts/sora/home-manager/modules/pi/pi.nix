@@ -128,6 +128,23 @@ in {
 
     update_pi_widget "$buddy" '.placement = "belowEditor" | .header = false'
     update_pi_widget "$powerbar" '(.powerbar //= {}) | .powerbar.placement = "belowEditor"'
+    # Writable runtime config: extension commands use atomic read-latest updates.
+    # Only these two billing routes may enter automatic rotation.
+    update_pi_widget "$HOME/.pi/agent/provider-failover.json" '. + ${builtins.toJSON {
+      enabled = true;
+      autoContinue = true;
+      autoDiscover = false;
+      autoDiscoverModels = false;
+      childProxy = false;
+      antigravitySubscription = false;
+      followLastSuccessfulModel = false;
+      contextGuard = false;
+      debugLog = false;
+      fallbacks = [
+        "openai-codex/gpt-6.1-sol"
+        "openai/gpt-6.1-sol"
+      ];
+    }}'
   '';
   # Keep custom agents Nix-sourced while leaving the runtime directory writable
   # for Pi's agent-management commands.
@@ -260,6 +277,7 @@ in {
     models = {
       providers = {
         anthropic.apiKey = "!cat ${osConfig.sops.secrets.anthropicApiKey.path}";
+        openai.apiKey = "!cat ${osConfig.sops.secrets.openaiApiKey.path}";
         hyper = {
           baseUrl = "https://hyper.charm.land/v1";
           apiKey = "!cat ${osConfig.sops.secrets.hyperApiKey.path}";
