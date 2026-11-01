@@ -72,6 +72,7 @@ in {
         date_format = "%d/%m/%Y";
         polkit_agent = false;
         telemetry_enabled = false;
+        settings_window_translucent = true;
         shadow.direction = "down_right";
         panel = {
           transparency_mode = "soft";
