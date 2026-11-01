@@ -140,7 +140,7 @@ export function createApprovalServer({ directory, apiToken, ownerHash, port = 87
     const send = (code, value, html = false) => { res.writeHead(code, { 'Content-Type': html ? 'text/html; charset=utf-8' : 'application/json' }); res.end(html ? value : canonical(value)); };
     try {
       const names = req.rawHeaders.filter((_, i) => i % 2 === 0).map(s => s.toLowerCase());
-      if (['host', 'origin', 'authorization', 'content-length', 'cookie'].some(k => names.filter(n => n === k).length > 1) || req.headers.host !== host || !req.url.startsWith('/') || req.url.includes('?')) return send(403, { error: 'request_rejected' });
+      if (['host', 'origin', 'authorization', 'content-length', 'cookie'].some(k => names.filter(n => n === k).length > 1) || ![host, `localhost:${server.address().port}`].includes(req.headers.host) || !req.url.startsWith('/') || req.url.includes('?')) return send(403, { error: 'request_rejected' });
       if (!['GET', 'POST'].includes(req.method)) return send(405, { error: 'method_rejected' });
       const api = req.url.startsWith('/api/');
       if (api) {
@@ -184,7 +184,7 @@ export function createApprovalServer({ directory, apiToken, ownerHash, port = 87
         return send(200, page('Mail approval — owner login', `<form method="post" action="/login"><input type="hidden" name="csrf" value="${anti}"><label>Username <input name="username" autocomplete="username" required></label><label>Password <input type="password" name="password" autocomplete="current-password" required maxlength="256"></label><button>Log in</button></form>`), true);
       }
       if (req.method === 'POST') {
-        if (req.headers.origin !== `http://${host}` || !current) return send(403, { error: 'csrf_rejected' });
+        if (req.headers.origin !== `http://${req.headers.host}` || !current) return send(403, { error: 'csrf_rejected' });
         const value = await body(req);
         if (typeof value.csrf !== 'string' || !equal(hash(value.csrf), current.csrf)) return send(403, { error: 'csrf_rejected' });
         if (req.url === '/login') {
