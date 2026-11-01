@@ -75,7 +75,8 @@ in {
         settings_window_translucent = true;
         shadow.direction = "down_right";
         panel = {
-          transparency_mode = "soft";
+          transparency_mode = "glass";
+          control_center_placement = "floating";
           launcher_position = "top_left";
           session_placement = "floating";
           open_near_click_control_center = true;
