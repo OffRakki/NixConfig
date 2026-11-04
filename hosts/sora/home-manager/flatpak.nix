@@ -21,6 +21,10 @@ in {
         bundle = "${airiBundle}";
         sha256 = airiHash;
       }
+      {
+        flatpakref = "https://flatpak.kalkmancode.co.uk/beamer.flatpakref";
+        sha256 = "1yhrp0ir471mkzfd7fjk83px8lr3gngjgp2za3r5xhmyp0q79id1";
+      }
       "com.bambulab.BambuStudio"
       "com.orcaslicer.OrcaSlicer"
       "org.vinegarhq.Sober"
