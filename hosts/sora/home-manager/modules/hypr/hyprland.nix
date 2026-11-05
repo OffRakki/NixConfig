@@ -135,22 +135,22 @@ in {
         hl.config({ animations = { enabled = true } })
 
         hl.curve("easeout", { type = "bezier", points = { {0.5, 1}, {0.9, 1} } })
-        hl.curve("easeoutback", { type = "bezier", points = { {0.34, 1.22}, {0.65, 1} } })
+        hl.curve("gentlespring", { type = "spring", mass = 1, stiffness = 250, dampening = 26 })
 
         hl.animation({ leaf = "fadeIn", enabled = true, speed = 3, bezier = "easeout" })
-        hl.animation({ leaf = "fadeLayersIn", enabled = true, speed = 5, bezier = "easeout" })
+        hl.animation({ leaf = "fadeLayersIn", enabled = true, speed = 3, bezier = "easeout" })
         hl.animation({ leaf = "fadeOut", enabled = true, speed = 3, bezier = "easeout" })
-        hl.animation({ leaf = "fadeLayersOut", enabled = true, speed = 5, bezier = "easeout" })
+        hl.animation({ leaf = "fadeLayersOut", enabled = true, speed = 3, bezier = "easeout" })
         hl.animation({ leaf = "fadeSwitch", enabled = true, speed = 2, bezier = "easeout" })
         hl.animation({ leaf = "fadeDim", enabled = true, speed = 3, bezier = "easeout" })
         hl.animation({ leaf = "fadeShadow", enabled = true, speed = 2, bezier = "easeout" })
         hl.animation({ leaf = "border", enabled = true, speed = 2, bezier = "easeout" })
-        hl.animation({ leaf = "windowsMove", enabled = true, speed = 3, bezier = "easeoutback" })
-        hl.animation({ leaf = "windowsIn", enabled = true, speed = 3, bezier = "easeoutback", style = "slide" })
-        hl.animation({ leaf = "windowsOut", enabled = true, speed = 3, bezier = "easeout", style = "slide" })
-        hl.animation({ leaf = "layersIn", enabled = true, speed = 3, bezier = "easeoutback", style = "slide" })
-        hl.animation({ leaf = "layersOut", enabled = true, speed = 3, bezier = "easeoutback", style = "slide" })
-        hl.animation({ leaf = "workspaces", enabled = true, speed = 2.5, bezier = "easeoutback", style = "slidefade" })
+        hl.animation({ leaf = "windowsMove", enabled = true, speed = 3, bezier = "easeout" })
+        hl.animation({ leaf = "windowsIn", enabled = true, speed = 3, spring = "gentlespring", style = "popin 90%" })
+        hl.animation({ leaf = "windowsOut", enabled = true, speed = 3, bezier = "easeout", style = "popin 90%" })
+        hl.animation({ leaf = "layersIn", enabled = true, speed = 3, spring = "gentlespring", style = "slide" })
+        hl.animation({ leaf = "layersOut", enabled = true, speed = 3, bezier = "easeout", style = "slide" })
+        hl.animation({ leaf = "workspaces", enabled = true, speed = 1.5, bezier = "easeout", style = "slidefade 15%" })
         -----------------------------------------------------------------------
 
         ------------------------------- MONITORS -------------------------------
