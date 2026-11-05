@@ -401,7 +401,6 @@ in {
           -- hl.exec_cmd("Telegram")
           hl.exec_cmd("vesktop")
           hl.exec_cmd("sleep 5 && openrgb --profile blackout")
-          hl.exec_cmd("sleep 5 && podman compose -f ~/Documents/odysseus/docker-compose.yml up -d")
         end)
         ----------------------------------------------------------------
 

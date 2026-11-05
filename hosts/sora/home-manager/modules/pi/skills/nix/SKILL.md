@@ -9,6 +9,14 @@ Use `read` for source files and `bash` for bounded search, evaluation, and
 build commands. Prefer NixConfig source files over runtime outputs, generated
 maps, or broad logs.
 
+## Declarative service shutdowns
+
+When Lucky requests disabling hosted services, persist the shutdown in their
+source declarations and remove desktop/session/systemd autostart hooks; stopping
+containers alone is not sufficient. Keep Odysseus, ntfy, SearXNG, and ChromaDB
+disabled by default unless Lucky explicitly requests re-enabling them. Preserve
+their data volumes and verify that their ports remain closed.
+
 ## Nix style
 
 Keep configuration YAGNI-minimal and group shared attribute prefixes into
