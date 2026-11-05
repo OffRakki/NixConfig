@@ -341,6 +341,13 @@ in {
           border_color = "rgba(7287fdff) rgba(7287fdaa)",
         })
 
+        -- Keep Pyprland's off-screen repositioning instant, even after config reloads.
+        hl.window_rule({
+          name = "pypr-offscreen-noanim",
+          match = { tag = "pypr_noanim" },
+          no_anim = true,
+        })
+
         hl.window_rule({
           name = "scratchpadBorderColorFix",
           match = { class = "^(pypr-.*|com\\.saivert\\.pwvucontrol|spotify)$" },
