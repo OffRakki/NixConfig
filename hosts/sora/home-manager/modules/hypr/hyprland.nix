@@ -99,8 +99,8 @@ in {
           },
 
           decoration = {
-            rounding = 6,
-            rounding_power = 0,
+            rounding = 0,
+            rounding_power = 1,
             active_opacity = 1,
             inactive_opacity = 0.8,
             fullscreen_opacity = 1.0,
