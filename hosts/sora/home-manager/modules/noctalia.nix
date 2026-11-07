@@ -30,6 +30,12 @@ in {
   xdg.configFile = {
     "noctalia/plugin-sources/community".source = communityPlugins;
     "noctalia/plugin-sources/local".source = ./noctalia-plugins;
+    "noctalia/templates/hyprland-borders.lua".text = ''
+      hl.config({ general = { col = {
+        active_border = "rgba({{colors.primary.default.hex_stripped}}ff)",
+        inactive_border = "rgba({{colors.primary.default.hex_stripped}}44)",
+      } } })
+    '';
   };
 
   home.persistence."/persist".directories = [
@@ -110,7 +116,7 @@ in {
         screen-off.enabled = false;
       };
       theme = {
-        # Darkman owns application color-scheme; Noctalia only themes its own shell.
+        # Darkman owns application color-scheme; Noctalia themes its shell and Hyprland borders.
         sync_color_scheme = false;
         mode = "dark";
         source = "wallpaper";
@@ -118,6 +124,11 @@ in {
         templates = {
           enable_builtin_templates = false;
           enable_community_templates = false;
+          user.hyprland-borders = {
+            input_path = "${config.xdg.configHome}/noctalia/templates/hyprland-borders.lua";
+            output_path = "${config.xdg.stateHome}/noctalia/hyprland-borders.lua";
+            post_hook = "${config.wayland.windowManager.hyprland.package}/bin/hyprctl dispatch 'function() dofile(\"${config.xdg.stateHome}/noctalia/hyprland-borders.lua\") end'";
+          };
         };
       };
       wallpaper = {

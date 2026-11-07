@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   pkgs,
   ...
@@ -131,6 +132,14 @@ in {
         })
         -----------------------------------------------------------------------
 
+        -- Keep the fallback borders until Noctalia first generates its palette.
+        local borderTheme = "${config.xdg.stateHome}/noctalia/hyprland-borders.lua"
+        local borderThemeFile = io.open(borderTheme, "r")
+        if borderThemeFile then
+          borderThemeFile:close()
+          dofile(borderTheme)
+        end
+
         ------------------------------- ANIMATIONS ----------------------------
         hl.config({ animations = { enabled = true } })
 
@@ -220,12 +229,6 @@ in {
           name = "inhibit-idle-fullscreen",
           match = { fullscreen = true },
           idle_inhibit = "fullscreen",
-        })
-
-        hl.window_rule({
-          name = "firefoxBorderColorFix",
-          match = {class = "firefox"},
-          border_color = "rgba(5c4826ff) rgba(5c482644)",
         })
 
         hl.window_rule({
@@ -348,12 +351,6 @@ in {
           no_anim = true,
         })
 
-        hl.window_rule({
-          name = "scratchpadBorderColorFix",
-          match = { class = "^(pypr-.*|com\\.saivert\\.pwvucontrol|spotify)$" },
-          border_color = "rgba(BFA16Eff) rgba(BFA16E44)",
-          border_size = 2,
-        })
         -----------------------------------------------------------------------
 
         ------------------------------- ENV VARS -------------------------------
