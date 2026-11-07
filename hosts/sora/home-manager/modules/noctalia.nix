@@ -6,16 +6,6 @@
   nixConfigRoot,
   ...
 }: let
-  noctalia = inputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
-    # Darkman owns application color-scheme; Noctalia only themes its own shell.
-    postPatch =
-      (old.postPatch or "")
-      + ''
-        substituteInPlace src/app/application_services.cpp \
-          --replace-fail 'syncGSettingsColorScheme(appliedMode);' '(void)appliedMode;' \
-          --replace-fail 'syncGSettingsColorScheme(m_themeService.resolvedMode());' '(void)0;'
-      '';
-  });
   communityPlugins = pkgs.fetchFromGitHub {
     owner = "noctalia-dev";
     repo = "community-plugins";
@@ -62,7 +52,7 @@ in {
 
   programs.noctalia = {
     enable = true;
-    package = noctalia;
+    package = inputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default;
     settings = {
       shell = {
         font_family = "Noto Sans";
@@ -120,6 +110,8 @@ in {
         screen-off.enabled = false;
       };
       theme = {
+        # Darkman owns application color-scheme; Noctalia only themes its own shell.
+        sync_color_scheme = false;
         mode = "dark";
         source = "wallpaper";
         wallpaper_scheme = "vibrant";

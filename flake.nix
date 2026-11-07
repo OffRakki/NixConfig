@@ -38,7 +38,7 @@
 
     # WM
     noctalia = {
-      url = "github:noctalia-dev/noctalia/v5.0.1";
+      url = "github:noctalia-dev/noctalia/v5.4.1";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -74,10 +74,12 @@
     extra-substituters = [
       "https://hyprland.cachix.org"
       "https://kopuz.cachix.org"
+      "https://cache.numtide.com"
     ];
     extra-trusted-public-keys = [
       "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
       "kopuz.cachix.org-1:J2X3AnAYhKTJW5S3aCLoA1ckonQXVNZMQvhZA0YAufw="
+      "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
     ];
   };
 

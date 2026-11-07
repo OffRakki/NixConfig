@@ -9,6 +9,9 @@
   in {
     package = pkgs.lixPackageSets.stable.lix;
     settings = {
+      # Bound concurrent builds and request eight cores per cooperating builder.
+      max-jobs = 2;
+      cores = 8;
       trusted-users = ["root" "rakki"];
       accept-flake-config = true;
       # Enable flakes and new 'nix' command

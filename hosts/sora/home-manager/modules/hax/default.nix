@@ -11,18 +11,17 @@
     nix = ./skills/nix;
     jujutsu = ../pi/skills/jujutsu;
   };
-  hax = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.hax.overrideAttrs (old: {
-    nativeInstallCheckInputs = (old.nativeInstallCheckInputs or []) ++ [pkgs.python3];
-    postInstallCheck =
-      (old.postInstallCheck or "")
-      + ''
-        ${pkgs.python3}/bin/python3 ${./tests/smoke.py} \
-          "$out/bin/hax" ${configFile} ${./context.md} \
-          ${pkgs.linkFarm "hax-skills" (pkgs.lib.mapAttrsToList (name: path: {inherit name path;}) skills)}
-      '';
-  });
+  hax = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.hax;
+  smokeCheck = pkgs.runCommand "hax-smoke-check" {} ''
+    ${pkgs.python3}/bin/python3 ${./tests/smoke.py} \
+      "${hax}/bin/hax" ${configFile} ${./context.md} \
+      ${pkgs.linkFarm "hax-skills" (pkgs.lib.mapAttrsToList (name: path: {inherit name path;}) skills)}
+    touch "$out"
+  '';
 in {
   home = {
+    # Required at build time without retaining the check in the runtime closure.
+    checks = [smokeCheck];
     packages = [hax pkgs.jujutsu pkgs.agent-browser pkgs.chromium];
     persistence."/persist".directories = [".local/state/hax"];
     file =
