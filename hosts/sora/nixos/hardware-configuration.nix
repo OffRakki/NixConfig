@@ -66,7 +66,6 @@
       theme = "bgrt";
     };
     consoleLogLevel = 0;
-    initrd.verbose = false;
   };
 
   services.udev = {

@@ -24,6 +24,9 @@
   npmRebuildFlags = ["--ignore-scripts"];
   dontNpmBuild = true;
   postConfigure = ''
+    # GCC 16 no longer supplies uint32_t through transitive includes.
+    substituteInPlace node_modules/isolated-vm/src/lib/timer.h \
+      --replace-fail '#include <functional>' $'#include <functional>\n#include <cstdint>'
     # The Kafka addon otherwise downloads libraries and launches unbounded make jobs.
     substituteInPlace node_modules/@confluentinc/kafka-javascript/deps/librdkafka.gyp \
       --replace-fail '"make", "-j",' '"make", "-j2",'

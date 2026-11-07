@@ -390,7 +390,6 @@ in {
           hl.exec_cmd("nm-applet --indicator")
           hl.exec_cmd("openrgb --startminimized")
           hl.exec_cmd("sleep 10 && ${lock}")
-          hl.exec_cmd("ags")
           hl.exec_cmd("blueman-applet")
           hl.exec_cmd("pypr")
           hl.exec_cmd("awww-daemon")
@@ -515,7 +514,6 @@ in {
         hl.bind("${mod} + D",                   hl.dsp.exec_cmd("${lib.getExe appLauncher}"))
         hl.bind("${mod} + ALT + D",             hl.dsp.exec_cmd("pkill wofi || wofi --show run -G --insensitive")) -- Main Menu
         hl.bind("${mod} + V",                   hl.dsp.exec_cmd("pkill clipse & ${terminal} --class middleFloat -e clipse"))
-        hl.bind("${mod} + A",                   hl.dsp.exec_cmd("pkill wofi || true && ags -t 'overview'"))
         hl.bind("${mod} + RETURN",              hl.dsp.exec_cmd("${terminal}")) -- terminal
         hl.bind("${mod} + ALT + C",             hl.dsp.exec_cmd("pkill qalc & ${terminal} --class middleFloat -e qalc")) -- calculator (qalculate)
         hl.bind("${mod} + Z",                   hl.dsp.exec_cmd("pypr zoom")) -- Toggle Desktop Zoom

@@ -119,8 +119,8 @@
     podman-tui
     podman-desktop
 
-    rust-paddle-ocr
-    dgop
+    newbee-ocr
+    dux-gop
     vial
     dnd-tools
     waypaper
@@ -150,7 +150,6 @@
 
     # WM Stuff
     hyprpaper
-    ags_1
     wl-color-picker
     cava
     eog

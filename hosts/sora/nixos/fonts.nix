@@ -6,7 +6,7 @@
       ipafont
       kochi-substitute
       source-code-pro
-      ttf_bitstream_vera
+      ttf-bitstream-vera
       plemoljp
       corefonts
       noto-fonts

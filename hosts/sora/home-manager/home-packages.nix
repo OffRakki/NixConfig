@@ -2,7 +2,7 @@
   home.packages = with pkgs; [
     tailcat
     chromium
-    shiru
+    (shiru.override {electron_42 = electron;})
     viddy
     (import ./packages/orca-slicer.nix {inherit pkgs;})
     (import ./packages/linoffice.nix {inherit pkgs;})
