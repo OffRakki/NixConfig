@@ -93,6 +93,7 @@ in {
           },
 
           cursor = {
+            default_monitor = "DP-1",
             no_hardware_cursors = false,
             enable_hyprcursor = true,
             warp_on_change_workspace = 1,
@@ -378,6 +379,7 @@ in {
 
         ------------------------------- EXEC ON START -------------------------------
         hl.on("hyprland.start", function ()
+          hl.dispatch(hl.dsp.focus({ workspace = 1 }))
           local desktop_env = "WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_DATA_DIRS GTK_THEME HYPRCURSOR_THEME HYPRCURSOR_SIZE XCURSOR_THEME XCURSOR_SIZE QT_QPA_PLATFORM QT_QPA_PLATFORMTHEME QT_STYLE_OVERRIDE"
           hl.exec_cmd("sleep 2 && systemctl --user import-environment " .. desktop_env)
           hl.exec_cmd("sleep 2 && dbus-update-activation-environment --systemd " .. desktop_env)
