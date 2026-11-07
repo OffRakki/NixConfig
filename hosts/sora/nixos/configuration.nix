@@ -152,8 +152,7 @@
       '';
     };
     pam.services = {
-      gdm-password.enableGnomeKeyring = true;
-      hyprlock = {};
+      hyprlock.enableGnomeKeyring = true;
     };
   };
 

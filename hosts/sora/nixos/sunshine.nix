@@ -10,6 +10,10 @@
     autoStart = true;
     openFirewall = true;
     capSysAdmin = true;
+    settings = {
+      sunshine_name = "Sora";
+      capture = "kms";
+    };
   };
 
   hardware.uinput.enable = true;
