@@ -13,6 +13,11 @@ ShellRoot {
         id: root
 
         property bool opened: false
+        readonly property var focusedMonitor: Hyprland.focusedMonitor
+        onFocusedMonitorChanged: {
+            if (opened && !visible)
+                show()
+        }
         readonly property bool mouseEnabled: false
         property bool favoritesOnly: false
         property string sortMode: "smart"
@@ -72,19 +77,22 @@ ShellRoot {
         }
 
         function focusedScreen(): var {
+            if (!focusedMonitor)
+                return null
             for (const candidate of Quickshell.screens) {
-                if (Hyprland.monitorFor(candidate) === Hyprland.focusedMonitor)
+                if (candidate.name === focusedMonitor.name)
                     return candidate
             }
-            return root.screen ?? Quickshell.screens[0]
+            return null
         }
 
         function show(): void {
-            const targetScreen = focusedScreen()
-            if (targetScreen)
-                screen = targetScreen
-            visible = true
             opened = true
+            const targetScreen = focusedScreen()
+            if (!targetScreen)
+                return
+            screen = targetScreen
+            visible = true
             search.text = ""
             list.currentIndex = 0
             Qt.callLater(() => search.forceActiveFocus())
