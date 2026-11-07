@@ -19,6 +19,7 @@
       url_style = "straight";
       shell = "${lib.getExe pkgs.fish}";
       confirm_os_window_close = 0;
+      remember_window_size = false;
       dynamic_background_opacity = false;
       enable_audio_bell = false;
       mouse_hide_wait = 3.0;
