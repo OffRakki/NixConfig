@@ -1,98 +1,129 @@
 {
+  config,
+  lib,
+  pkgs,
+  nixConfigRoot,
+  ...
+}: let
+  themePath = "${config.xdg.stateHome}/noctalia/hyprlock-theme.conf";
+  font = "JetBrainsMono Nerd Font";
+  mainMonitor = "DP-1";
+  label = text: font_size: position: color: {
+    monitor = mainMonitor;
+    inherit text font_size position color;
+    font_family = font;
+    halign = "left";
+    valign = "center";
+    zindex = 2;
+  };
+in {
+  xdg.configFile."noctalia/templates/hyprlock.conf".text = ''
+    $lockWallpaper = {{image}}
+    $lockPrimary = rgba({{colors.primary.default.hex_stripped}}ff)
+    $lockText = rgba({{colors.on_surface.default.hex_stripped}}ff)
+    $lockMuted = rgba({{colors.on_surface.default.hex_stripped}}bf)
+    $lockPanel = rgba({{colors.surface.default.hex_stripped}}c0)
+    $lockPill = rgba({{colors.on_surface.default.hex_stripped}}20)
+    $lockInput = rgba({{colors.on_surface.default.hex_stripped}}14)
+    $lockError = rgba({{colors.error.default.hex_stripped}}ff)
+  '';
+
+  programs.noctalia.settings.theme.templates.user.hyprlock = {
+    input_path = "${config.xdg.configHome}/noctalia/templates/hyprlock.conf";
+    output_path = themePath;
+  };
+
+  # A first lock must work even before Noctalia has rendered its first palette.
+  home.activation.hyprlockTheme = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    $DRY_RUN_CMD mkdir -p ${lib.escapeShellArg (builtins.dirOf themePath)}
+    $DRY_RUN_CMD touch ${lib.escapeShellArg themePath}
+  '';
+
   programs.hyprlock = {
     enable = true;
-
     settings = {
+      "$lockWallpaper" = "${nixConfigRoot}/assets/wallpapers/6eaZOze.jpeg";
+      "$lockPrimary" = "rgba(bfa16eff)";
+      "$lockText" = "rgba(e1e1e1ff)";
+      "$lockMuted" = "rgba(e1e1e1bf)";
+      "$lockPanel" = "rgba(141415c0)";
+      "$lockPill" = "rgba(e1e1e120)";
+      "$lockInput" = "rgba(e1e1e114)";
+      "$lockError" = "rgba(ffb4abff)";
+      source = themePath;
+
       general = {
         hide_cursor = true;
-        no_fade_in = false;
-        disable_loading_bar = false;
-        grace = 0;
         ignore_empty_input = true;
         fractional_scaling = 0;
       };
 
-      # BACKGROUND
+      # Outputs without widgets stay black, but remain session-locked.
       background = [
         {
-          monitor = "";
-          path = "${../../../../../assets/wallpapers/knnw.jpg}";
-          blur_passes = 3;
-          contrast = 0.8916;
-          brightness = 0.8172;
-          vibrancy = 0.1696;
-          vibrancy_darkness = 0.0;
+          monitor = mainMonitor;
+          path = "$lockWallpaper";
+          blur_passes = 0;
         }
       ];
 
-      # TIME
+      # Layout 11: a left-side panel, with the wallpaper unobscured on the right.
+      # https://github.com/mahaveergurjar/Hyprlock-Dots
+      shape = [
+        {
+          monitor = mainMonitor;
+          size = "660, 100%";
+          color = "$lockPanel";
+          rounding = 0;
+          border_size = 0;
+          position = "0, 0";
+          halign = "left";
+          valign = "center";
+          zindex = 0;
+        }
+        {
+          monitor = mainMonitor;
+          size = "320, 55";
+          color = "$lockPill";
+          rounding = -1;
+          border_size = 0;
+          position = "170, -140";
+          halign = "left";
+          valign = "center";
+          zindex = 1;
+        }
+      ];
+
       label = [
-        {
-          monitor = "";
-          text = ''cmd[update:1000] echo "$(date +"%-I:%M%p")"'';
-          color = "rgba(235, 219, 178, .75)";
-          font_size = 60;
-          font_family = "SF Pro Display Bold";
-          position = "0, -140";
-          halign = "center";
-          valign = "top";
-        }
-
-        # DAY-DATE-MONTH
-        {
-          monitor = "";
-          text = ''cmd[update:1000] echo "<span>$(date '+%A, %d %B')</span>"'';
-          color = "rgba(225, 225, 225, 0.75)";
-          font_size = 16;
-          font_family = "SF Pro Display Bold";
-          position = "0, 200";
-          halign = "center";
-          valign = "center";
-        }
-
-        # LOGO
-        #{
-        #  monitor = "";
-        #  text = " ";
-        #  color = "rgba(255, 255, 255, 0.65)";
-        #  font_size = 80;
-        #  position = "0, 60";
-        #  halign = "center";
-        #  valign = "center";
-        #}
-
-        # USER
-        {
-          monitor = "";
-          text = "死んでください。";
-          color = "rgba(255, 255, 255, .65)";
-          font_size = 16;
-          font_family = "SF Pro Display Bold";
-          position = "0, -70";
-          halign = "center";
-          valign = "center";
-        }
+        (label "Welcome!" 55 "165, 320" "$lockPrimary")
+        (label ''cmd[update:1000] ${pkgs.coreutils}/bin/date '+%H:%M' '' 40 "255, 240" "$lockText")
+        (label ''cmd[update:60000] ${pkgs.coreutils}/bin/date '+%A, %B %d' '' 20 "180, 175" "$lockMuted")
+        (label "  $USER" 16 "281, -140" "$lockText")
       ];
 
-      # INPUT FIELD
       input-field = [
         {
-          monitor = "";
-          size = "290, 60";
-          outline_thickness = "2";
-          dots_size = "0.2"; # Scale of input-field height, 0.2 - 0.8
-          dots_spacing = "0.2"; # Scale of dots' absolute size, 0.0 - 1.0
-          dots_center = "true";
-          outer_color = "rgba(0, 0, 0, 0)";
-          inner_color = "rgba(60, 56, 54, 0.35)";
-          font_color = "rgb(200, 200, 200)";
-          fade_on_empty = "false";
-          font_family = "SF Pro Display Bold";
-          placeholder_text = ''<i><span foreground="##ffffff99">Generate luminous element!</span></i>'';
-          hide_input = "false";
-          position = "0, -140";
-          halign = "center";
+          monitor = mainMonitor;
+          size = "320, 55";
+          outline_thickness = 1;
+          dots_size = 0.2;
+          dots_spacing = 0.2;
+          dots_center = true;
+          outer_color = "$lockPrimary";
+          inner_color = "$lockInput";
+          font_color = "$lockText";
+          check_color = "$lockPrimary";
+          fail_color = "$lockError";
+          fail_text = "$FAIL <b>($ATTEMPTS)</b>";
+          fade_on_empty = false;
+          font_family = font;
+          placeholder_text = "<i>Enter password</i>";
+          hide_input = false;
+          rounding = -1;
+          position = "170, -220";
+          halign = "left";
           valign = "center";
+          zindex = 2;
         }
       ];
     };
