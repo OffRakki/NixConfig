@@ -6,7 +6,6 @@ from pathlib import Path
 root = Path(sys.argv[1])
 buddy_controller = root / "@apat183/pi-buddy/src/controller.ts"
 powerbar_index = root / "@juanibiapina/pi-powerbar/src/powerbar/index.ts"
-subagent_aliases = root / "pi-subagents/src/runs/background/runner-aliases.js"
 
 
 def replace_once(text: str, old: str, new: str) -> str:
@@ -34,16 +33,6 @@ text = replace_once(
     "\t\tsetImmediate(refresh);",
 )
 powerbar_index.write_text(text)
-
-# Pi 1.0 removed this unused legacy subpath; requiring it blocks every async child.
-text = subagent_aliases.read_text()
-text = replace_once(
-    text,
-    '    { specifier: "@earendil-works/pi-agent-core/node", '
-    'pkg: "@earendil-works/pi-agent-core", subpath: "./node" },\n',
-    "",
-)
-subagent_aliases.write_text(text)
 
 # Suppress only the informational startup banner; keep actionable warnings.
 failover_index = root / "pi-multi-account/index.ts"

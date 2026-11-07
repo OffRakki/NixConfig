@@ -25,7 +25,7 @@
     pname = package.name;
     inherit (package) version;
     src = ./.;
-    npmDepsHash = "sha256-R1B86wKcMW52QZ/BDhzWppqFn/w+YvamIr10hEnxNXo=";
+    npmDepsHash = "sha256-f/ZxAvW2mPYLnM84xAR0SSDIFs7k7u8PmwyFWO5phaI=";
     npmFlags = ["--legacy-peer-deps"];
     dontNpmBuild = true;
     installPhase = ''

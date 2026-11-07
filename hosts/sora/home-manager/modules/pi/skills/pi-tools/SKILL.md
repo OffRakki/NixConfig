@@ -157,7 +157,7 @@ Do not route work to removed APIs such as `ctx_*`, `lsp_*`, `lens_*`,
 
 Always update all Nix-managed Pi packages when updating Pi itself; choose the
 latest compatible releases rather than ignoring Node/Pi support floors.
-Browser-native 0.8 requires Node >=24.21.0; the current Node 24.19.0 supports 0.7.1.
+Browser-native 0.8–0.9 requires Node >=24.21.0; the current Node 24.19.0 supports 0.7.1.
 
 1. Review release/source changes and update the exact version in `packages/package.json`.
 2. Run `npm install --package-lock-only --ignore-scripts --legacy-peer-deps` in `packages/`.
@@ -172,12 +172,13 @@ skill, agent, prompt, theme, and extension changes need Home Manager activation
 before runtime paths update. `--list-models` alone does not exercise extension
 loading: also smoke-test `DefaultResourceLoader.reload()` and session binding
 with an isolated HOME, checking errors and registered tools without a model call.
-Pi 1.0's Nix postInstall must preserve the `pi-codemode` and `pi-mcp` workspaces
-alongside the existing host libraries so unbundled SDK imports can resolve.
-The Nix package patch removes pi-subagents 0.74's unused legacy
-`pi-agent-core/node` alias requirement, absent in Pi 1.0. The package install check
-must also validate `resolveHostPeerAliases()`; extension/session loading alone
-misses detached-child startup failures. Revisit the patch when updating pi-subagents.
+Pi 1.5's Nix postInstall must preserve `pi-codemode`, `pi-mcp`, `pi-schema`,
+`pi-durable`, and `pi-env` alongside the existing host libraries so unbundled
+SDK imports can resolve; the former client/protocol workspaces no longer exist.
+Pi-subagents 0.86 makes the removed `pi-agent-core/node` alias optional, so the
+old local patch is no longer needed. The package install check must still validate
+`resolveHostPeerAliases()`; extension/session loading alone misses detached-child
+startup failures.
 Fresh SDK hosts outside Pi's CLI also need the supported
 `PI_SUBAGENTS_PI_CODING_AGENT_PACKAGE_ROOT` environment override pointing to Pi's
 installed package root before loading the extension; CLI argv discovery supplies

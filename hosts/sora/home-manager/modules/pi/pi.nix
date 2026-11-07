@@ -6,19 +6,19 @@
   ...
 }: let
   piPackage = pkgs.pi-coding-agent.overrideAttrs (finalAttrs: _: {
-    version = "1.0.0";
+    version = "1.5.0";
     src = pkgs.fetchurl {
       url = "https://github.com/earendil-works/pi/releases/download/v${finalAttrs.version}/pi-${finalAttrs.version}-source.tar.gz";
-      hash = "sha256-iQicgtQXWbgAEkp34hKtqoZ8qqnRJp2AEu8N+byGuS4=";
+      hash = "sha256-V3rOZipGYybRpLQfgTV5rrWVdnnnlsV3uuZYIPrqXZo=";
     };
     npmDeps = pkgs.fetchNpmDeps {
       name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
       inherit (finalAttrs) src;
-      hash = "sha256-ndEvWdB6sa5nNNtabk2OMZKUFG9x3op185deZHxFnXk=";
+      hash = "sha256-koVd02HEhEAOkcvIuUg4X1A6P6P0B+wJp4DJLwkH62w=";
     };
     modelData = pkgs.fetchurl {
       url = "https://registry.npmjs.org/@earendil-works/pi-ai/-/pi-ai-${finalAttrs.version}.tgz";
-      hash = "sha256-85uZwpuFmPF1sQhA5dKoGYPnwM5crk19+DoQB0R9LCs=";
+      hash = "sha256-4yD+e9K5J3grqaN9NW/lg38aqWpGQyYQ4bO5zLdI6lw=";
     };
     buildPhase = ''
       runHook preBuild
@@ -30,10 +30,11 @@
       for ws in @earendil-works/chord:packages/chord \
                 @earendil-works/pi-ai:packages/ai \
                 @earendil-works/pi-agent-core:packages/agent \
-                @earendil-works/pi-client:packages/client \
                 @earendil-works/pi-codemode:packages/codemode \
+                @earendil-works/pi-durable:packages/durable \
+                @earendil-works/pi-env:packages/env \
                 @earendil-works/pi-mcp:packages/mcp \
-                @earendil-works/pi-protocol:packages/protocol \
+                @earendil-works/pi-schema:packages/schema \
                 @earendil-works/pi-telemetry:packages/telemetry \
                 @earendil-works/pi-tui:packages/tui; do
         IFS=: read -r pkg src <<< "$ws"
