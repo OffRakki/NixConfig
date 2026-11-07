@@ -88,7 +88,7 @@ in {
     name = "Pi";
     genericName = "AI Coding Assistant";
     comment = "Terminal-based AI coding assistant";
-    exec = "kitty --override background_opacity=1.0 --override background_blur=0 --directory /home/rakki/Projects/NixConfig -e pi";
+    exec = "kitty --directory /home/rakki/Projects/NixConfig -e pi";
     icon = "utilities-terminal";
     terminal = false;
     categories = [

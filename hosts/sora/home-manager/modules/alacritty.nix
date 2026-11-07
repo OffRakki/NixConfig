@@ -12,7 +12,7 @@
       };
       window = {
         dynamic_title = true;
-        # opacity = 0.85;
+        opacity = 0.92;
         blur = true;
         padding = {
           x = 4;
