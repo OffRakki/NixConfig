@@ -318,7 +318,7 @@ in {
         hl.window_rule({
           name = "firefoxBrowser",
           match = { class = "firefox" },
-          opacity = "2 2 2",
+          opaque = true,
           workspace = "1",
           -- monitor = "DP-1",
         })
