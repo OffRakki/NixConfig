@@ -381,12 +381,12 @@ in {
           local desktop_env = "WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_DATA_DIRS GTK_THEME HYPRCURSOR_THEME HYPRCURSOR_SIZE XCURSOR_THEME XCURSOR_SIZE QT_QPA_PLATFORM QT_QPA_PLATFORMTHEME QT_STYLE_OVERRIDE"
           hl.exec_cmd("sleep 2 && systemctl --user import-environment " .. desktop_env)
           hl.exec_cmd("sleep 2 && dbus-update-activation-environment --systemd " .. desktop_env)
-          hl.exec_cmd("sleep 4 && systemctl --user restart xsettingsd; sleep 1; noctalia")
+          hl.exec_cmd("sleep 4 && systemctl --user restart xsettingsd")
           hl.exec_cmd("${lib.getExe appLauncher} --hidden")
           hl.exec_cmd("clipse -listen")
           hl.exec_cmd("openrgb --startminimized")
-          -- Unlock the encrypted keyring through PAM before starting credential consumers.
-          hl.exec_cmd("sleep 10 && ${lock} && hyprctl dispatch exec 'nm-applet --indicator' && hyprctl dispatch exec steam && hyprctl dispatch exec vesktop")
+          -- Noctalia's encrypted history also needs the keyring; start consumers only after PAM unlock.
+          hl.exec_cmd([[${lock} && hyprctl eval 'hl.exec_cmd("noctalia"); hl.exec_cmd("nm-applet --indicator"); hl.exec_cmd("steam"); hl.exec_cmd("vesktop")']])
           hl.exec_cmd("blueman-applet")
           hl.exec_cmd("pypr")
           hl.exec_cmd("awww-daemon")
