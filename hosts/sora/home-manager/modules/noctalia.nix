@@ -34,6 +34,8 @@ in {
       hl.config({ general = { col = {
         active_border = "rgba({{colors.primary.default.hex_stripped}}ff)",
         inactive_border = "rgba({{colors.primary.default.hex_stripped}}44)",
+        nogroup_border_active = "rgba({{colors.primary.default.hex_stripped}}ff)",
+        nogroup_border = "rgba({{colors.primary.default.hex_stripped}}44)",
       } } })
     '';
   };
