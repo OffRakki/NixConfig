@@ -38,13 +38,6 @@
       "capabilities": ["extension", "tool", "ui"]
     },
     {
-      "name": "@wishx127/pi-tokyo-night",
-      "version": "1.2.3",
-      "source": "npm",
-      "trust": "pinned-third-party",
-      "capabilities": ["extension", "themes", "ui", "network", "filesystem"]
-    },
-    {
       "name": "pi-agent-browser-native",
       "version": "0.7.1",
       "source": "npm",
@@ -119,6 +112,13 @@
       "source": "npm",
       "trust": "pinned-third-party",
       "capabilities": ["extension", "tools", "network", "filesystem"]
+    },
+    {
+      "name": "rea-agents",
+      "version": "6.8.0",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["cli", "mcp", "skills", "filesystem", "process", "network", "browser", "runtime-inspection"]
     },
     {
       "name": "rinco-pi-sakura",

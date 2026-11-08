@@ -9,7 +9,6 @@
     "@jamesjfoong/pi-ollama": "1.0.3",
     "@juanibiapina/pi-extension-settings": "0.10.0",
     "@juicesharp/rpiv-ask-user-question": "2.15.0",
-    "@wishx127/pi-tokyo-night": "1.2.3",
     "pi-agent-browser-native": "0.7.1",
     "pi-codex-image-gen": "0.3.1",
     "pi-context-view": "0.8.3",
@@ -19,6 +18,14 @@
     "pi-powerline": "0.11.2",
     "pi-subagents": "0.86.0",
     "pi-web-access": "0.47.0",
+    "rea-agents": "6.8.0",
     "rinco-pi-sakura": "1.0.2"
+  },
+  "overrides": {
+    "glob": "14.0.4",
+    "minimatch": "11.0.5",
+    "rea-agents": {
+      "zod": "4.6.7"
+    }
   }
 }

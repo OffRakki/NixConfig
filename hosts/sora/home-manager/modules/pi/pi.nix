@@ -51,6 +51,13 @@
     '';
   });
   piPackages = import ./packages {inherit piPackage pkgs nodejs;};
+  rea = pkgs.writeShellApplication {
+    name = "rea";
+    runtimeInputs = [nodejs pkgs.procps];
+    text = ''
+      exec node "${piPackages.npmClosure}/node_modules/rea-agents/scripts/rea.mjs" "$@"
+    '';
+  };
   piw = pkgs.writeShellApplication {
     name = "piw";
     runtimeInputs = [
@@ -70,6 +77,7 @@ in {
     packages = [
       inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.lean-ctx
       piw
+      rea
       (import ./mail {
         inherit pkgs piPackage piPackages;
         recipientPolicyFile = osConfig.sops.secrets.mailRecipientPolicy.path;
@@ -201,7 +209,7 @@ in {
     # Chromium is the isolated automation browser it drives via CDP.
     # jujutsu backs automatic working-copy snapshots from jj-snapshot.ts.
     extraPackages =
-      [nodejs]
+      [nodejs rea]
       ++ (with pkgs; [
         libnotify
         jujutsu
@@ -370,6 +378,15 @@ in {
     # MCP servers (Pi-owned global override)
     ".pi/agent/mcp.json".text = builtins.toJSON {
       mcpServers = {
+        rea = {
+          command = "${rea}/bin/rea";
+          args = ["mcp"];
+          exposure = "codemode";
+          description = "Reverse-engineer shipped binaries, JavaScript/Electron applications, and artifacts with evidence-backed inspection.";
+          timeout = 360;
+          # REA 6.8 only supports full/off; avoid its oversized output-schema catalog.
+          env.REA_MCP_OUTPUT_SCHEMA_PROFILE = "off";
+        };
         obsidian = {
           command = "npx";
           args = [

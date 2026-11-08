@@ -31,7 +31,6 @@ Runtime files under `~/.pi/agent/` are outputs, not sources; never edit them.
 | `@juanibiapina/pi-extension-settings` | shared extension settings UI |
 | `@juicesharp/rpiv-ask-user-question` | `ask_user_question` |
 | `@jamesjfoong/pi-ollama` | discovers downloaded Ollama chat models; `/ollama-refresh` refreshes them |
-| `@wishx127/pi-tokyo-night` | Tokyo Night themes, rain panel, and status UI |
 | `pi-agent-browser-native` | `agent_browser`, `agent_browser_code`, `agent_browser_tools`, and advanced browser tools |
 | `pi-codex-image-gen` | `codex_generate_image` and `imagegen` |
 | `pi-context-view` | `/context` usage map and `/context injections` inspector |
@@ -41,6 +40,7 @@ Runtime files under `~/.pi/agent/` are outputs, not sources; never edit them.
 | `pi-powerline` | coordinated editor breadcrumbs and footer; Sakura retains the header |
 | `pi-subagents` | `subagents_enable`, `subagent`, `bg_wait`, and packaged agents |
 | `pi-web-access` | `web_enable`, `web_search`, `source_check`, `fetch_content`, and `get_search_content` |
+| `rea-agents` | `rea` CLI, REA MCP server, and bundled `reverse-engineer-anything` skill |
 | `rinco-pi-sakura` | Sakura Macaron theme and animated header |
 
 Agent Orchestrator complements `pi-subagents`; existing delegation routing remains unchanged.
@@ -164,9 +164,18 @@ Keep REA on that same runtime. Do not override `pkgs.nodejs_24` globally: doing
 so also rebuilds unrelated consumers, including the llama.cpp web UI.
 REA 6.8 requires Node >=24.22.1 on the 24.x line; browser-native 0.8–0.9
 requires Node >=24.21.0. Check current engine constraints before changing pins.
-REA 6.8.0 was tested with CLI startup and an MCP initialize/tools-list handshake
-on Node 24.22.2; this does not install or register it. Its output-schema profile
-accepts `full` or `off`, not the `compact` option documented on repository main.
+REA is pinned in the same npm closure and registered in Nix-managed `mcp.json`.
+Its `rea` wrapper uses the same Node as Pi and includes procps; do not run `rea setup` or `rea update`
+to rewrite Nix-owned installation/configuration. Load `reverse-engineer-anything`
+for shipped-artifact investigations, not ordinary source-code exploration.
+Discover its `mcp__rea` tools through codemode; its 229 tools are not declared
+up front. Its output-schema profile accepts `full` or `off`, not the `compact`
+option documented on repository main; use `off` for 6.8.0.
+Native decompilers and optional instrumentation engines are not auto-installed.
+The npm overrides update REA's vulnerable Zod/glob/minimatch pins; retain them
+until upstream pins pass audit without overrides. `tests/rea.smoke.mjs` checks
+MCP discovery, model metadata, and ASAR/JavaScript parsing after these updates.
+Keep evidence exports under `~/sync/geral/Ciel/`, never inside NixConfig.
 
 1. Review release/source changes and update the exact version in `packages/package.json`.
 2. Run `npm install --package-lock-only --ignore-scripts --legacy-peer-deps` in `packages/`.

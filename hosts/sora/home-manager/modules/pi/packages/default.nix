@@ -10,7 +10,6 @@
     "@jamesjfoong/pi-ollama"
     "@juanibiapina/pi-extension-settings"
     "@juicesharp/rpiv-ask-user-question"
-    "@wishx127/pi-tokyo-night"
     "pi-agent-browser-native"
     "pi-codex-image-gen"
     "pi-context-view"
@@ -20,6 +19,7 @@
     "pi-powerline"
     "pi-subagents"
     "pi-web-access"
+    "rea-agents"
     "rinco-pi-sakura"
   ];
   npmClosure = pkgs.buildNpmPackage {
@@ -27,8 +27,12 @@
     pname = package.name;
     inherit (package) version;
     src = ./.;
-    npmDepsHash = "sha256-P6Net2oI4NavfBQdbgvbJtzjf56Vn17zIgA4y8gJS7E=";
+    npmDepsHash = "sha256-1+VMwtT3xzxh+9Zcx1sbe2UtKWuYa33VxAGT8QwlHLM=";
     npmFlags = ["--legacy-peer-deps"];
+    # Use shipped native prebuilds; never download/build optional engines during install.
+    npmRebuildFlags = ["--ignore-scripts"];
+    nativeBuildInputs = [pkgs.autoPatchelfHook];
+    buildInputs = [pkgs.stdenv.cc.cc.lib];
     dontNpmBuild = true;
     installPhase = ''
       runHook preInstall
@@ -39,6 +43,7 @@
       runHook postInstall
     '';
     doInstallCheck = true;
+    nativeInstallCheckInputs = [pkgs.procps];
     installCheckPhase = ''
       runHook preInstallCheck
       export HOME="$TMPDIR/home"
@@ -57,6 +62,7 @@
       const settingsManager = SettingsManager.inMemory({ packages: process.argv.slice(2), enableAnalytics: false, enableInstallTelemtry: false });
       const resourceLoader = new DefaultResourceLoader({ cwd, agentDir, settingsManager, noContextFiles: true });
       await resourceLoader.reload();
+      if (!resourceLoader.getSkills().skills.some(skill => skill.name === "reverse-engineer-anything")) throw new Error("REA skill missing");
       const { errors, warnings = [] } = resourceLoader.getExtensions();
       if (errors.length || warnings.length) throw new Error(JSON.stringify({ errors, warnings }));
       const { session } = await createAgentSession({ cwd, agentDir, settingsManager, resourceLoader, sessionManager: SessionManager.inMemory(cwd) });
@@ -68,6 +74,7 @@
       JS
       ${nodejs}/bin/node ${../tests/failover.smoke.mjs} \
         ${piPackage}/lib/node_modules/pi-monorepo "$out"
+      ${nodejs}/bin/node ${../tests/rea.smoke.mjs} "$out/node_modules/rea-agents/scripts/rea.mjs"
       runHook postInstallCheck
     '';
   };
