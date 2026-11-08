@@ -26,6 +26,7 @@
     ./users.nix
     ./tailscale.nix
     ./kdeconnect.nix
+    ./nectarlink.nix
     ./sunshine.nix
     ./firefly.nix
     ./mcServers.nix

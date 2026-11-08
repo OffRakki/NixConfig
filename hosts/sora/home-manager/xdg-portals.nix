@@ -10,6 +10,7 @@
         "gtk"
         "hyprland"
       ];
+      hyprland."org.freedesktop.impl.portal.ScreenCast" = ["hyprland"];
       common = {
         default = ["gtk"];
         "org.freedesktop.impl.portal.FileChooser" = ["gtk"];

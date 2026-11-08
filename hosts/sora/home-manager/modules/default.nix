@@ -4,6 +4,7 @@
     ./hax
     ./pi
     ./obs.nix
+    ./nectarlink.nix
     ./steam/steam.nix
     ./steam/millennium.nix
     ./fish
