@@ -22,6 +22,11 @@ their data volumes and verify that their ports remain closed.
 Keep configuration YAGNI-minimal and group shared attribute prefixes into
 nested blocks instead of repeating dotted assignments.
 
+For Helix IDE configuration, check the pinned editor's built-in language/server
+and debugger definitions plus Home Manager's `programs.helix` module before
+adding custom glue. Reuse those facilities, override only meaningful differences,
+and distinguish necessary configuration from redundant copies of defaults.
+
 ## Pi module changes
 
 Pi packages, custom extensions, skills, prompts, themes, custom agents, and model
