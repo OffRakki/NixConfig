@@ -29,7 +29,6 @@ Runtime files under `~/.pi/agent/` are outputs, not sources; never edit them.
 | `@apat183/pi-buddy` | animated Pi header, state widget, and spinner |
 | `@groeponline/pi-agent-orchestrator` | `Agent`, `get_subagent_result`, `steer_subagent`, `/agents`, scheduling, and orchestra workflows |
 | `@juanibiapina/pi-extension-settings` | shared extension settings UI |
-| `@juanibiapina/pi-powerbar` | persistent powerline status UI and usage segments |
 | `@juicesharp/rpiv-ask-user-question` | `ask_user_question` |
 | `@jamesjfoong/pi-ollama` | discovers downloaded Ollama chat models; `/ollama-refresh` refreshes them |
 | `@wishx127/pi-tokyo-night` | Tokyo Night themes, rain panel, and status UI |
@@ -39,6 +38,7 @@ Runtime files under `~/.pi/agent/` are outputs, not sources; never edit them.
 | `pi-intercom` | `intercom` and cross-session coordination |
 | `pi-invisible-continue` | manual invisible `/continue` command |
 | `pi-multi-account` | subscription-to-API failover, quota display, and `/multi-account` controls |
+| `pi-powerline` | coordinated editor breadcrumbs and footer; Sakura retains the header |
 | `pi-subagents` | `subagents_enable`, `subagent`, `bg_wait`, and packaged agents |
 | `pi-web-access` | `web_enable`, `web_search`, `source_check`, `fetch_content`, and `get_search_content` |
 | `rinco-pi-sakura` | Sakura Macaron theme and animated header |

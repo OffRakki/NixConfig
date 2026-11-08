@@ -108,7 +108,6 @@ in {
   '';
   home.activation.setPiWidgetPlacement = ''
     buddy="$HOME/.pi/agent/pi-buddy/config.json"
-    powerbar="$HOME/.pi/agent/settings-extensions.json"
     mkdir -p "$(dirname "$buddy")"
 
     update_pi_widget() (
@@ -131,7 +130,6 @@ in {
     )
 
     update_pi_widget "$buddy" '.placement = "belowEditor" | .header = false'
-    update_pi_widget "$powerbar" '(.powerbar //= {}) | .powerbar.placement = "belowEditor"'
     # Writable runtime config: extension commands use atomic read-latest updates.
     # Only these two billing routes may enter automatic rotation.
     update_pi_widget "$HOME/.pi/agent/provider-failover.json" '. + ${builtins.toJSON {
@@ -262,22 +260,17 @@ in {
         blockImages = false;
       };
       warnings.anthropicExtraUsage = true;
-      powerline = {
-        preset = "nerd";
-      };
+      powerline = true;
+      breadcrumb = "inner";
+      footer = true;
+      # Keep the existing Sakura header; Powerline owns only the editor/footer.
+      header = false;
+      header-info = false;
       subagents.agentOverrides = {
         oracle.thinking = "medium";
         planner.thinking = "medium";
         reviewer.thinking = "medium";
         worker.thinking = "medium";
-      };
-      # Empty jump bindings suppress powerline's scroll-away navigation card.
-      powerlineShortcuts = {
-        jumpChatBottom = null;
-        jumpPreviousUserMessage = null;
-        jumpNextUserMessage = null;
-        jumpPreviousLlmMessage = null;
-        jumpNextLlmMessage = null;
       };
       packages = piPackages.paths;
     };

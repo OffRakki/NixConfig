@@ -5,7 +5,6 @@ from pathlib import Path
 
 root = Path(sys.argv[1])
 buddy_controller = root / "@apat183/pi-buddy/src/controller.ts"
-powerbar_index = root / "@juanibiapina/pi-powerbar/src/powerbar/index.ts"
 
 
 def replace_once(text: str, old: str, new: str) -> str:
@@ -23,16 +22,6 @@ text = replace_once(
     "\t\tsetImmediate(() => this.applyAll(ctx));\n\t\tctx.ui.setTitle(",
 )
 buddy_controller.write_text(text)
-
-text = powerbar_index.read_text()
-text = replace_once(
-    text,
-    "\t\thideFooter(ctx);\n\t\trefresh();",
-    "\t\thideFooter(ctx);\n"
-    "\t\t// Keep startup ordering stable with other below-editor widgets on Pi 0.80.\n"
-    "\t\tsetImmediate(refresh);",
-)
-powerbar_index.write_text(text)
 
 # Suppress only the informational startup banner; keep actionable warnings.
 failover_index = root / "pi-multi-account/index.ts"

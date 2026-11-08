@@ -31,13 +31,6 @@
       "capabilities": ["extension", "ui", "filesystem"]
     },
     {
-      "name": "@juanibiapina/pi-powerbar",
-      "version": "0.16.0",
-      "source": "npm",
-      "trust": "pinned-third-party",
-      "capabilities": ["extension", "ui", "network", "filesystem", "credentials", "session-metadata"]
-    },
-    {
       "name": "@juicesharp/rpiv-ask-user-question",
       "version": "2.15.0",
       "source": "npm",
@@ -99,6 +92,13 @@
       "source": "npm",
       "trust": "pinned-third-party",
       "capabilities": ["extension", "network", "filesystem", "credentials", "session-control", "ui"]
+    },
+    {
+      "name": "pi-powerline",
+      "version": "0.11.2",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "ui", "filesystem", "session-metadata"]
     },
     {
       "name": "pi-subagents",

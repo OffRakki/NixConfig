@@ -8,7 +8,6 @@
     "@groeponline/pi-agent-orchestrator": "0.19.1",
     "@jamesjfoong/pi-ollama": "1.0.3",
     "@juanibiapina/pi-extension-settings": "0.10.0",
-    "@juanibiapina/pi-powerbar": "0.16.0",
     "@juicesharp/rpiv-ask-user-question": "2.15.0",
     "@wishx127/pi-tokyo-night": "1.2.3",
     "pi-agent-browser-native": "0.7.1",
@@ -17,6 +16,7 @@
     "pi-intercom": "0.18.1",
     "pi-invisible-continue": "0.3.19",
     "pi-multi-account": "1.28.1",
+    "pi-powerline": "0.11.2",
     "pi-subagents": "0.86.0",
     "pi-web-access": "0.47.0",
     "rinco-pi-sakura": "1.0.2"

@@ -8,7 +8,6 @@
     "@groeponline/pi-agent-orchestrator"
     "@jamesjfoong/pi-ollama"
     "@juanibiapina/pi-extension-settings"
-    "@juanibiapina/pi-powerbar"
     "@juicesharp/rpiv-ask-user-question"
     "@wishx127/pi-tokyo-night"
     "pi-agent-browser-native"
@@ -17,6 +16,7 @@
     "pi-intercom"
     "pi-invisible-continue"
     "pi-multi-account"
+    "pi-powerline"
     "pi-subagents"
     "pi-web-access"
     "rinco-pi-sakura"
@@ -25,7 +25,7 @@
     pname = package.name;
     inherit (package) version;
     src = ./.;
-    npmDepsHash = "sha256-f/ZxAvW2mPYLnM84xAR0SSDIFs7k7u8PmwyFWO5phaI=";
+    npmDepsHash = "sha256-P6Net2oI4NavfBQdbgvbJtzjf56Vn17zIgA4y8gJS7E=";
     npmFlags = ["--legacy-peer-deps"];
     dontNpmBuild = true;
     installPhase = ''
