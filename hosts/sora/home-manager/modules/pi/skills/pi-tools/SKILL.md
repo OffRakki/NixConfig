@@ -157,7 +157,16 @@ Do not route work to removed APIs such as `ctx_*`, `lsp_*`, `lens_*`,
 
 Always update all Nix-managed Pi packages when updating Pi itself; choose the
 latest compatible releases rather than ignoring Node/Pi support floors.
-Browser-native 0.8–0.9 requires Node >=24.21.0; the current Node 24.19.0 supports 0.7.1.
+Pi selects its Node 24 runtime locally in `pi.nix` from `nixpkgs-node`
+(locked separately so Node security updates do not upgrade the OS). Pi itself,
+its package builds, and tools launched on its extraPackages PATH share this Node.
+Keep REA on that same runtime. Do not override `pkgs.nodejs_24` globally: doing
+so also rebuilds unrelated consumers, including the llama.cpp web UI.
+REA 6.8 requires Node >=24.22.1 on the 24.x line; browser-native 0.8–0.9
+requires Node >=24.21.0. Check current engine constraints before changing pins.
+REA 6.8.0 was tested with CLI startup and an MCP initialize/tools-list handshake
+on Node 24.22.2; this does not install or register it. Its output-schema profile
+accepts `full` or `off`, not the `compact` option documented on repository main.
 
 1. Review release/source changes and update the exact version in `packages/package.json`.
 2. Run `npm install --package-lock-only --ignore-scripts --legacy-peer-deps` in `packages/`.

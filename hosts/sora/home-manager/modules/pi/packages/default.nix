@@ -1,6 +1,7 @@
 {
   pkgs,
   piPackage ? pkgs.pi-coding-agent,
+  nodejs ? pkgs.nodejs,
 }: let
   package = builtins.fromJSON (builtins.readFile ./package.json);
   activeNpmPackages = [
@@ -22,6 +23,7 @@
     "rinco-pi-sakura"
   ];
   npmClosure = pkgs.buildNpmPackage {
+    inherit nodejs;
     pname = package.name;
     inherit (package) version;
     src = ./.;
@@ -44,7 +46,7 @@
       args=()
       export PI_CODING_AGENT_DIR="$HOME/.pi/agent" PI_TELEMETRY=0 PI_SKIP_VERSION_CHECK=1
       ${pkgs.lib.concatMapStringsSep "\n" (name: ''args+=("$out/node_modules/${name}")'') activeNpmPackages}
-      ${pkgs.nodejs}/bin/node --input-type=module - "''${args[@]}" <<'JS'
+      ${nodejs}/bin/node --input-type=module - "''${args[@]}" <<'JS'
       import { createAgentSession, DefaultResourceLoader, SessionManager, SettingsManager } from '${piPackage}/lib/node_modules/pi-monorepo/dist/index.js';
       const { resolveHostPeerAliases } = await import(process.argv.slice(2).find(path => path.endsWith('/pi-subagents')) + '/src/runs/background/runner-aliases.js');
       const { missing } = resolveHostPeerAliases('${piPackage}/lib/node_modules/pi-monorepo');
@@ -64,7 +66,7 @@
       if (runtimeErrors.length) throw new Error(JSON.stringify(runtimeErrors));
       process.exit(0);
       JS
-      ${pkgs.nodejs}/bin/node ${../tests/failover.smoke.mjs} \
+      ${nodejs}/bin/node ${../tests/failover.smoke.mjs} \
         ${piPackage}/lib/node_modules/pi-monorepo "$out"
       runHook postInstallCheck
     '';

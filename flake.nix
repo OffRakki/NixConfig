@@ -4,6 +4,8 @@
   inputs = {
     # Nix
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    # Node 24 security releases ahead of the unstable channel; used only for Node.
+    nixpkgs-node.url = "github:NixOS/nixpkgs/master";
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";

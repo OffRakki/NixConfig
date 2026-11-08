@@ -5,7 +5,12 @@
   inputs,
   ...
 }: let
-  piPackage = pkgs.pi-coding-agent.overrideAttrs (finalAttrs: _: {
+  # Keep Pi/REA on a newer Node without rebuilding unrelated Node consumers.
+  nodejs = inputs.nixpkgs-node.legacyPackages.${pkgs.stdenv.hostPlatform.system}.nodejs_24;
+  piBasePackage = pkgs.pi-coding-agent.override {
+    buildNpmPackage = pkgs.buildNpmPackage.override {inherit nodejs;};
+  };
+  piPackage = piBasePackage.overrideAttrs (finalAttrs: _: {
     version = "1.5.0";
     src = pkgs.fetchurl {
       url = "https://github.com/earendil-works/pi/releases/download/v${finalAttrs.version}/pi-${finalAttrs.version}-source.tar.gz";
@@ -45,7 +50,7 @@
       find "$nm/.bin" -xtype l -delete
     '';
   });
-  piPackages = import ./packages {inherit piPackage pkgs;};
+  piPackages = import ./packages {inherit piPackage pkgs nodejs;};
   piw = pkgs.writeShellApplication {
     name = "piw";
     runtimeInputs = [
@@ -195,14 +200,15 @@ in {
     # agent-browser is the upstream binary used by pi-agent-browser-native;
     # Chromium is the isolated automation browser it drives via CDP.
     # jujutsu backs automatic working-copy snapshots from jj-snapshot.ts.
-    extraPackages = with pkgs; [
-      nodejs
-      libnotify
-      jujutsu
-      agent-browser
-      chromium
-      inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.lean-ctx
-    ];
+    extraPackages =
+      [nodejs]
+      ++ (with pkgs; [
+        libnotify
+        jujutsu
+        agent-browser
+        chromium
+        inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.lean-ctx
+      ]);
     settings = {
       enableInstallTelemtry = false;
       enableAnalytics = false;
