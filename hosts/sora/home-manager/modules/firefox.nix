@@ -59,6 +59,7 @@
         };
         userChrome = ''
           #TabsToolbar { visibility: collapse !important; }
+          #sidebar-box, #sidebar { border-radius: 0 !important; }
           #sidebar-panel-header { display: none; }
           #sidebar-header { display: none; }
         '';
