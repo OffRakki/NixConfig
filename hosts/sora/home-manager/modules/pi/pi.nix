@@ -227,7 +227,7 @@ in {
       defaultThinkingLevel = "medium";
       cacheWarming = "idle";
       showCacheMissNotices = true;
-      theme = "sakura-macaron";
+      theme = "system";
       enabledModels = [
         "gpt-6*"
         "gpt-5.6*"
