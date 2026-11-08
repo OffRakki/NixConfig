@@ -73,7 +73,7 @@ in {
         settings_window_translucent = true;
         shadow.direction = "down_right";
         panel = {
-          transparency_mode = "glass";
+          transparency_mode = "soft";
           control_center_placement = "floating";
           launcher_position = "top_left";
           session_placement = "floating";
@@ -139,12 +139,16 @@ in {
         fill_mode = "crop";
         edge_smoothness = 0.05;
       };
-      dock.enabled = false;
+      dock = {
+        enabled = false;
+        background_opacity = 0.75;
+      };
       backdrop.enabled = false;
       bar.main = {
         position = "top";
         thickness = 30;
-        background_opacity = 0.0;
+        background_opacity = 0.75;
+        capsule_opacity = 0.75;
         margin_ends = 3;
         margin_edge = 3;
         padding = 2;
@@ -229,12 +233,12 @@ in {
         position = "top_center";
         monitors = ["DP-1"];
         layer = "overlay";
-        background_opacity = 1.0;
+        background_opacity = 0.75;
       };
       osd = {
         position = "top_right";
         monitors = ["DP-1"];
-        background_opacity = 1.0;
+        background_opacity = 0.75;
         kinds = {
           caffeine = false;
           privacy = false;
