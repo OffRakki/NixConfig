@@ -68,7 +68,10 @@
     text = builtins.readFile ./scripts/piw.sh;
   };
 in {
-  imports = [(import ./usage {inherit pkgs nodejs piPackage;})];
+  imports = [
+    (import ./usage {inherit pkgs nodejs piPackage;})
+    ./noctalia.nix
+  ];
 
   home = {
     sessionVariables = {
@@ -227,7 +230,7 @@ in {
       defaultThinkingLevel = "medium";
       cacheWarming = "idle";
       showCacheMissNotices = true;
-      theme = "system";
+      theme = "noctalia";
       enabledModels = [
         "gpt-6*"
         "gpt-5.6*"

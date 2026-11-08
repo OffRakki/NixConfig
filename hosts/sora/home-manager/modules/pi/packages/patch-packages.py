@@ -14,6 +14,17 @@ def replace_once(text: str, old: str, new: str) -> str:
     return text.replace(old, new, 1)
 
 
+# The footer already receives Pi's live theme proxy, but its Git branch used a
+# fixed green. Keep that segment on the same palette as the rest of the bar.
+footer = root / "pi-powerline/extensions/footer.ts"
+text = replace_once(footer.read_text(), "hasNerdFonts, hexFg, withIcon", "hasNerdFonts, withIcon")
+text = replace_once(
+    text,
+    "hexFg('#5faf5f', withIcon(ICON_GIT, branch))",
+    "theme.fg('success', withIcon(ICON_GIT, branch))",
+)
+footer.write_text(text)
+
 text = buddy_controller.read_text()
 text = replace_once(
     text,
