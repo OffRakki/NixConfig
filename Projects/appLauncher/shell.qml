@@ -12,6 +12,30 @@ ShellRoot {
     PanelWindow {
         id: root
 
+        FileView {
+            id: themeFile
+            path: Quickshell.env("APP_LAUNCHER_THEME")
+                || (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state")
+                    + "/noctalia/app-launcher.json"
+            watchChanges: true
+            printErrors: false
+            onFileChanged: reload()
+
+            JsonAdapter {
+                id: launcherPalette
+                property color primary: "#64e7be"
+                property color primaryText: "#00382b"
+                property color primaryContainer: "#00513e"
+                property color primaryContainerText: "#8ff7d7"
+                property color surfaceContainer: "#181c1b"
+                property color surfaceContainerLow: "#141817"
+                property color surfaceContainerHigh: "#222725"
+                property color surfaceText: "#e1e3df"
+                property color mutedText: "#bfc9c2"
+                property color outlineVariant: "#3f4943"
+            }
+        }
+
         property bool opened: false
         readonly property var focusedMonitor: Hyprland.focusedMonitor
         onFocusedMonitorChanged: {
@@ -183,6 +207,14 @@ ShellRoot {
             function open(): void { root.show() }
             function close(): void { root.hide() }
             function toggle(): void { root.toggle() }
+            function theme(): string {
+                return JSON.stringify({
+                    primary: launcherPalette.primary.toString(),
+                    selection: launcherPalette.primaryContainer.toString(),
+                    text: launcherPalette.surfaceText.toString(),
+                    background: card.color.toString()
+                })
+            }
         }
 
         GlobalShortcut {
@@ -194,7 +226,7 @@ ShellRoot {
 
         Rectangle {
             anchors.fill: parent
-            color: "#80090a0d"
+            color: Qt.rgba(0, 0, 0, 0.35)
 
             MouseArea {
                 anchors.fill: parent
@@ -209,9 +241,9 @@ ShellRoot {
             width: Math.min(760, root.width - 48)
             height: Math.min(610, root.height - 48)
             radius: 24
-            color: "#f5101115"
+            color: Qt.rgba(0, 0, 0, 0.60)
             border.width: 1
-            border.color: "#34363d"
+            border.color: launcherPalette.outlineVariant
             clip: true
 
             MouseArea {
@@ -233,13 +265,13 @@ ShellRoot {
                         width: 40
                         height: 40
                         radius: 12
-                        color: "#202126"
-                        border.color: "#34363d"
+                        color: launcherPalette.surfaceContainer
+                        border.color: launcherPalette.outlineVariant
 
                         Text {
                             anchors.centerIn: parent
                             text: "󰀻"
-                            color: "#e7e8ec"
+                            color: launcherPalette.primary
                             font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: 20
                         }
@@ -249,14 +281,14 @@ ShellRoot {
                         spacing: 0
                         Text {
                             text: "Applications"
-                            color: "#f2f3f5"
+                            color: launcherPalette.surfaceText
                             font.family: "Noto Sans"
                             font.pixelSize: 20
                             font.weight: Font.DemiBold
                         }
                         Text {
                             text: root.apps.length + " installed"
-                            color: "#777a83"
+                            color: launcherPalette.mutedText
                             font.family: "Noto Sans"
                             font.pixelSize: 11
                         }
@@ -268,12 +300,12 @@ ShellRoot {
                         width: 42
                         height: 28
                         radius: 8
-                        color: "#1c1d22"
-                        border.color: "#30323a"
+                        color: launcherPalette.surfaceContainer
+                        border.color: launcherPalette.outlineVariant
                         Text {
                             anchors.centerIn: parent
                             text: "ESC"
-                            color: "#777a83"
+                            color: launcherPalette.mutedText
                             font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: 10
                         }
@@ -284,9 +316,9 @@ ShellRoot {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 60
                     radius: 16
-                    color: "#191a1f"
+                    color: launcherPalette.surfaceContainerLow
                     border.width: 1
-                    border.color: search.activeFocus ? "#6d707b" : "#30323a"
+                    border.color: search.activeFocus ? launcherPalette.primary : launcherPalette.outlineVariant
                     Behavior on border.color { ColorAnimation { duration: 100 } }
 
                     RowLayout {
@@ -297,7 +329,7 @@ ShellRoot {
 
                         Text {
                             text: "󰍉"
-                            color: "#8b8e98"
+                            color: launcherPalette.primary
                             font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: 18
                         }
@@ -305,9 +337,9 @@ ShellRoot {
                         TextInput {
                             id: search
                             Layout.fillWidth: true
-                            color: "#eeeeef"
-                            selectionColor: "#555861"
-                            selectedTextColor: "white"
+                            color: launcherPalette.surfaceText
+                            selectionColor: launcherPalette.primary
+                            selectedTextColor: launcherPalette.primaryText
                             font.family: "Noto Sans"
                             font.pixelSize: 17
                             clip: true
@@ -316,7 +348,7 @@ ShellRoot {
                             Text {
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: "Search by name, description, or keyword..."
-                                color: "#62656e"
+                                color: launcherPalette.mutedText
                                 font: search.font
                                 visible: !search.text
                             }
@@ -356,7 +388,7 @@ ShellRoot {
 
                         Text {
                             text: root.results.length + " / " + root.matchingApps.length
-                            color: "#70737c"
+                            color: launcherPalette.mutedText
                             font.family: "Noto Sans"
                             font.pixelSize: 11
                         }
@@ -379,16 +411,16 @@ ShellRoot {
                             width: sortText.width + 24
                             height: 30
                             radius: 9
-                            color: root.sortMode === modelData.key ? "#2a2c32" : "transparent"
+                            color: root.sortMode === modelData.key ? launcherPalette.primaryContainer : "transparent"
                             border.width: 1
-                            border.color: root.sortMode === modelData.key ? "#474a53" : "#292b31"
+                            border.color: root.sortMode === modelData.key ? launcherPalette.primary : launcherPalette.outlineVariant
                             Behavior on color { ColorAnimation { duration: 90 } }
 
                             Text {
                                 id: sortText
                                 anchors.centerIn: parent
                                 text: modelData.label
-                                color: root.sortMode === modelData.key ? "#e4e5e8" : "#797c85"
+                                color: root.sortMode === modelData.key ? launcherPalette.primaryContainerText : launcherPalette.mutedText
                                 font.family: "Noto Sans"
                                 font.pixelSize: 11
                                 font.weight: Font.Medium
@@ -408,15 +440,15 @@ ShellRoot {
                         width: favoritesText.width + 26
                         height: 30
                         radius: 9
-                        color: root.favoritesOnly ? "#2a2c32" : "transparent"
+                        color: root.favoritesOnly ? launcherPalette.primaryContainer : "transparent"
                         border.width: 1
-                        border.color: root.favoritesOnly ? "#474a53" : "#292b31"
+                        border.color: root.favoritesOnly ? launcherPalette.primary : launcherPalette.outlineVariant
 
                         Text {
                             id: favoritesText
                             anchors.centerIn: parent
                             text: (root.favoritesOnly ? "󰓎  " : "󰓏  ") + "Favorites"
-                            color: root.favoritesOnly ? "#e4e5e8" : "#797c85"
+                            color: root.favoritesOnly ? launcherPalette.primaryContainerText : launcherPalette.mutedText
                             font.family: "JetBrainsMono Nerd Font"
                             font.pixelSize: 11
                         }
@@ -449,9 +481,9 @@ ShellRoot {
                         width: list.width
                         height: 56
                         radius: 14
-                        color: index === list.currentIndex ? "#24262c" : rowMouse.containsMouse ? "#1b1c21" : "transparent"
+                        color: index === list.currentIndex ? launcherPalette.primaryContainer : rowMouse.containsMouse ? launcherPalette.surfaceContainerHigh : "transparent"
                         border.width: index === list.currentIndex ? 1 : 0
-                        border.color: "#3b3d45"
+                        border.color: launcherPalette.primary
                         Behavior on color { ColorAnimation { duration: 90 } }
 
                         MouseArea {
@@ -476,8 +508,8 @@ ShellRoot {
                                 width: 40
                                 height: 40
                                 radius: 11
-                                color: "#1b1c21"
-                                border.color: "#2c2e34"
+                                color: launcherPalette.surfaceContainerHigh
+                                border.color: launcherPalette.outlineVariant
 
                                 Image {
                                     anchors.centerIn: parent
@@ -498,7 +530,7 @@ ShellRoot {
                                 Text {
                                     Layout.fillWidth: true
                                     text: row.modelData.entry.name
-                                    color: "#eeeeef"
+                                    color: launcherPalette.surfaceText
                                     elide: Text.ElideRight
                                     font.family: "Noto Sans"
                                     font.pixelSize: 14
@@ -507,7 +539,7 @@ ShellRoot {
                                 Text {
                                     Layout.fillWidth: true
                                     text: row.modelData.entry.genericName || row.modelData.entry.id
-                                    color: "#70737c"
+                                    color: launcherPalette.mutedText
                                     elide: Text.ElideRight
                                     font.family: "Noto Sans"
                                     font.pixelSize: 10
@@ -517,7 +549,7 @@ ShellRoot {
                             Text {
                                 visible: row.modelData.launches > 0
                                 text: row.modelData.launches + "×"
-                                color: "#686b74"
+                                color: launcherPalette.mutedText
                                 font.family: "Noto Sans"
                                 font.pixelSize: 10
                             }
@@ -526,12 +558,12 @@ ShellRoot {
                                 width: 34
                                 height: 34
                                 radius: 10
-                                color: favoriteMouse.containsMouse ? "#303239" : "transparent"
+                                color: favoriteMouse.containsMouse ? launcherPalette.surfaceContainerHigh : "transparent"
 
                                 Text {
                                     anchors.centerIn: parent
                                     text: row.modelData.favorite ? "󰓎" : "󰓏"
-                                    color: row.modelData.favorite ? "#e4e5e8" : "#666972"
+                                    color: row.modelData.favorite ? launcherPalette.primaryContainerText : launcherPalette.mutedText
                                     font.family: "JetBrainsMono Nerd Font"
                                     font.pixelSize: 16
                                 }
@@ -554,7 +586,7 @@ ShellRoot {
                         anchors.centerIn: parent
                         visible: root.results.length === 0
                         text: root.favoritesOnly ? "No favorites yet" : "No matching applications"
-                        color: "#747780"
+                        color: launcherPalette.mutedText
                         font.family: "Noto Sans"
                         font.pixelSize: 14
                     }
@@ -564,14 +596,14 @@ ShellRoot {
                     Layout.fillWidth: true
                     Text {
                         text: "↑↓ / ctrl+jk navigate   ↵ launch   ctrl+space favorite"
-                        color: "#5f626b"
+                        color: launcherPalette.mutedText
                         font.family: "Noto Sans"
                         font.pixelSize: 10
                     }
                     Item { Layout.fillWidth: true }
                     Text {
                         text: "ctrl+1/2/3 sort   ctrl+f filter"
-                        color: "#5f626b"
+                        color: launcherPalette.mutedText
                         font.family: "Noto Sans"
                         font.pixelSize: 10
                     }

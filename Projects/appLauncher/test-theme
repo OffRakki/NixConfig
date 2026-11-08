@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# Usage: bash test-theme FIRST_RENDERED_PALETTE SECOND_RENDERED_PALETTE
+# Temporarily owns the launcher; restores the installed launcher when finished.
+set -euo pipefail
+project="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+first="$(realpath -e -- "${1:?first rendered palette required}")"
+second="$(realpath -e -- "${2:?second rendered palette required}")"
+tmp="$(mktemp -d)"
+installed="$(command -v app-launcher || true)"
+cleanup() {
+    "$project/launch" --stop
+    [ -z "$installed" ] || "$installed" --hidden
+    rm -rf -- "$tmp"
+}
+trap cleanup EXIT
+
+query() { "$project/launch" ipc call launcher theme; }
+pid() { qs list --all --json | jq -r '.[] | select(.shell_id == "app-launcher") | .pid'; }
+wait_palette() {
+    local expected="$1" current
+    for _ in {1..60}; do
+        current="$(query)"
+        if jq -e --argjson expected "$expected" \
+            '.primary == $expected.primary and .selection == $expected.primaryContainer and .text == $expected.surfaceText and .background == "#99000000"' \
+            <<< "$current" >/dev/null; then
+            return
+        fi
+        sleep 0.05
+    done
+    echo "Palette did not update: $current" >&2
+    exit 1
+}
+
+"$project/launch" --stop
+APP_LAUNCHER_THEME="$tmp/palette.json" "$project/launch" --hidden
+initial_pid="$(pid)"
+[ -n "$initial_pid" ]
+# A missing file must have a usable fallback, then load when Noctalia creates it.
+jq -e '.primary == "#64e7be" and .background == "#99000000"' <<< "$(query)" >/dev/null
+cp -- "$first" "$tmp/palette.json"
+wait_palette "$(jq -c . "$first")"
+valid="$(query)"
+printf '{' > "$tmp/palette.json"
+sleep 0.3
+[ "$(query)" = "$valid" ]
+# Atomic replacement must re-arm the native watcher, including later updates.
+cp -- "$second" "$tmp/next.json"
+mv -- "$tmp/next.json" "$tmp/palette.json"
+wait_palette "$(jq -c . "$second")"
+cp -- "$first" "$tmp/palette.json"
+wait_palette "$(jq -c . "$first")"
+[ "$(pid)" = "$initial_pid" ]
+"$project/launch" ipc call launcher open
+"$project/launch" ipc call launcher close
+"$project/launch" --hidden
+[ "$(pid)" = "$initial_pid" ]
+qs log -p "$project" > "$tmp/launcher.log"
+if grep -Eq 'Unable to assign|Binding loop|Failed to load configuration' "$tmp/launcher.log"; then
+    echo "Launcher emitted QML errors" >&2
+    exit 1
+fi
+echo 'PASS: fallback, file creation, live colors, malformed JSON, atomic replacement, repeated updates, open/close, single-instance lifecycle, neutral glass; no QML binding errors.'

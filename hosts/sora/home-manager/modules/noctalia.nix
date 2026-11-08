@@ -30,6 +30,7 @@ in {
   xdg.configFile = {
     "noctalia/plugin-sources/community".source = communityPlugins;
     "noctalia/plugin-sources/local".source = ./noctalia-plugins;
+    "noctalia/templates/app-launcher.json".source = ../../../../Projects/appLauncher/theme.json.in;
     "noctalia/templates/hyprland-borders.lua".text = ''
       hl.config({ general = { col = {
         active_border = "rgba({{colors.primary.default.hex_stripped}}ff)",
@@ -126,6 +127,10 @@ in {
         templates = {
           enable_builtin_templates = false;
           enable_community_templates = false;
+          user.app-launcher = {
+            input_path = "${config.xdg.configHome}/noctalia/templates/app-launcher.json";
+            output_path = "${config.xdg.stateHome}/noctalia/app-launcher.json";
+          };
           user.hyprland-borders = {
             input_path = "${config.xdg.configHome}/noctalia/templates/hyprland-borders.lua";
             output_path = "${config.xdg.stateHome}/noctalia/hyprland-borders.lua";
