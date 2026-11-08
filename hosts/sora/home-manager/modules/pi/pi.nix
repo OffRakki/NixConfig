@@ -68,6 +68,8 @@
     text = builtins.readFile ./scripts/piw.sh;
   };
 in {
+  imports = [(import ./usage {inherit pkgs nodejs piPackage;})];
+
   home = {
     sessionVariables = {
       PI_SKIP_VERSION_CHECK = true;

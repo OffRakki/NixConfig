@@ -1,13 +1,13 @@
 id           = "local/pi-usage"
-name         = "Pi Usage"
-version      = "0.1.0"
+name         = "OpenAI Usage"
+version      = "0.2.0"
 plugin_api   = 8
 author       = "local"
 license      = "MIT"
 icon         = "chart-donut-3"
-description  = "Shows subscription limits from pi-usage's local cache, the same data Pi's powerbar displays."
+description  = "Shows OpenAI 5-hour and weekly subscription usage, refreshed independently by a systemd timer."
 tags         = ["bar", "ai", "indicator"]
-dependencies = ["jq", "sh"]
+dependencies = ["jq", "sh", "systemctl"]
 
 [[widget]]
 id    = "bar"

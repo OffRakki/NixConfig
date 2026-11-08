@@ -1,12 +1,13 @@
 --!nonstrict
--- Reads pi-usage's cache (~/.cache/pi-usage/provider-*.json). Makes no network
--- requests and touches no credentials; data refreshes whenever Pi refreshes it.
+-- The standalone openai-usage timer owns network/auth and refreshes every five
+-- minutes, even with Pi closed. This widget only reads sanitized data.
 
 local REFRESH_MS = 30000
-local STALE_SEC = 3600
-local CMD = "jq -c '.lastGood | {fetchedAt, usage}' ${XDG_CACHE_HOME:-$HOME/.cache}/pi-usage/provider-*.json 2>/dev/null"
+local STALE_SEC = 900
+local CMD = 'jq -c "." "${XDG_CACHE_HOME:-$HOME/.cache}/noctalia/openai-usage.json" 2>/dev/null'
 
 local entries = {}
+local lastError = nil
 
 local function parseIso(value)
     if type(value) ~= "string" then return nil end
@@ -78,24 +79,28 @@ local function render()
     end
 
     if #segments == 0 then
-        segments[1] = ui.label({ text = "Pi usage —", fontSize = 11, color = "on_surface_variant" })
-        tooltip[1] = { key = "Pi Usage", value = "No cache yet" }
+        segments[1] = ui.label({ text = "OpenAI —", fontSize = 11, color = "on_surface_variant" })
+        tooltip[1] = { key = "OpenAI Usage", value = "Waiting for usage refresh" }
     end
 
+    if lastError ~= nil then
+        tooltip[#tooltip + 1] = { key = "Refresh", value = lastError }
+    end
     barWidget.render(ui.row({ gap = 7, align = "center" }, segments))
     barWidget.setTooltip(tooltip)
 end
 
 local function refresh()
     noctalia.runAsync(CMD, function(result)
-        local found = {}
-        for line in string.gmatch((result and result.stdout) or "", "[^\n]+") do
-            local decoded = noctalia.json.decode(line)
-            if type(decoded) == "table" and type(decoded.usage) == "table" then
-                found[#found + 1] = decoded
+        local decoded = noctalia.json.decode((result and result.stdout) or "{}")
+        entries = {}
+        lastError = nil
+        if type(decoded) == "table" then
+            lastError = decoded.error
+            if type(decoded.lastGood) == "table" and type(decoded.lastGood.usage) == "table" then
+                entries[1] = decoded.lastGood
             end
         end
-        entries = found
         render()
     end, 5000)
 end
@@ -105,8 +110,10 @@ function update()
     refresh()
 end
 
-function onRightClick() refresh() end
-function onIpc(event, _payload) if event == "refresh" then refresh() end end
+function onRightClick()
+    noctalia.runAsync("systemctl --user start openai-usage.service", function() refresh() end, 125000)
+end
+function onIpc(event, _payload) if event == "refresh" then onRightClick() end end
 
 noctalia.setUpdateInterval(REFRESH_MS)
 render()
