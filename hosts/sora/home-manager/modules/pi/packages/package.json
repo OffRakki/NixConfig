@@ -9,6 +9,7 @@
     "@jamesjfoong/pi-ollama": "1.0.3",
     "@juanibiapina/pi-extension-settings": "0.10.0",
     "@juicesharp/rpiv-ask-user-question": "2.15.0",
+    "billion-context": "0.1.213",
     "pi-agent-browser-native": "0.7.1",
     "pi-codex-image-gen": "0.3.1",
     "pi-context-view": "0.8.3",

@@ -38,6 +38,13 @@
       "capabilities": ["extension", "tool", "ui"]
     },
     {
+      "name": "billion-context",
+      "version": "0.1.213",
+      "source": "npm",
+      "trust": "pinned-third-party",
+      "capabilities": ["extension", "tools", "network", "filesystem", "process", "session-control"]
+    },
+    {
       "name": "pi-agent-browser-native",
       "version": "0.7.1",
       "source": "npm",

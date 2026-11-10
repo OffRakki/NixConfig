@@ -10,6 +10,7 @@
     "@jamesjfoong/pi-ollama"
     "@juanibiapina/pi-extension-settings"
     "@juicesharp/rpiv-ask-user-question"
+    "billion-context"
     "pi-agent-browser-native"
     "pi-codex-image-gen"
     "pi-context-view"
@@ -27,7 +28,7 @@
     pname = package.name;
     inherit (package) version;
     src = ./.;
-    npmDepsHash = "sha256-1+VMwtT3xzxh+9Zcx1sbe2UtKWuYa33VxAGT8QwlHLM=";
+    npmDepsHash = "sha256-+ncES/9PheEpGeipZghtrrlHhFzGQcHfp0XS55aLqF8=";
     npmFlags = ["--legacy-peer-deps"];
     # Use shipped native prebuilds; never download/build optional engines during install.
     npmRebuildFlags = ["--ignore-scripts"];

@@ -93,6 +93,7 @@ in {
     persistence."/persist".directories = [
       ".pi"
       ".local/share/pi"
+      ".local/share/billion-context"
       ".config/lean-ctx"
       ".local/share/lean-ctx"
       ".codex"
@@ -101,6 +102,13 @@ in {
         mode = "0700";
       }
     ];
+  };
+  # Nix owns updates; retain pi-subagents rather than registering a second delegate.
+  xdg.configFile."billion-context/billion-context.json".text = builtins.toJSON {
+    autoUpdate = false;
+    autoRestartOnUpdate = false;
+    advisoryCheck = false;
+    pi.subagents = false;
   };
   xdg.desktopEntries.pi-coding-agent = {
     name = "Pi";

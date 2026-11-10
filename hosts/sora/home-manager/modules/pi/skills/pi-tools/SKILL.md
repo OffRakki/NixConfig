@@ -31,6 +31,7 @@ Runtime files under `~/.pi/agent/` are outputs, not sources; never edit them.
 | `@juanibiapina/pi-extension-settings` | shared extension settings UI |
 | `@juicesharp/rpiv-ask-user-question` | `ask_user_question` |
 | `@jamesjfoong/pi-ollama` | discovers downloaded Ollama chat models; `/ollama-refresh` refreshes them |
+| `billion-context` | reversible context compression and `/acp` diagnostics; native inline mode |
 | `pi-agent-browser-native` | `agent_browser`, `agent_browser_code`, `agent_browser_tools`, and advanced browser tools |
 | `pi-codex-image-gen` | `codex_generate_image` and `imagegen` |
 | `pi-context-view` | `/context` usage map and `/context injections` inspector |
@@ -48,6 +49,12 @@ Use its `/agents` dashboard or `/orchestra-audit` and `/orchestra-plan` workflow
 when explicitly requested. Its Git-worktree isolation is not suitable for this
 jj-managed workspace; do not enable it here. Multi-agent dispatch still requires
 authorization, regardless of which extension provides it.
+
+`billion-context` runs its native Pi entry in-process by default. Nix disables
+its self-updater and advisory force-installer, persists its local session store,
+and sets `pi.subagents = false` to retain the existing delegation setup.
+Native compaction remains enabled as a fallback; the extension only cancels it
+when billion-context owns compression for that session. Restart Pi after activation.
 
 `lean-ctx` is installed as a companion CLI package on `PATH`; it is not an
 active Pi extension and does not provide `ctx_*` tools in this configuration.
