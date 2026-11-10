@@ -11,19 +11,19 @@
     buildNpmPackage = pkgs.buildNpmPackage.override {inherit nodejs;};
   };
   piPackage = piBasePackage.overrideAttrs (finalAttrs: _: {
-    version = "1.5.0";
+    version = "1.5.2";
     src = pkgs.fetchurl {
       url = "https://github.com/earendil-works/pi/releases/download/v${finalAttrs.version}/pi-${finalAttrs.version}-source.tar.gz";
-      hash = "sha256-V3rOZipGYybRpLQfgTV5rrWVdnnnlsV3uuZYIPrqXZo=";
+      hash = "sha256-2hS3Ll1nSVm2T8VB5KkkGsn836JDQxR5EZ0+21mLIjE=";
     };
     npmDeps = pkgs.fetchNpmDeps {
       name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
       inherit (finalAttrs) src;
-      hash = "sha256-koVd02HEhEAOkcvIuUg4X1A6P6P0B+wJp4DJLwkH62w=";
+      hash = "sha256-uHehffbEB2uU9U9uSpfWojzxvQyqeicbh/esCwk4neQ=";
     };
     modelData = pkgs.fetchurl {
       url = "https://registry.npmjs.org/@earendil-works/pi-ai/-/pi-ai-${finalAttrs.version}.tgz";
-      hash = "sha256-4yD+e9K5J3grqaN9NW/lg38aqWpGQyYQ4bO5zLdI6lw=";
+      hash = "sha256-1XFe+oNMI7/fEKBCtJ307hacyZAAvxbXmY+rLVM7Rfg=";
     };
     buildPhase = ''
       runHook preBuild
@@ -46,8 +46,8 @@
         rm "$nm/$pkg"
         cp -r "$src" "$nm/$pkg"
       done
-      find "$nm" -type l -lname '*/packages/*' -delete
-      find "$nm/.bin" -xtype l -delete
+      # Unshipped workspaces include apps/p2 as well as packages/*.
+      find "$nm" -xtype l -delete
     '';
   });
   piPackages = import ./packages {inherit piPackage pkgs nodejs;};

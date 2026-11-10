@@ -61,49 +61,55 @@ failover_index.write_text(text)
 # Mail's approval bindings pin this configuration path. Do not merge ambient HOME,
 # project or environment-selected browser settings into the mail process. Normal Pi
 # keeps upstream discovery when this explicit wrapper-only mode is absent.
-browser_policy = root / "pi-agent-browser-native/dist/extensions/agent-browser/lib/config-policy.js"
-text = browser_policy.read_text()
-text = replace_once(
-    text,
-    '    const env = options.env ?? process.env;\n'
-    '    const paths = getAgentBrowserConfigPaths({ cwd: options.cwd, env });\n',
-    '    const env = options.env ?? process.env;\n'
-    '    const pinned = env.PI_AGENT_BROWSER_PINNED_CONFIG;\n'
-    '    if (pinned !== undefined) {\n'
-    '        if (!pinned.startsWith("/nix/store/")) throw new Error("Pinned browser config must be Nix-owned");\n'
-    '        const errors = [], warnings = [];\n'
-    '        const layer = readConfigLayerSync(pinned, "override", errors, warnings);\n'
-    '        if (!layer || errors.length) throw new Error("Invalid pinned browser configuration");\n'
-    '        return buildAgentBrowserConfigState({ env: {}, errors, warnings, layers: [layer],\n'
-    '            paths: { global: pinned, project: pinned, override: pinned },\n'
-    '            mergedConfig: layer.config, projectConfigIncluded: false });\n'
-    '    }\n'
-    '    const paths = getAgentBrowserConfigPaths({ cwd: options.cwd, env });\n',
-)
-browser_policy.write_text(text)
+browser = root / "pi-agent-browser-native"
+browser_entry = browser / "dist/extensions/agent-browser/index.js"
+# Upstream 0.9 bundles these helpers into the entry point as well as CLI modules.
+for browser_policy in [browser_entry, browser / "dist/packaged/lib/config-policy.js"]:
+    text = replace_once(
+        browser_policy.read_text(),
+        '  const env = options.env ?? process.env;\n'
+        '  const paths = getAgentBrowserConfigPaths({ cwd: options.cwd, env });\n',
+        '  const env = options.env ?? process.env;\n'
+        '  const pinned = env.PI_AGENT_BROWSER_PINNED_CONFIG;\n'
+        '  if (pinned !== undefined) {\n'
+        '    if (!pinned.startsWith("/nix/store/")) throw new Error("Pinned browser config must be Nix-owned");\n'
+        '    const errors = [], warnings = [];\n'
+        '    const layer = readConfigLayerSync(pinned, "override", errors, warnings);\n'
+        '    if (!layer || errors.length) throw new Error("Invalid pinned browser configuration");\n'
+        '    return buildAgentBrowserConfigState({ env: {}, errors, warnings, layers: [layer],\n'
+        '      paths: { global: pinned, project: pinned, override: pinned },\n'
+        '      mergedConfig: layer.config, projectConfigIncluded: false });\n'
+        '  }\n'
+        '  const paths = getAgentBrowserConfigPaths({ cwd: options.cwd, env });\n',
+    )
+    browser_policy.write_text(text)
 
-# The native CLI has its own config/env discovery, independent of the extension.
-# Mail starts from a pinned empty native config and drops inherited launch/proxy
-# settings. Internal, explicitly approved CLI/session overrides still compose.
-browser_environment = root / "pi-agent-browser-native/dist/extensions/agent-browser/lib/process-environment.js"
-text = browser_environment.read_text()
-text = replace_once(
-    text,
-    '    const isolatedConfig = isolatedAgentBrowserEnvironment.getStore();\n',
-    '    const isolatedConfig = isolatedAgentBrowserEnvironment.getStore();\n'
-    '    if (baseEnv.PI_AGENT_BROWSER_PINNED_CONFIG !== undefined) {\n'
-    '        const nativeConfig = baseEnv.PI_AGENT_BROWSER_NATIVE_CONFIG;\n'
-    '        if (!nativeConfig?.startsWith("/nix/store/")) throw new Error("Native browser config must be Nix-owned");\n'
-    '        return {\n'
-    '            ...Object.fromEntries(Object.entries(baseEnv).filter(([name]) =>\n'
-    '                !name.toUpperCase().startsWith("AGENT_BROWSER_") && !PROXY_ENV_NAMES.has(name.toUpperCase()))),\n'
-    '            AGENT_BROWSER_CONFIG: nativeConfig,\n'
-    '            ...agentBrowserProcessEnvironment.getStore(),\n'
-    '            ...(isolatedConfig !== undefined ? { AGENT_BROWSER_CONFIG: isolatedConfig } : {}),\n'
-    '        };\n'
-    '    }\n',
-)
-browser_environment.write_text(text)
+# Native CLI discovery must also ignore inherited launch/proxy settings. Explicit
+# approved overrides now live in the upstream async-local store's .env member.
+for browser_environment in [browser_entry, browser / "dist/packaged/lib/runtime.js"]:
+    text = replace_once(
+        browser_environment.read_text(),
+        '  const isolatedConfig = isolatedAgentBrowserEnvironment.getStore();\n',
+        '  const isolatedConfig = isolatedAgentBrowserEnvironment.getStore();\n'
+        '  if (baseEnv.PI_AGENT_BROWSER_PINNED_CONFIG !== undefined) {\n'
+        '    const nativeConfig = baseEnv.PI_AGENT_BROWSER_NATIVE_CONFIG;\n'
+        '    if (!nativeConfig?.startsWith("/nix/store/")) throw new Error("Native browser config must be Nix-owned");\n'
+        '    return {\n'
+        '      ...Object.fromEntries(Object.entries(baseEnv).filter(([name]) =>\n'
+        '        !name.toUpperCase().startsWith("AGENT_BROWSER_") && !PROXY_ENV_NAMES.has(name.toUpperCase()))),\n'
+        '      AGENT_BROWSER_CONFIG: nativeConfig,\n'
+        '      ...agentBrowserProcessEnvironment.getStore()?.env,\n'
+        '      ...(isolatedConfig !== undefined ? { AGENT_BROWSER_CONFIG: isolatedConfig } : {}),\n'
+        '    };\n'
+        '  }\n',
+    )
+    browser_environment.write_text(text)
+
+# Expose the actual bundled helpers for the offline mail regression smoke; testing
+# only the CLI copy would miss a security regression in the extension entry point.
+with browser_entry.open("a") as entry:
+    entry.write("\nexport { loadAgentBrowserConfigStateSync, getAgentBrowserProcessEnvironment, "
+                "withAgentBrowserProcessEnvironment, withNativeSessionDefaults };\n")
 
 # Pi 1.0 supplies TypeBox; use its host alias instead of a private runtime copy.
 orchestrator = root / "@groeponline/pi-agent-orchestrator"

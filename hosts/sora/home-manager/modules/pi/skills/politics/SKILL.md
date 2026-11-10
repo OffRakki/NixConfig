@@ -137,7 +137,7 @@ or automatic future rechecks are implied.
 - For JavaScript-heavy portals, use `agent_browser` after reading the browser skill:
   open the exact official URL, take `snapshot -i`, use current refs, apply public
   filters/search forms, and re-snapshot after navigation. Use native batches for
-  fixed sequences; `agent_browser_code` for branching or aggregation. No purchases,
+  fixed sequences; Pi `codemode` calling `tools.agent_browser` for branching or aggregation. No purchases,
   posts, account/security changes, or unsolicited contact with sources.
 - Use official API/export documentation rather than inventing endpoints or query
   parameters. Preserve dataset IDs, filters, units, reference periods, and versions.

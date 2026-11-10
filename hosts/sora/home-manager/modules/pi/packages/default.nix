@@ -28,7 +28,7 @@
     pname = package.name;
     inherit (package) version;
     src = ./.;
-    npmDepsHash = "sha256-+ncES/9PheEpGeipZghtrrlHhFzGQcHfp0XS55aLqF8=";
+    npmDepsHash = "sha256-GCYgf3B13rV8G+2MTvBk8GMQGlDf0U2tbzf6ftGP0K4=";
     npmFlags = ["--legacy-peer-deps"];
     # Use shipped native prebuilds; never download/build optional engines during install.
     npmRebuildFlags = ["--ignore-scripts"];

@@ -32,7 +32,7 @@ Runtime files under `~/.pi/agent/` are outputs, not sources; never edit them.
 | `@juicesharp/rpiv-ask-user-question` | `ask_user_question` |
 | `@jamesjfoong/pi-ollama` | discovers downloaded Ollama chat models; `/ollama-refresh` refreshes them |
 | `billion-context` | reversible context compression and `/acp` diagnostics; native inline mode |
-| `pi-agent-browser-native` | `agent_browser`, `agent_browser_code`, `agent_browser_tools`, and advanced browser tools |
+| `pi-agent-browser-native` | `agent_browser` and advanced browser tools discovered via native `tool_search`; orchestration via Pi `codemode` |
 | `pi-codex-image-gen` | `codex_generate_image` and `imagegen` |
 | `pi-context-view` | `/context` usage map and `/context injections` inspector |
 | `pi-intercom` | `intercom` and cross-session coordination |

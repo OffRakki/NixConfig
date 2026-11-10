@@ -46,7 +46,7 @@
     },
     {
       "name": "pi-agent-browser-native",
-      "version": "0.7.1",
+      "version": "0.9.18",
       "source": "npm",
       "trust": "pinned-third-party",
       "capabilities": [
@@ -67,7 +67,7 @@
     },
     {
       "name": "pi-context-view",
-      "version": "0.8.3",
+      "version": "0.8.4",
       "source": "npm",
       "trust": "pinned-third-party",
       "capabilities": ["extension", "ui", "filesystem", "session-metadata", "session-control"]
@@ -102,7 +102,7 @@
     },
     {
       "name": "pi-subagents",
-      "version": "0.86.0",
+      "version": "0.88.0",
       "source": "npm",
       "trust": "pinned-third-party",
       "capabilities": [

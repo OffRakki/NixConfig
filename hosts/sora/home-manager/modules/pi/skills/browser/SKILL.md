@@ -22,11 +22,14 @@ or form submission because references can become stale.
 
 - Use `fetch_content` for readable public pages, PDFs, GitHub repositories, and videos.
 - Use `agent_browser` when JavaScript, interaction, login state, screenshots, or downloads matter.
-- Use `agent_browser_code` for JavaScript orchestration over the persistent browser.
-- Enable advanced tools with `agent_browser_tools`, then use `agent_browser_qa`
+- Use Pi `codemode` to orchestrate `tools.agent_browser` calls with branching or aggregation.
+- Discover advanced tools through native `tool_search`, then use `agent_browser_qa`
   for page assertions, `agent_browser_action` for semantic actions, and
   `agent_browser_electron` / `agent_browser_source` / `agent_browser_network_source`
   for their specialized workflows. Read the installed package's tool contract.
+  Browser-native 0.9.18 removes `agent_browser_code`; 0.9.17 removes `agent_browser_tools`.
+  Restart every participating Pi process after upgrading; mixed versions can corrupt
+  execution-claim ownership.
 - Legacy `job`, `qa`, `semanticAction`, `electron`, and source-lookup input modes
   are removed in browser-native 0.7; use native `batch` for fixed jobs.
 - Use `sessionMode = "fresh"` for launch-scoped browser flags.

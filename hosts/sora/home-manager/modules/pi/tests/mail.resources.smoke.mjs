@@ -21,21 +21,24 @@ const ambient = join(ambientDir, 'config.json');
 await writeFile(ambient, JSON.stringify({ version: 1, browser: { executablePath: '/AMBIENT_MUST_NOT_RUN', defaultProfile: '/AMBIENT_PROFILE' } }));
 process.env.PI_AGENT_BROWSER_CONFIG = ambient;
 const browserPackage = host.config.assistantProfile.extensionPaths.find(path => path.endsWith('/pi-agent-browser-native'));
-const { loadAgentBrowserConfigStateSync } = await import(pathToFileURL(join(browserPackage, 'dist/extensions/agent-browser/lib/config-policy.js')));
+// Match Pi's extension loader: the bundled browser resolves host peers via jiti.
+const { createJiti } = await import(pathToFileURL(join(sdkRoot, 'node_modules/jiti/lib/jiti.mjs')));
+const jiti = createJiti(import.meta.url, { alias: { '@earendil-works/pi-tui': join(sdkRoot, 'node_modules/@earendil-works/pi-tui/dist/index.js') } });
+const { loadAgentBrowserConfigStateSync, getAgentBrowserProcessEnvironment, withAgentBrowserProcessEnvironment, withNativeSessionDefaults } = await jiti.import(join(browserPackage, 'dist/extensions/agent-browser/index.js'));
+const cliPolicy = await import(pathToFileURL(join(browserPackage, 'dist/packaged/lib/config-policy.js')));
+assert.deepEqual(cliPolicy.loadAgentBrowserConfigStateSync({ cwd: directory }), loadAgentBrowserConfigStateSync({ cwd: directory }));
 const effective = loadAgentBrowserConfigStateSync({ cwd: directory });
 assert.equal(effective.layers.length, 1); assert.equal(effective.layers[0].path, process.env.PI_AGENT_BROWSER_PINNED_CONFIG);
 assert.equal(effective.projectConfigIncluded, false); assert.deepEqual(effective.errors, []);
 assert.doesNotMatch(JSON.stringify(effective), /AMBIENT_MUST_NOT_RUN|AMBIENT_PROFILE/);
 assert.throws(() => loadAgentBrowserConfigStateSync({ env: { HOME: directory, PI_AGENT_BROWSER_PINNED_CONFIG: ambient } }), /Nix-owned/);
-const { getAgentBrowserProcessEnvironment, withAgentBrowserProcessEnvironment } = await import(pathToFileURL(join(browserPackage, 'dist/extensions/agent-browser/lib/process-environment.js')));
-const { withNativeSessionDefaults } = await import(pathToFileURL(join(browserPackage, 'dist/extensions/agent-browser/lib/orchestration/native-session-defaults.js')));
 const poisoned = { ...process.env, AGENT_BROWSER_CONFIG: ambient, AGENT_BROWSER_PROFILE: '/AMBIENT_PROFILE', AGENT_BROWSER_SESSION: 'AMBIENT_SESSION', AGENT_BROWSER_CDP: 'http://127.0.0.1:1', AGENT_BROWSER_PROVIDER: 'AMBIENT_PROVIDER', AGENT_BROWSER_EXECUTABLE_PATH: '/AMBIENT_MUST_NOT_RUN', HTTPS_PROXY: 'http://127.0.0.1:1' };
 const native = getAgentBrowserProcessEnvironment(poisoned);
 assert.equal(native.AGENT_BROWSER_CONFIG, process.env.PI_AGENT_BROWSER_NATIVE_CONFIG);
 for (const key of ['AGENT_BROWSER_PROFILE', 'AGENT_BROWSER_SESSION', 'AGENT_BROWSER_CDP', 'AGENT_BROWSER_PROVIDER', 'AGENT_BROWSER_EXECUTABLE_PATH', 'HTTPS_PROXY']) assert.equal(native[key], undefined);
 Object.assign(process.env, poisoned);
 const input = { kind: 'native', toolArgs: ['open', 'https://example.test'], toolStdin: undefined };
-await withNativeSessionDefaults(input, directory, AbortSignal.timeout(2000), effective => {
+await withNativeSessionDefaults(input, { cwd: directory, signal: AbortSignal.timeout(2000) }, effective => {
   assert.deepEqual(effective.toolArgs, input.toolArgs);
   assert.equal(getAgentBrowserProcessEnvironment().AGENT_BROWSER_CONFIG, process.env.PI_AGENT_BROWSER_NATIVE_CONFIG);
   assert.doesNotMatch(JSON.stringify(effective), /AMBIENT/);
