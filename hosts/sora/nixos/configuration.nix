@@ -151,8 +151,10 @@
         })
       '';
     };
-    pam.services = {
-      hyprlock.enableGnomeKeyring = true;
+    pam.services.hyprlock = {
+      enableGnomeKeyring = true;
+      # Hyprlock authenticates without opening a PAM session.
+      rules.auth.gnome_keyring.settings.auto_start = true;
     };
   };
 
