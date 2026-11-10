@@ -25,7 +25,6 @@
     ./fonts.nix
     ./users.nix
     ./tailscale.nix
-    ./nectarlink.nix
     ./sunshine.nix
     ./firefly.nix
     ./mcServers.nix

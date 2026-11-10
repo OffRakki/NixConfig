@@ -28,11 +28,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nectarlink = {
-      url = "github:thtbee/nectarlink";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     nuls = {
       url = "github:cesarferreira/nuls";
       inputs.nixpkgs.follows = "nixpkgs";
