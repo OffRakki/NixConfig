@@ -1,0 +1,24 @@
+{
+  lib,
+  rustPlatform,
+  python3,
+}:
+rustPlatform.buildRustPackage {
+  pname = "rapoo-battery";
+  version = "0.1.0";
+  src = lib.fileset.toSource {
+    root = ./.;
+    fileset = lib.fileset.unions [./Cargo.toml ./Cargo.lock ./src ./tests];
+  };
+  cargoLock.lockFile = ./Cargo.lock;
+  nativeCheckInputs = [python3];
+  doCheck = true;
+  postInstall = ''
+    python3 tests/smoke.py "$out/bin/rapoo-battery"
+  '';
+  meta = {
+    description = "Rapoo VT9 Pro HID battery reporter";
+    mainProgram = "rapoo-battery";
+    platforms = lib.platforms.linux;
+  };
+}

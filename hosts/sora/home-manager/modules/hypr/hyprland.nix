@@ -18,10 +18,29 @@
   hyprshot = "${lib.getExe pkgs.hyprshot}";
   lock = lib.getExe pkgs.hyprlock;
   appLauncher = pkgs.callPackage ../../../../../Projects/appLauncher {};
+  autoclicker = pkgs.callPackage ../../../macros/autoclicker/package.nix {};
 in {
   imports = [];
 
-  home.packages = [appLauncher];
+  home.packages = [appLauncher autoclicker];
+
+  # Deliberately not enabled at login: only the shortcut starts clicking.
+  systemd.user.services.autoclicker = {
+    Unit = {
+      Description = "Toggleable left-button autoclicker";
+      PartOf = ["graphical-session.target"];
+      After = ["graphical-session.target"];
+    };
+    Service = {
+      Type = "exec";
+      ExecStart = "${lib.getExe autoclicker} run";
+      ExecStopPost = "-${lib.getExe autoclicker} release";
+      Restart = "no";
+      TimeoutStopSec = 2;
+      NoNewPrivileges = true;
+      RestrictAddressFamilies = ["AF_UNIX"];
+    };
+  };
 
   wayland.windowManager.hyprland = {
     enable = true;
@@ -482,7 +501,7 @@ in {
         end, { release = true }) -- DPMS off
         hl.bind("${mod} + mouse:272",           hl.dsp.window.drag(), { mouse = true }) -- mouse:272 = left click
         hl.bind("${mod} + mouse:273",           hl.dsp.window.resize(), { mouse = true }) -- mouse:273 = right click
-        hl.bind("CTRL + SHIFT + ALT + C",       hl.dsp.exec_cmd("notify-send -t 1000 macro_toggled && '${../../../macros/autoClicker.sh}'"))
+        hl.bind("CTRL + SHIFT + ALT + C",       hl.dsp.exec_cmd("${lib.getExe autoclicker} toggle"))
         hl.bind("${mod} + SHIFT + Q",           hl.dsp.window.close())
         hl.bind("${mod} + SHIFT + CTRL + Q",    hl.dsp.window.kill())
         hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })

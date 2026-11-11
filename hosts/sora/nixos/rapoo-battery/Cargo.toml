@@ -1,0 +1,11 @@
+[package]
+name = "rapoo-battery"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+
+[dependencies]
+libc = "0.2"
+
+[profile.release]
+strip = true

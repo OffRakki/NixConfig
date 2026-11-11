@@ -1,0 +1,12 @@
+[package]
+name = "autoclicker"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+
+[dependencies]
+libc = "0.2"
+signal-hook = "0.3"
+
+[profile.release]
+strip = true
