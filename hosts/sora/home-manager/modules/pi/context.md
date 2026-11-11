@@ -187,6 +187,8 @@ load the `security-sweep` skill and execute its checklist. No exceptions.
 - **lumis** — MTG proxy printing: orders, supplies, tracking
 - **browser** — web automation: navigate, click, fill, extract
 - **quickshell** — Quickshell/QML shells, panels, widgets, services, IPC, and deployment
+- **rust** — Rust/Cargo development, quick execution, ownership, testing, async,
+  unsafe/FFI, performance, and toolchain/MSRV compatibility
 - **pi-tools** — Pi runtime tools, packages, extensions, agents, prompts, and
   tool-routing inventory
 - **context-curation** — organizing, splitting, merging context.md and skills
