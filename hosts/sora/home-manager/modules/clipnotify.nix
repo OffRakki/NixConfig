@@ -4,12 +4,7 @@
   lib,
   ...
 }: let
-  # Vendored from misterio77/nix-config (MIT).
-  clip-notify = pkgs.writeShellApplication {
-    name = "clip-notify";
-    runtimeInputs = with pkgs; [file coreutils libnotify wl-clipboard];
-    text = builtins.readFile ./clip-notify.sh;
-  };
+  clip-notify = pkgs.callPackage ./clip-notify/package.nix {};
 in {
   systemd.user.services.clip-notify = {
     Unit = {
