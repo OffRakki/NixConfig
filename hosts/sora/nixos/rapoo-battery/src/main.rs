@@ -1,3 +1,5 @@
+mod notify;
+
 use std::{
     env, fs,
     fs::{File, OpenOptions},
@@ -256,10 +258,19 @@ fn run() -> io::Result<()> {
     let mut device = None;
     let mut uhid = PathBuf::from("/dev/uhid");
     let mut is_daemon = false;
+    let mut is_notify = false;
+    let mut power_supply = None;
     let mut args = env::args_os().skip(1);
     while let Some(arg) = args.next() {
         match arg.to_str() {
             Some("--daemon") => is_daemon = true,
+            Some("--notify") => is_notify = true,
+            Some("--power-supply") => {
+                power_supply =
+                    Some(PathBuf::from(args.next().ok_or_else(|| {
+                        io::Error::other("--power-supply needs a path")
+                    })?))
+            }
             Some("--device") => {
                 device = Some(PathBuf::from(
                     args.next()
@@ -273,13 +284,26 @@ fn run() -> io::Result<()> {
                 )
             }
             Some("--help" | "-h") => {
-                println!("Usage: rapoo-battery [--daemon] [--device PATH] [--uhid PATH]");
+                println!(
+                    "Usage: rapoo-battery [--daemon] [--device PATH] [--uhid PATH]\n       rapoo-battery --notify [--power-supply PATH]"
+                );
                 return Ok(());
             }
             _ => return Err(io::Error::other("unknown argument; see --help")),
         }
     }
-    if is_daemon {
+    if is_notify {
+        if is_daemon || device.is_some() || uhid != Path::new("/dev/uhid") {
+            return Err(io::Error::other("--notify cannot query HID devices"));
+        }
+        notify::run(
+            power_supply
+                .as_deref()
+                .unwrap_or(Path::new("/sys/class/power_supply")),
+        )
+    } else if power_supply.is_some() {
+        Err(io::Error::other("--power-supply requires --notify"))
+    } else if is_daemon {
         daemon(device.as_deref(), &uhid)
     } else {
         println!("{}%", query(device.as_deref())?);

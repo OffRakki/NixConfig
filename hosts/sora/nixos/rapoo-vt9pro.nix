@@ -1,44 +1,5 @@
 {pkgs, ...}: let
   rapooBattery = pkgs.callPackage ./rapoo-battery/package.nix {};
-
-  batteryWatcher = pkgs.writeShellScript "rapoo-battery-watcher" ''
-    for capacity in /sys/class/power_supply/hid-24ae:185a-battery-*/capacity; do
-      [[ -r "$capacity" ]] || exit 0
-      percentage=$(<"$capacity")
-      break
-    done
-
-    stateDirectory="''${XDG_STATE_HOME:-$HOME/.local/state}/rapoo-battery-watcher"
-    stateFile="$stateDirectory/last-threshold"
-    ${pkgs.coreutils}/bin/mkdir -p "$stateDirectory"
-    previous=101
-    [[ -r "$stateFile" ]] && previous=$(<"$stateFile")
-
-    if ((percentage > 10)); then
-      printf '101\n' >"$stateFile"
-      exit 0
-    fi
-
-    for threshold in 10 5 1; do
-      if ((percentage <= threshold && previous > threshold)); then
-        urgency=normal
-        icon=battery-caution-symbolic
-        if ((threshold <= 5)); then
-          urgency=critical
-          icon=battery-empty-symbolic
-        fi
-        if ${pkgs.libnotify}/bin/notify-send \
-          --app-name="Rapoo Battery" \
-          --urgency="$urgency" \
-          --icon="$icon" \
-          "Rapoo VT9 Pro battery low" \
-          "$percentage% remaining (reached $threshold% warning)"; then
-          previous=$threshold
-          printf '%s\n' "$previous" >"$stateFile"
-        fi
-      fi
-    done
-  '';
 in {
   environment.systemPackages = [rapooBattery];
 
@@ -72,7 +33,7 @@ in {
         description = "Rapoo VT9 Pro low battery notifier";
         serviceConfig = {
           Type = "oneshot";
-          ExecStart = batteryWatcher;
+          ExecStart = "${rapooBattery}/bin/rapoo-battery --notify";
         };
       };
 
