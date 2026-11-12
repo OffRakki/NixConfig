@@ -23,6 +23,7 @@
     ./waybar.nix
     ./neovim.nix
     ./kitty.nix
+    ./ranger.nix
     ./qutebrowser.nix
     ./email.nix
     ./aerc/aerc.nix

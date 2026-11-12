@@ -46,7 +46,6 @@
     satty
     flatpak
     yazi
-    ranger
     libqalculate
     comma
     bc
