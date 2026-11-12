@@ -63,6 +63,14 @@ compatible releases, then validate and activate them together.**
 
 # Preferences
 
+## Implementation language
+
+Before building or implementing anything, assess whether Rust is technically
+suitable and worth the added complexity. **When it is, Rust is the preferred
+choice.** Load the `rust` skill for that work. Preserve YAGNI: prefer existing
+native facilities when they already fit, and do not force Rust into unsuitable
+SDK integrations or rewrite working code without a worthwhile benefit.
+
 ## Naming
 
 Never prefix software, projects, commands, services, namespaces, or other artifacts built for Lucky with `Ciel` unless he explicitly asks for it.
