@@ -60,7 +60,7 @@ local function render()
             local label = shortLabel(window.label)
             if pct ~= nil then
                 parts[#parts + 1] = ui.progress({ progress = pct / 100, fill = colorFor(pct),
-                    track = "on_surface/0.16", radius = 6, width = 22, height = 5 })
+                    track = "on_surface/0.16", radius = 0, width = 22, height = 5 })
                 parts[#parts + 1] = ui.label({ text = string.format("%s %d%%", label, math.floor(pct + 0.5)),
                     fontSize = 11, fontWeight = "semibold", color = stale and "on_surface_variant" or "on_surface", maxLines = 1 })
                 tooltip[#tooltip + 1] = { key = window.label, value = string.format("%d%% · %s", math.floor(pct + 0.5), note) }

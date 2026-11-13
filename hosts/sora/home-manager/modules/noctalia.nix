@@ -65,7 +65,8 @@ in {
     settings = {
       shell = {
         font_family = "Noto Sans";
-        corner_radius_scale = 0.75;
+        corner_radius_scale = 0;
+        screen_corners.enabled = false;
         avatar_path = "${../../../../assets/svgs/pelucio.jpg}";
         time_format = "{:%H:%M}";
         date_format = "%d/%m/%Y";
@@ -147,6 +148,11 @@ in {
       dock = {
         enabled = false;
         background_opacity = 0.75;
+        radius = 0;
+        radius_top_left = 0;
+        radius_top_right = 0;
+        radius_bottom_left = 0;
+        radius_bottom_right = 0;
       };
       backdrop.enabled = false;
       bar.main = {
@@ -160,6 +166,12 @@ in {
         widget_spacing = 6;
         font_scale = 1.3;
         capsule = true;
+        radius = 0;
+        radius_top_left = 0;
+        radius_top_right = 0;
+        radius_bottom_left = 0;
+        radius_bottom_right = 0;
+        capsule_radius = 0;
         start = ["control-center" "group:system-metrics" "media"];
         center = ["group:center-widgets"];
         capsule_group = [
@@ -233,7 +245,10 @@ in {
           actions.left = "exec ${lib.getExe pkgs.kitty} -e ${lib.getExe config.programs.todoman.package} repl";
         };
       };
-      control_center.shortcuts = map (type: {inherit type;}) ["bluetooth" "wallpaper" "system" "notification" "caffeine" "nightlight"];
+      control_center = {
+        circular_avatar = false;
+        shortcuts = map (type: {inherit type;}) ["bluetooth" "wallpaper" "system" "notification" "caffeine" "nightlight"];
+      };
       notification = {
         position = "top_center";
         monitors = ["DP-1"];
