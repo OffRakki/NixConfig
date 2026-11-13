@@ -193,6 +193,8 @@ load the `security-sweep` skill and execute its checklist. No exceptions.
 - **screenshot** — Wayland/Hyprland screenshots
 - **firefly** — Firefly III: transactions, budgets, reimbursements
 - **lumis** — MTG proxy printing: orders, supplies, tracking
+- **modeling** — printable 3D models, STL/3MF, engraved labels, thread-fit tests,
+  Bambu Studio projects, plate layout, slicer settings and printability
 - **browser** — web automation: navigate, click, fill, extract
 - **quickshell** — Quickshell/QML shells, panels, widgets, services, IPC, and deployment
 - **rust** — Rust/Cargo development, quick execution, ownership, testing, async,
