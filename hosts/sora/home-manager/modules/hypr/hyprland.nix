@@ -15,7 +15,12 @@
   filesGUI = "${lib.getExe pkgs.nemo-with-extensions}";
   qalc = "${lib.getExe pkgs.qalculate-gtk}";
   slurp = "${lib.getExe pkgs.slurp}";
-  hyprshot = "${lib.getExe pkgs.hyprshot}";
+  hyprshot = lib.getExe (pkgs.hyprshot.overrideAttrs (old: {
+    # Workspace IDs are numbers (or null for special workspaces), not containers.
+    postPatch = (old.postPatch or "") + ''
+      substituteInPlace hyprshot --replace-fail 'contains(' 'IN('
+    '';
+  }));
   lock = lib.getExe pkgs.hyprlock;
   appLauncher = pkgs.callPackage ../../../../../Projects/appLauncher {};
   autoclicker = pkgs.callPackage ../../../macros/autoclicker/package.nix {};
@@ -525,6 +530,7 @@ in {
         hl.bind("${mod} + I",                   hl.dsp.window.pin({ action = "toggle" }))
         hl.bind("Print",                        hl.dsp.exec_cmd("${hyprshot} -z --clipboard-only -m region --freeze"))
         hl.bind("CTRL + Print",                 hl.dsp.exec_cmd("${hyprshot} -z --clipboard-only -m output --freeze"))
+        hl.bind("CTRL + SHIFT + Print",         hl.dsp.exec_cmd("${hyprshot} -z --clipboard-only -m window --freeze"))
         hl.bind("${mod} + ALT + L",             hl.dsp.exec_cmd("${lock}"))
         -- "${mod} + SHIFT + D",                hl.dsp.exec_cmd("pkill wofi || wofi --show drun -G --insensitive" -- Main Menu))
         hl.bind("${mod} + D",                   hl.dsp.exec_cmd("${lib.getExe appLauncher}"))
