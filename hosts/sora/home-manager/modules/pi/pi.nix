@@ -391,6 +391,12 @@ in {
     # MCP servers (Pi-owned global override)
     ".pi/agent/mcp.json".text = builtins.toJSON {
       mcpServers = {
+        auvp = {
+          url = "https://financas-api.auvp.com.br/mcp";
+          headers."x-api-key" = "!${pkgs.coreutils}/bin/cat ${osConfig.sops.secrets.auvpApiKey.path}";
+          exposure = "codemode";
+          description = "AUVP financial data and investment research.";
+        };
         rea = {
           command = "${rea}/bin/rea";
           args = ["mcp"];

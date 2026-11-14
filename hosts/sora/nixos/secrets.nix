@@ -70,6 +70,11 @@
       sopsFile = ../home-manager/modules/pi/private.yaml;
       owner = "rakki";
     };
+    secrets.auvpApiKey = {
+      sopsFile = ../home-manager/modules/pi/private.yaml;
+      owner = "rakki";
+      mode = "0400";
+    };
     #Charm (free ai api 10m tokensish/month)
     secrets.hyperApiKey = {
       sopsFile = ../home-manager/modules/pi/private.yaml;
