@@ -497,7 +497,7 @@ in {
           hl.config({ general = { layout = layouts[layoutIndex] } })
         end)
 
-        hl.bind("${mod} + CTRL + ALT + O", hl.dsp.dpms({ action = "enable" })) -- DPMS on
+        hl.bind("${mod} + CTRL + ALT + O", hl.dsp.dpms({ action = "enable" }), { locked = true }) -- DPMS on, including while locked
         -- Wait for the rest of the chord to be released before powering off.
         hl.bind("${mod} + CTRL + ALT + P", function()
           hl.timer(function()
