@@ -411,8 +411,9 @@ in {
           hl.exec_cmd("${lib.getExe appLauncher} --hidden")
           hl.exec_cmd("clipse -listen")
           hl.exec_cmd("openrgb --startminimized")
-          -- Noctalia's encrypted history also needs the keyring; start consumers only after PAM unlock.
-          hl.exec_cmd([[${lock} && hyprctl eval 'hl.exec_cmd("noctalia"); hl.exec_cmd("nm-applet --indicator"); hl.exec_cmd("steam"); hl.exec_cmd("vesktop")']])
+          -- Finish initializing greetd's login daemon before Hyprlock's PAM unlock.
+          -- Keep keyring consumers behind the unlock, including Noctalia's encrypted history.
+          hl.exec_cmd([[${pkgs.gnome-keyring}/bin/gnome-keyring-daemon --start --components=secrets && ${lock} && hyprctl eval 'hl.exec_cmd("noctalia"); hl.exec_cmd("nm-applet --indicator"); hl.exec_cmd("steam"); hl.exec_cmd("vesktop")']])
           hl.exec_cmd("blueman-applet")
           hl.exec_cmd("pypr")
           hl.exec_cmd("awww-daemon")
