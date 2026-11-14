@@ -1,5 +1,6 @@
 {pkgs, ...}: {
   home.packages = with pkgs; [
+    aria2
     tailcat
     chromium
     (shiru.override {electron_42 = electron;})

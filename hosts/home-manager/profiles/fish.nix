@@ -139,6 +139,7 @@
       gitall = "git add -A && git commit -a && git push";
       pipes = "pipes.sh -t 3 -f 100 -R -r 0";
       htop = "btop";
+      aria = "aria2c -c -x16 -s16 -k1M --file-allocation=falloc";
     };
     functions = {
       fish_greeting = "";
