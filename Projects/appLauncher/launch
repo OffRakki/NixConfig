@@ -6,9 +6,10 @@ shell_id=app-launcher
 command_name="${0##*/}"
 config_path="${QUICKSHELL_CONFIG_PATH:-$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)}"
 mode=toggle
+passwords=false
 
 usage() {
-    echo "usage: $command_name [--foreground | --hidden | --stop | --path PATH | ipc ARGS...]" >&2
+    echo "usage: $command_name [--passwords] [--foreground | --hidden | --stop | --path PATH | ipc ARGS...]" >&2
 }
 
 instances() {
@@ -57,44 +58,97 @@ cleanup() {
     done
 }
 
-case "${1:-}" in
-    "") ;;
-    --foreground) mode=foreground ;;
-    --hidden) mode=hidden ;;
-    --stop) mode=stop ;;
-    --path)
-        [ "$#" -eq 2 ] || { usage; exit 2; }
-        config_path="$(realpath -e -- "$2")"
-        [ -f "$config_path/shell.qml" ] || { echo "$command_name: shell.qml not found" >&2; exit 2; }
-        mode=foreground
-        ;;
-    ipc)
-        shift
-        config_file="$(instances --all | matches | jq -r 'first.config_path // empty')"
-        [ -n "$config_file" ] || { echo "$command_name: no running instance" >&2; exit 1; }
-        exec qs ipc -p "${config_file%/shell.qml}" "$@"
-        ;;
-    *) usage; exit 2 ;;
-esac
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --passwords) passwords=true ;;
+        --foreground) mode=foreground ;;
+        --hidden) mode=hidden ;;
+        --stop) mode=stop ;;
+        --path)
+            [ "$#" -ge 2 ] || { usage; exit 2; }
+            config_path="$(realpath -e -- "$2")"
+            [ -f "$config_path/shell.qml" ] || { echo "$command_name: shell.qml not found" >&2; exit 2; }
+            mode=foreground
+            shift
+            ;;
+        ipc)
+            shift
+            pid="$(instances --all | matches | jq -r 'first.pid // empty')"
+            [ -n "$pid" ] || { echo "$command_name: no running instance" >&2; exit 1; }
+            exec qs ipc --pid "$pid" "$@"
+            ;;
+        *) usage; exit 2 ;;
+    esac
+    shift
+done
 
-if [ "$mode" = toggle ] && qs ipc -p "$config_path" call launcher toggle >/dev/null 2>&1; then
+# Serialize both source-tree and packaged starts without holding a lock in qs.
+exec 200>"${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/app-launcher.lock"
+flock -x 200
+
+context=''
+if [ "$passwords" = true ]; then
+    helper="${APP_LAUNCHER_PASSWORD_HELPER:-app-launcher-passwords}"
+    if ! context="$("$helper" context)" || ! jq -e 'type == "object" and has("address") and has("host")' <<< "$context" >/dev/null; then
+        echo "$command_name: password helper unavailable; build/install it or set APP_LAUNCHER_PASSWORD_HELPER" >&2
+        exit 1
+    fi
+fi
+
+route() {
+    if [ "$passwords" = true ]; then
+        qs ipc --pid "$1" call launcher passwordMode "$context" >/dev/null 2>&1
+    else
+        qs ipc --pid "$1" call launcher toggle >/dev/null 2>&1
+    fi
+}
+
+current="$(instances --all | matches)"
+pid="$(jq -r --arg exact "$config_path/shell.qml" \
+    'if length == 1 and first.config_path == $exact then first.pid else empty end' <<< "$current")"
+if [ "$mode" = toggle ] && [ -n "$pid" ] && route "$pid"; then
     exit 0
 fi
 
-if [ "$mode" = hidden ]; then
-    current="$(instances --all | matches)"
+if [ "$mode" = hidden ] && [ "$passwords" = false ]; then
     pid="$(jq -r --arg exact "$config_path/shell.qml" \
         'if length == 1 and first.config_path == $exact then first.pid else empty end' <<< "$current")"
     [ -n "$pid" ] && exit 0
 fi
 
 cleanup
+if [ "$mode" = stop ]; then exit 0; fi
+if [ "$passwords" = true ]; then
+    # Cold starts stay hidden until IPC is registered; never flash app mode first.
+    foreground_pid=''
+    if [ "$mode" = foreground ]; then
+        APP_LAUNCHER_HIDDEN=1 qs -p "$config_path" -n 200>&- &
+        foreground_pid=$!
+        trap 'kill "$foreground_pid" 2>/dev/null || true' EXIT
+        trap 'exit 130' INT
+        trap 'exit 143' TERM
+    else
+        APP_LAUNCHER_HIDDEN=1 qs -p "$config_path" -n -d 200>&-
+    fi
+    for _ in {1..100}; do
+        pid="$(instances --all | matches | jq -r 'if length == 1 then first.pid else empty end')"
+        if [ -n "$pid" ] && route "$pid"; then
+            if [ -n "$foreground_pid" ]; then
+                flock -u 200
+                wait "$foreground_pid"
+            fi
+            exit 0
+        fi
+        sleep 0.05
+    done
+    echo "$command_name: password mode IPC did not become ready" >&2
+    exit 1
+fi
 case "$mode" in
-    stop) exit 0 ;;
-    foreground) exec qs -p "$config_path" -n ;;
+    foreground) exec qs -p "$config_path" -n 200>&- ;;
     hidden)
         export APP_LAUNCHER_HIDDEN=1
-        exec qs -p "$config_path" -n -d
+        exec qs -p "$config_path" -n -d 200>&-
         ;;
-    toggle) exec qs -p "$config_path" -n -d ;;
+    toggle) exec qs -p "$config_path" -n -d 200>&- ;;
 esac

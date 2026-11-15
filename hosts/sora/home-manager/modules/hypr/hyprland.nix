@@ -527,7 +527,6 @@ in {
         hl.bind("${mod} + N",                   hl.dsp.exec_cmd("noctalia msg panel-toggle control-center notifications"))
         hl.bind("${mod} + SHIFT + W",           hl.dsp.exec_cmd("noctalia msg panel-toggle local/motionwall:picker"))
         hl.bind("CTRL + ALT + N",               hl.dsp.exec_cmd("${terminal} --class middleFloat -e hx"))
-        hl.bind("${mod} + SHIFT + P",           hl.dsp.exec_cmd("${terminal} --class middleFloat --directory /home/rakki -e pi"))
         hl.bind("${mod} + I",                   hl.dsp.window.pin({ action = "toggle" }))
         hl.bind("Print",                        hl.dsp.exec_cmd("${hyprshot} -z --clipboard-only -m region --freeze"))
         hl.bind("CTRL + Print",                 hl.dsp.exec_cmd("${hyprshot} -z --clipboard-only -m output --freeze"))
@@ -535,6 +534,7 @@ in {
         hl.bind("${mod} + ALT + L",             hl.dsp.exec_cmd("${lock}"))
         -- "${mod} + SHIFT + D",                hl.dsp.exec_cmd("pkill wofi || wofi --show drun -G --insensitive" -- Main Menu))
         hl.bind("${mod} + D",                   hl.dsp.exec_cmd("${lib.getExe appLauncher}"))
+        hl.bind("${mod} + SHIFT + P",           hl.dsp.exec_cmd("${lib.getExe appLauncher} --passwords"))
         hl.bind("${mod} + ALT + D",             hl.dsp.exec_cmd("pkill wofi || wofi --show run -G --insensitive")) -- Main Menu
         hl.bind("${mod} + V",                   hl.dsp.exec_cmd("pkill clipse & ${terminal} --class middleFloat -e clipse"))
         hl.bind("${mod} + RETURN",              hl.dsp.exec_cmd("${terminal}")) -- terminal

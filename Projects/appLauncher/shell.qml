@@ -36,10 +36,55 @@ ShellRoot {
             }
         }
 
+        property bool passwordMode: false
+        PasswordSession {
+            id: passwords
+            onListed: root.showPasswordStatus()
+            onHideForAction: { root.opened = false; root.visible = false }
+            onFinished: success => {
+                if (success) { passwords.close(); root.passwordMode = false }
+                else root.showPasswordStatus()
+            }
+        }
+        function showPasswordStatus(): void {
+            opened = true
+            const target = focusedScreen()
+            if (target) screen = target
+            visible = true
+            Qt.callLater(() => search.forceActiveFocus())
+        }
+        function openPasswords(captured: string): void {
+            if (passwords.acting) return
+            if (passwordMode && opened) { hide(); return }
+            if (!passwords.open(captured)) return
+            passwordMode = true
+            // rbw may open pinentry: never hold layer-shell focus while loading.
+            opened = true
+            visible = false
+            list.currentIndex = 0
+            search.text = passwords.context.host || ""
+        }
+        function appsMode(): void {
+            if (passwords.acting) return
+            if (passwordMode) {
+                passwords.close()
+                passwordMode = false
+                show()
+            } else toggle()
+        }
+        readonly property var passwordMatches: {
+            if (passwords.selected) return passwords.actions.map(name => ({entry: {name: name, genericName: passwords.selected.name, id: "", icon: "dialog-password"}, favorite: false, launches: 0}))
+            const query = search.text.trim().toLowerCase()
+            return passwords.entries.map(entry => ({
+                entry: {name: entry.name, genericName: [entry.username, entry.folder].filter(Boolean).join(" · "), id: entry.id, icon: "dialog-password"},
+                metadata: entry, favorite: false, launches: 0,
+                score: query ? fuzzyScoreText([entry.name, entry.username, entry.folder].join(" ").toLowerCase(), query) : 0
+            })).filter(item => item.score > -Infinity).sort((a, b) => b.score - a.score)
+        }
         property bool opened: false
         readonly property var focusedMonitor: Hyprland.focusedMonitor
         onFocusedMonitorChanged: {
-            if (opened && !visible)
+            if (opened && !visible && !passwordMode)
                 show()
         }
         readonly property bool mouseEnabled: false
@@ -75,7 +120,7 @@ ShellRoot {
             })
             return matches
         }
-        readonly property var results: matchingApps.slice(0, 10)
+        readonly property var results: (passwordMode ? passwordMatches : matchingApps).slice(0, 10)
 
         function fuzzyScoreText(text: string, query: string): real {
             let position = -1
@@ -123,6 +168,9 @@ ShellRoot {
         }
 
         function hide(): void {
+            if (passwords.acting) return
+            passwords.close()
+            passwordMode = false
             opened = false
             visible = false
         }
@@ -132,6 +180,16 @@ ShellRoot {
         }
 
         function launchAt(index: int): void {
+            if (passwordMode) {
+                if (passwords.busy || results.length === 0) return
+                if (passwords.selected) passwords.submit(index)
+                else {
+                    passwords.selected = results[Math.max(0, index)].metadata
+                    search.text = ""
+                    list.currentIndex = 0
+                }
+                return
+            }
             if (results.length === 0)
                 return
             const app = results[Math.max(0, Math.min(index, results.length - 1))].entry
@@ -149,7 +207,7 @@ ShellRoot {
         }
 
         function toggleSelectedFavorite(): void {
-            if (results.length === 0)
+            if (passwordMode || results.length === 0)
                 return
             const index = Math.max(0, list.currentIndex)
             toggleFavorite(results[index].entry)
@@ -204,9 +262,10 @@ ShellRoot {
 
         IpcHandler {
             target: "launcher"
-            function open(): void { root.show() }
+            function open(): void { if (!passwords.acting) { passwords.close(); root.passwordMode = false; root.show() } }
             function close(): void { root.hide() }
-            function toggle(): void { root.toggle() }
+            function toggle(): void { root.appsMode() }
+            function passwordMode(context: string): void { root.openPasswords(context) }
             function theme(): string {
                 return JSON.stringify({
                     primary: launcherPalette.primary.toString(),
@@ -221,7 +280,7 @@ ShellRoot {
             appid: "ciel-launcher"
             name: "toggle"
             description: "Toggle the application launcher"
-            onPressed: root.toggle()
+            onPressed: root.appsMode()
         }
 
         Rectangle {
@@ -280,14 +339,16 @@ ShellRoot {
                     ColumnLayout {
                         spacing: 0
                         Text {
-                            text: "Applications"
+                            text: root.passwordMode ? (passwords.selected ? "Choose action" : "Passwords") : "Applications"
                             color: launcherPalette.surfaceText
                             font.family: "Noto Sans"
                             font.pixelSize: 20
                             font.weight: Font.DemiBold
                         }
                         Text {
-                            text: root.apps.length + " installed"
+                            text: root.passwordMode ? (passwords.message || passwords.entries.length + " logins · metadata only") : root.apps.length + " installed"
+                            elide: Text.ElideRight
+                            Layout.maximumWidth: 570
                             color: launcherPalette.mutedText
                             font.family: "Noto Sans"
                             font.pixelSize: 11
@@ -343,11 +404,12 @@ ShellRoot {
                             font.family: "Noto Sans"
                             font.pixelSize: 17
                             clip: true
+                            readOnly: root.passwordMode && (passwords.selected !== null || passwords.busy)
                             onTextChanged: list.currentIndex = 0
 
                             Text {
                                 anchors.verticalCenter: parent.verticalCenter
-                                text: "Search by name, description, or keyword..."
+                                text: root.passwordMode ? (passwords.selected ? "Enter to execute · Escape to go back" : "Search login name, username, or folder…") : "Search by name, description, or keyword..."
                                 color: launcherPalette.mutedText
                                 font: search.font
                                 visible: !search.text
@@ -355,6 +417,8 @@ ShellRoot {
 
                             Keys.onPressed: event => {
                                 const ctrl = event.modifiers & Qt.ControlModifier
+                                if (root.passwordMode && passwords.busy) { event.accepted = true; return }
+                                if (root.passwordMode && ctrl && [Qt.Key_Space, Qt.Key_F, Qt.Key_1, Qt.Key_2, Qt.Key_3, Qt.Key_S].includes(event.key)) { event.accepted = true; return }
                                 if (event.key === Qt.Key_Escape || event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                                     event.accepted = true
                                     return
@@ -376,8 +440,14 @@ ShellRoot {
                                 event.accepted = true
                             }
                             Keys.onReleased: event => {
-                                if (event.key === Qt.Key_Escape)
-                                    root.hide()
+                                if (event.isAutoRepeat) { event.accepted = true; return }
+                                if (event.key === Qt.Key_Escape) {
+                                    if (root.passwordMode && passwords.selected && !passwords.busy) {
+                                        passwords.selected = null
+                                        search.text = ""
+                                        list.currentIndex = 0
+                                    } else root.hide()
+                                }
                                 else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter)
                                     root.launchAt(list.currentIndex)
                                 else
@@ -387,7 +457,7 @@ ShellRoot {
                         }
 
                         Text {
-                            text: root.results.length + " / " + root.matchingApps.length
+                            text: root.results.length + " / " + (root.passwordMode ? root.passwordMatches.length : root.matchingApps.length)
                             color: launcherPalette.mutedText
                             font.family: "Noto Sans"
                             font.pixelSize: 11
@@ -396,6 +466,7 @@ ShellRoot {
                 }
 
                 RowLayout {
+                    visible: !root.passwordMode
                     Layout.fillWidth: true
                     spacing: 8
 
@@ -529,6 +600,7 @@ ShellRoot {
                                 spacing: 0
                                 Text {
                                     Layout.fillWidth: true
+                                    textFormat: Text.PlainText
                                     text: row.modelData.entry.name
                                     color: launcherPalette.surfaceText
                                     elide: Text.ElideRight
@@ -538,6 +610,7 @@ ShellRoot {
                                 }
                                 Text {
                                     Layout.fillWidth: true
+                                    textFormat: Text.PlainText
                                     text: row.modelData.entry.genericName || row.modelData.entry.id
                                     color: launcherPalette.mutedText
                                     elide: Text.ElideRight
@@ -555,6 +628,7 @@ ShellRoot {
                             }
 
                             Rectangle {
+                                visible: !root.passwordMode
                                 width: 34
                                 height: 34
                                 radius: 10
@@ -585,7 +659,10 @@ ShellRoot {
                     Text {
                         anchors.centerIn: parent
                         visible: root.results.length === 0
-                        text: root.favoritesOnly ? "No favorites yet" : "No matching applications"
+                        text: root.passwordMode ? (passwords.message || "No matching logins. Edit the search to see all entries.") : root.favoritesOnly ? "No favorites yet" : "No matching applications"
+                        width: parent.width
+                        wrapMode: Text.Wrap
+                        horizontalAlignment: Text.AlignHCenter
                         color: launcherPalette.mutedText
                         font.family: "Noto Sans"
                         font.pixelSize: 14
@@ -595,14 +672,14 @@ ShellRoot {
                 RowLayout {
                     Layout.fillWidth: true
                     Text {
-                        text: "↑↓ / ctrl+jk navigate   ↵ launch   ctrl+space favorite"
+                        text: root.passwordMode ? "↑↓ navigate   ↵ " + (passwords.selected ? "execute" : "actions") + "   esc back / close" : "↑↓ / ctrl+jk navigate   ↵ launch   ctrl+space favorite"
                         color: launcherPalette.mutedText
                         font.family: "Noto Sans"
                         font.pixelSize: 10
                     }
                     Item { Layout.fillWidth: true }
                     Text {
-                        text: "ctrl+1/2/3 sort   ctrl+f filter"
+                        text: root.passwordMode ? "Fill never submits" : "ctrl+1/2/3 sort   ctrl+f filter"
                         color: launcherPalette.mutedText
                         font.family: "Noto Sans"
                         font.pixelSize: 10
