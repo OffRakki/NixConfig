@@ -236,11 +236,8 @@ fn window() -> Result<Context> {
     let address = text(&value, "address")?;
     let class = text(&value, "class")?;
     let pid = value["pid"].as_u64().ok_or("target_unavailable")?;
-    if !address.starts_with("0x")
-        || address.len() > 32
-        || !address[2..].bytes().all(|b| b.is_ascii_hexdigit())
-        || pid == 0
-    {
+    focus_request(&address)?;
+    if pid == 0 {
         return Err("target_unavailable");
     }
     Ok(Context {
@@ -249,6 +246,14 @@ fn window() -> Result<Context> {
         class,
         host: String::new(),
     })
+}
+fn focus_request(address: &str) -> Result<String> {
+    // A validated numeric address is the only interpolated Lua value.
+    let hex = address.strip_prefix("0x").ok_or("target_unavailable")?;
+    if hex.is_empty() || address.len() > 32 || !hex.bytes().all(|b| b.is_ascii_hexdigit()) {
+        return Err("target_unavailable");
+    }
+    Ok(format!("hl.dsp.focus({{window=\"address:{address}\"}})"))
 }
 fn verify_window(current: &Context, target: &Context) -> Result<()> {
     if current.address != target.address
@@ -417,10 +422,17 @@ fn plain_us() -> Result<()> {
 }
 fn verify_keymap(devices: &Value) -> Result<()> {
     let keyboards = devices["keyboards"].as_array().ok_or("input_unavailable")?;
-    if keyboards.is_empty()
+    // ydotool emits US keycodes through its own device, not the physical keyboard.
+    // Keep physical layouts untouched; only the emitting device must use plain US.
+    let mut virtual_keyboards = keyboards
+        .iter()
+        .filter(|k| k["name"] == "ydotoold-virtual-device");
+    let keyboard = virtual_keyboards.next().ok_or("unsupported_keymap")?;
+    if virtual_keyboards.next().is_some()
+        || keyboard["active_keymap"] != "English (US)"
         || keyboards
             .iter()
-            .any(|k| k["active_keymap"] != "English (US)" || k["capsLock"].as_bool() != Some(false))
+            .any(|k| k["capsLock"].as_bool() != Some(false))
     {
         return Err("unsupported_keymap");
     }
@@ -530,15 +542,12 @@ fn act(id: &str, action: &str, target: &Context) -> Result<Value> {
             verify_target(&clients, target)?;
             run(
                 "hyprctl",
-                &[
-                    "dispatch",
-                    "focuswindow",
-                    &format!("address:{}", target.address),
-                ],
+                &["dispatch", &focus_request(&target.address)?],
                 &[],
                 Duration::from_secs(2),
                 1024,
-            )?;
+            )
+            .map_err(|_| "focus_failed")?;
             std::thread::sleep(Duration::from_millis(150));
             fill_steps(
                 &username,
@@ -683,6 +692,20 @@ mod tests {
         assert!(!uuid("--password"));
     }
     #[test]
+    fn lua_focus_uses_only_a_validated_numeric_address() {
+        assert_eq!(
+            focus_request("0x123aB").unwrap(),
+            "hl.dsp.focus({window=\"address:0x123aB\"})"
+        );
+        for invalid in ["", "0x", "123", "0x12z", "0x1\"});bad()", "0x1\n"] {
+            assert_eq!(focus_request(invalid), Err("target_unavailable"));
+        }
+        assert_eq!(
+            focus_request(&format!("0x{}", "a".repeat(31))),
+            Err("target_unavailable")
+        );
+    }
+    #[test]
     fn metadata_is_allowlisted_and_duplicate_names_stay_distinct() {
         let fixture = br#"[{"id":"aaaaaaaa-1111-2222-3333-444444444444","name":"same/a","user":"a","type":"Login","password":"FAKE-SECRET"},{"id":"bbbbbbbb-1111-2222-3333-444444444444","name":"same/a","user":"a","type":"Login"},{"type":"Card","number":"FAKE-CARD"}]"#;
         let rows = entries(fixture).unwrap();
@@ -817,16 +840,27 @@ mod tests {
             Err("target_unavailable")
         );
         assert!(verify_target(&json!([target.clone()]), &target).is_ok());
-        let valid = json!({"keyboards":[{"active_keymap":"English (US)","capsLock":false}]});
+        let virtual_keyboard = json!({"name":"ydotoold-virtual-device","active_keymap":"English (US)","capsLock":false});
+        let physical_keyboard =
+            json!({"name":"physical","active_keymap":"English (US, alt. intl.)","capsLock":false});
+        assert!(verify_keymap(&json!({"keyboards":[virtual_keyboard]})).is_ok());
+        let valid = json!({"keyboards":[virtual_keyboard, physical_keyboard]});
         assert!(verify_keymap(&valid).is_ok());
+        // Removing, duplicating or changing the emitting device must fail closed.
         for invalid in [
             json!({}),
             json!({"keyboards":[]}),
-            json!({"keyboards":[{"active_keymap":"English (US)","capsLock":true}]}),
-            json!({"keyboards":[{"active_keymap":"English (US, intl.)","capsLock":false}]}),
-            json!({"keyboards":[{"active_keymap":"English (US)"}]}),
+            json!({"keyboards":[physical_keyboard]}),
+            json!({"keyboards":[virtual_keyboard, virtual_keyboard]}),
+            json!({"keyboards":[{"name":"ydotoold-virtual-device","active_keymap":"English (US, intl.)","capsLock":false}]}),
+            json!({"keyboards":[{"name":"ydotoold-virtual-device","active_keymap":"English (US)"}]}),
         ] {
             assert!(verify_keymap(&invalid).is_err());
+        }
+        for index in 0..2 {
+            let mut locked = valid.clone();
+            locked["keyboards"][index]["capsLock"] = json!(true);
+            assert_eq!(verify_keymap(&locked), Err("unsupported_keymap"));
         }
         assert!(keys_released(&[0; 96]));
         for key in [28, 96, 29, 97, 42, 54, 56, 100, 125, 126] {

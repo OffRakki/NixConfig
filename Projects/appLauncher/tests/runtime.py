@@ -116,7 +116,8 @@ else:
             run(["wl-copy", "--sensitive", "--type", "text/secret"], input=fake)
             wait(lambda: len(notifier_log.read_text().splitlines()) > previous, "sensitive notification missing")
             assert run(["wl-paste", "--no-newline", "--type", "text/secret"]).stdout == fake
-            assert "Sensitive clipboard content hidden" in notifier_log.read_text().splitlines()[-1]
+            text = fake.decode().rstrip("\n")
+            assert json.loads(notifier_log.read_text().splitlines()[-1])[-1] == text[:3] + "*" * max(0, len(text) - 3)
             assert fake.decode().splitlines()[0] not in notifier_log.read_text()
             assert fake.splitlines()[0] not in run(["cliphist", "-db-path", db, "list"]).stdout
         run(["wl-copy", "--type", "text/plain"], input=b"ordinary fixture after sensitive")
@@ -134,7 +135,7 @@ print(json.dumps({"id":id,"data":{"username":"fixture","password":"FAKE-helper\\
             assert json.loads(result.stdout) == {"status":"copied"}
             assert run(["wl-paste", "--no-newline", "--type", "text/secret"]).stdout == b"FAKE-helper\\n -option\nsecond line\n"
             assert b"FAKE-helper" not in run(["cliphist", "-db-path", db, "list"]).stdout
-        print("PASS: installed sensitive clipboard: exact bytes, fully hidden notification, absent from disposable cliphist; ordinary text before/after stores and previews")
+        print("PASS: installed sensitive clipboard: exact bytes, upstream three-character masked notification, absent from disposable cliphist; ordinary text before/after stores and previews")
 
         # Exercise the actual component's generation and busy-state logic using
         # fixture-only IPC in a separate test shell (no production debug API).

@@ -39,6 +39,28 @@ fn escaped_preview(text: &str) -> String {
     output
 }
 
+fn censored_preview(text: &str) -> String {
+    // Match upstream: reveal the first three characters, replace every remaining
+    // character (including newlines) with '*'. Keep existing markup/size guards.
+    let masked: String = text
+        .chars()
+        .enumerate()
+        .take(MAX_PREVIEW_CHARS + 1)
+        .map(|(index, ch)| if index < 3 { ch } else { '*' })
+        .collect();
+    escaped_preview(&masked)
+}
+
+fn sensitive_preview(reader: &mut impl Read) -> io::Result<String> {
+    Ok(match read_bounded(reader, MAX_INPUT)? {
+        None => TOO_LARGE.to_owned(),
+        Some(bytes) => match shell_text(&bytes) {
+            Ok(text) => censored_preview(&text),
+            Err(_) => HIDDEN.to_owned(),
+        },
+    })
+}
+
 fn text_preview(text: &str) -> String {
     let lines = text.split('\n').count();
     if lines <= 5 {
@@ -152,13 +174,11 @@ fn run() -> io::Result<ExitCode> {
     }
     let mut input = io::stdin().lock();
     if state == "sensitive" {
-        io::copy(&mut input, &mut io::sink())?;
-        return notify(HIDDEN);
+        return notify(&sensitive_preview(&mut input)?);
     }
     let mimes = output(Command::new("wl-paste").arg("-l"))?;
     if has_mime(&mimes, "text/secret") {
-        io::copy(&mut input, &mut io::sink())?;
-        return notify(HIDDEN);
+        return notify(&sensitive_preview(&mut input)?);
     }
     let preview = match read_bounded(&mut input, MAX_INPUT)? {
         None => TOO_LARGE.to_owned(),
@@ -188,6 +208,33 @@ mod tests {
         assert_eq!(shell_text(b"a\0b\n\n").unwrap(), "ab");
         assert_eq!(shell_text(b"\n\n").unwrap(), "");
         assert!(shell_text(&[0xff]).is_err());
+    }
+
+    #[test]
+    fn upstream_sensitive_prefix_and_masking() {
+        for (text, expected) in [
+            ("", ""),
+            ("a", "a"),
+            ("abc", "abc"),
+            ("abcdef", "abc***"),
+            ("á中🙂def", "á中🙂***"),
+            ("a\nb\nc", "a\nb**"),
+            ("<&>private", "&lt;&amp;&gt;*******"),
+        ] {
+            assert_eq!(censored_preview(text), expected);
+        }
+        assert_eq!(
+            sensitive_preview(&mut &b"a\0bcdef\n\n"[..]).unwrap(),
+            "abc***"
+        );
+        assert_eq!(sensitive_preview(&mut &[0xff][..]).unwrap(), HIDDEN);
+        assert_eq!(
+            censored_preview(&"x".repeat(MAX_PREVIEW_CHARS + 10)),
+            format!(
+                "xxx{}\n[Preview truncated]",
+                "*".repeat(MAX_PREVIEW_CHARS - 3)
+            )
+        );
     }
 
     #[test]

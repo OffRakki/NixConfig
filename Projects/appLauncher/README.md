@@ -49,8 +49,11 @@ The Rust helper alone handles raw rbw responses. QML/IPC receive allowlisted
 metadata and status codes, never passwords, OTPs, notes, custom fields or history.
 Actions validate the requested UUID against the returned entry. Password/OTP
 bytes go to `wl-copy --sensitive --type text/secret` through stdin; multiline and
-literal backslashes are preserved. Existing clip-notify hides them completely,
-and the installed clipboard stack has been tested with disposable cliphist data.
+literal backslashes are preserved. clip-notify matches upstream's masking: the
+first three characters remain visible, with one asterisk per remaining character
+(short values of up to three characters are fully visible). Invalid UTF-8 stays
+hidden and preview size limits still apply. This preview can remain in notification
+history; clipboard-history exclusion is separate and tested with disposable data.
 **Sensitive clipboard hints are not access control:** other applications can
 still request the contents. There is no clipboard timer or automatic clearing.
 
@@ -58,8 +61,10 @@ Fill restores the captured window identity (address, PID and class), checks focu
 and released Enter/modifier keys before each stage, then types username, Tab,
 password, **never Enter**. Existing input-device permissions are required; no
 privileges are added. ydotool 1.0.4 only faithfully supports printable ASCII here:
-non-ASCII, multiline/control values, non-plain-US keymaps or Caps Lock fail closed
-with a Copy fallback. A configured OTP is copied sensitively afterward; an OTP
+non-ASCII and multiline/control values fail closed with a Copy fallback.
+Hyprland pins only `ydotoold-virtual-device` to plain English (US); the helper
+validates that device's layout and requires Caps Lock off on every keyboard.
+Physical keyboards retain their configured layouts. A configured OTP is copied sensitively afterward; an OTP
 failure reports that the credentials were already filled. An interrupted Fill
 may have typed a prefix: inspect the form instead of retrying blindly. Global
 input always has a focus race between checks; this is not browser-extension-grade
@@ -93,7 +98,7 @@ fresh HOME/runtime/state/cache, fake helper processes, and a disposable cliphist
 DB. They never connect to the existing Wayland clipboard or input service. They
 also run `test-theme` only in that private session, not the desktop. Requirements:
 Sway, Quickshell, wl-clipboard, cliphist, wtype, jq, flock and Python. Compile the
-unchanged clip-notify source for the notification assertion, then run:
+clip-notify source for the notification assertion, then run:
 
 ```sh
 rustc --edition=2024 hosts/sora/home-manager/modules/clip-notify/src/main.rs -o /tmp/fixture-clip-notify

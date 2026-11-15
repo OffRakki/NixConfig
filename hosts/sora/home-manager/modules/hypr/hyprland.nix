@@ -426,6 +426,13 @@ in {
         ----------------------------------------------------------------
 
         ------------------------------- BINDS -------------------------------
+        -- ydotool emits plain-US keycodes; do not change the physical keyboards.
+        hl.device({
+          name = "ydotoold-virtual-device",
+          kb_layout = "us",
+          kb_variant = "",
+          kb_options = "",
+        })
         -- Natural scroll for rapoo mouse
         hl.device({
           name = "rapoo-rapoo-gaming-device",

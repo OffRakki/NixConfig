@@ -34,7 +34,7 @@ if name == "rbw":
         assert args[2] in [id, other]
         if mode == "malformed": print("not JSON"); sys.exit()
         data = {"username": "dummy-user", "password": password, "totp": "dummy-seed", "uris": [{"uri": "https://first.example/a"}, {"uri": "https://www.second.example/path"}]}
-        if mode in ["destroyed", "changed_pid", "changed_class", "focus_changed", "bad_keymap"]: data["password"] = "dummy-ascii"
+        if mode in ["destroyed", "changed_pid", "changed_class", "focus_changed", "focus_error", "bad_keymap"]: data["password"] = "dummy-ascii"
         if mode == "no_otp": data["totp"] = None
         if mode == "no_password": data["password"] = None
         if mode == "no_username": data["username"] = None
@@ -63,9 +63,13 @@ elif name == "hyprctl":
         if mode == "changed_pid": c["pid"] = 999
         if mode == "changed_class": c["class"] = "other"
         print(json.dumps([] if mode == "destroyed" else [c]))
-    elif args[:2] == ["dispatch", "focuswindow"]: print("ok")
+    elif args == ["dispatch", 'hl.dsp.focus({window="address:0x123"})']:
+        if mode == "focus_error":
+            print("untrusted fake focus diagnostic", file=sys.stderr)
+            sys.exit(1)
+        print("ok")
     elif args == ["-j", "devices"]:
-        print(json.dumps({"keyboards":[{"active_keymap":"other" if mode == "bad_keymap" else "English (US)","capsLock":False}]}))
+        print(json.dumps({"keyboards":[{"name":"ydotoold-virtual-device","active_keymap":"other" if mode == "bad_keymap" else "English (US)","capsLock":False}]}))
     else: sys.exit(23)
 elif name == "qutebrowser":
     assert args[0] == "--nowindow"
@@ -125,6 +129,7 @@ with tempfile.TemporaryDirectory(prefix="app-launcher-fixtures-") as directory:
         ("changed_pid", "fill", "target_unavailable"),
         ("changed_class", "fill", "target_unavailable"),
         ("focus_changed", "fill", "focus_changed"),
+        ("focus_error", "fill", "focus_failed"),
         ("bad_keymap", "fill", "unsupported_keymap"),
     ]:
         code, value = invoke(["act", ID, action], case)

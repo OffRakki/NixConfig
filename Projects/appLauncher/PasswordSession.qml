@@ -76,6 +76,7 @@ Item {
             input_unavailable: "Cannot verify released keys; Fill aborted. Use Copy instead.",
             keys_held: "Release Enter and modifiers, then retry.",
             focus_changed: "Target focus changed; Fill aborted.",
+            focus_failed: "Could not restore target focus; Fill aborted. Reopen from the intended field.",
             target_unavailable: "Original window unavailable; Fill aborted.",
             partial_fill: "Fill interrupted: some characters may have been typed. Inspect the form; do not retry blindly.",
             timed_out: "Operation timed out. Unlock or retry.",

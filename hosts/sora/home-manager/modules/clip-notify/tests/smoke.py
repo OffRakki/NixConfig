@@ -65,8 +65,22 @@ with tempfile.TemporaryDirectory(prefix='clip-notify-smoke-') as directory:
     preview(b'x' * (16 * 1024 * 1024 + 1), 'Clipboard content too large to preview (over 16 MiB)')
     binary_calls = preview(b'\x00\xff', '[[ 4.0K synthetic &lt;binary&gt; &amp; data, second ]]', mimes='application/octet-stream')
     assert binary_calls == ['wl-paste', 'du', 'file', 'notify-send']
-    # Synthetic markers only. Sensitive payloads must never reach args or stderr,
-    # nor require MIME queries, UTF-8 decoding, or temporary files.
+    # Match upstream's intentionally visible three-character prefix. No suffix
+    # may reach notification args/stderr; binary fallback stays fully hidden.
+    for kwargs, expected_calls in [
+        ({'state': 'sensitive'}, ['notify-send']),
+        ({'mimes': 'image/png\ntext/secret'}, ['wl-paste', 'notify-send']),
+    ]:
+        for data, expected in [
+            (b'', ''), (b'ab', 'ab'), (b'abc', 'abc'),
+            (b'abcdef', 'abc***'), (b'a\0bcdef\n\n', 'abc***'),
+            ('á中🙂def'.encode(), 'á中🙂***'),
+            (b'<&>private', '&lt;&amp;&gt;*******'),
+            (b'a\nb\nc', 'a\nb**'),
+            (b'x' * 5000, 'xxx' + '*' * 4093 + '\n[Preview truncated]'),
+            (b'x' * (16 * 1024 * 1024 + 1), 'Clipboard content too large to preview (over 16 MiB)'),
+        ]:
+            assert preview(data, expected, **kwargs) == expected_calls
     sensitive = b'SYNTHETIC_PRIVATE_MARKER\xff'
     assert preview(sensitive, 'Sensitive clipboard content hidden', state='sensitive') == ['notify-send']
     assert preview(sensitive, 'Sensitive clipboard content hidden', mimes='image/png\ntext/secret') == ['wl-paste', 'notify-send']
