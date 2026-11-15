@@ -62,7 +62,7 @@ in {
       background = [
         {
           monitor = mainMonitor;
-          path = "$lockWallpaper";
+          path = "${nixConfigRoot}/assets/wallpapers/wallhaven-lygzqq.jpg";
           blur_passes = 0;
         }
       ];
