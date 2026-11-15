@@ -23,7 +23,12 @@
     countdown_seconds = 10;
   };
 in {
-  home.packages = [pkgs.ddcutil];
+  home.packages = [
+    pkgs.ddcutil
+    pkgs.gst_all_1.gstreamer
+    pkgs.socat
+    inputs.gslapper.packages.${pkgs.stdenv.hostPlatform.system}.default
+  ];
 
   # Stable paths: Noctalia copies plugin sources into its GUI-owned settings.toml,
   # so raw store paths there would pin stale plugin versions across rebuilds.
