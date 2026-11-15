@@ -2,8 +2,6 @@
 local library = noctalia.state.get("library") or {}
 local previews = noctalia.state.get("previews") or {}
 local assignments = noctalia.state.get("assignments") or {}
-local outputList = noctalia.state.get("outputs") or noctalia.outputs() or {}
-local selected = "*"
 local search = ""
 local page = 1
 local counter = 0
@@ -15,7 +13,7 @@ local render
 local function send(command)
     counter = counter + 1
     command.nonce = noctalia.nowMs() * 1000 + counter
-    command.output = selected
+    command.output = "*"
     noctalia.state.set("command", command)
 end
 local function filtered()
@@ -69,12 +67,7 @@ render = function()
     cursor = math.clamp(cursor, 1, math.max(1, #entries))
     local busy = noctalia.state.get("busy") == true
     local ready = noctalia.state.get("ready") == true
-    local options = { "All monitors" }
-    local selectedIndex = 0
-    for index, output in ipairs(outputList) do
-        table.insert(options, output.name)
-        if selected == output.name then selectedIndex = index end
-    end
+    local policy = noctalia.state.get("policy") or {}
     local children = {
         ui.row({ align = "center", gap = 8 }, {
             ui.label({ text = "Motion Wallpapers", fontSize = 18, fontWeight = "bold", flexGrow = 1 }),
@@ -83,14 +76,14 @@ render = function()
         }),
         ui.row({ gap = 8, align = "center" }, {
             ui.input({ key = "search", value = search, focus = true, placeholder = "Search images and videos…", flexGrow = 1, onChange = "onSearch", onSubmit = "onChoose" }),
-            ui.select({ options = options, selectedIndex = selectedIndex, onChange = "onOutput" }),
+            ui.label({ text = "Shared · All monitors", color = "on_surface_variant", fontSize = 11 }),
             ui.button({ glyph = "refresh", variant = "ghost", enabled = ready and not busy, onClick = function() send({ action = "scan" }) end }),
         }),
         ui.row({ gap = 8 }, {
             ui.button({ text = "Pause", enabled = ready and not busy, onClick = function() send({ action = "pause" }) end }),
             ui.button({ text = "Resume", enabled = ready and not busy, onClick = function() send({ action = "resume" }) end }),
             ui.button({ text = "Restore static", enabled = ready and not busy, onClick = function() send({ action = "restore" }) end }),
-            ui.label({ text = busy and "Applying…" or "Colors update when a wallpaper is selected", color = "on_surface_variant", fontSize = 11 }),
+            ui.label({ text = busy and "Applying…" or (policy.reason or "Shared playback · Colors update on selection"), color = "on_surface_variant", fontSize = 11 }),
         }),
     }
     local message = noctalia.state.get("error")
@@ -107,8 +100,8 @@ render = function()
         local image = previews[entry.path]
         local highlighted = index == cursor
         local active = false
-        for output, assignment in pairs(assignments) do
-            if (selected == "*" or selected == output) and assignment.path == entry.path then active = true end
+        for _, assignment in pairs(assignments) do
+            if assignment.path == entry.path then active = true end
         end
         local choose = nil
         if ready and not busy then choose = function() cursor = index; render(); send({ action = "apply", path = entry.path }) end end
@@ -138,30 +131,16 @@ render = function()
     panel.render(ui.column({ padding = 16, gap = 12, flexGrow = 1 }, children))
 end
 function onSearch(value) search = tostring(value or ""); page = 1; cursor = 1; render(); visiblePreviews() end
-function onOutput(value)
-    local index = tonumber(value)
-    if index == 0 then selected = "*"
-    elseif index and outputList[index] then selected = outputList[index].name end
-    render()
-end
 function onClose() opened = false end
 function onOpen()
     opened = true
     library = noctalia.state.get("library") or {}
     previews = noctalia.state.get("previews") or {}
     assignments = noctalia.state.get("assignments") or {}
-    outputList = noctalia.state.get("outputs") or noctalia.outputs() or {}
     render()
     visiblePreviews()
 end
 noctalia.state.watch("library", function(value) library = value or {}; page = 1; cursor = 1; render(); if opened then visiblePreviews() end end)
 noctalia.state.watch("previews", function(value) previews = value or {}; render() end)
 noctalia.state.watch("assignments", function(value) assignments = value or {}; render() end)
-noctalia.state.watch("outputs", function(value)
-    outputList = value or {}
-    local found = selected == "*"
-    for _, output in ipairs(outputList) do if output.name == selected then found = true end end
-    if not found then selected = "*" end
-    render()
-end)
-for _, key in ipairs({ "error", "warnings", "busy", "ready", "scanning" }) do noctalia.state.watch(key, function() render() end) end
+for _, key in ipairs({ "error", "warnings", "busy", "ready", "scanning", "policy" }) do noctalia.state.watch(key, function() render() end) end

@@ -5,7 +5,7 @@ plugin_api = 26
 author = "local"
 license = "MIT"
 icon = "wallpaper-selector"
-description = "Image and video wallpapers with cached previews and selection-time colors."
+description = "Shared video playback with DP-1 fullscreen pausing, cached previews and selection-time colors."
 tags = ["bar", "panel", "service", "video", "wallpaper"]
 
 [[setting]]
@@ -37,6 +37,13 @@ options = [
   { value = "60", label_key = "fps_60" },
   { value = "100", label_key = "fps_100" },
 ]
+
+[[setting]]
+key = "auto_pause"
+type = "bool"
+label_key = "auto_pause_label"
+description_key = "auto_pause_description"
+default = true
 
 [[service]]
 id = "service"

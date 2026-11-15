@@ -9,5 +9,7 @@
   "scale_original": "Original size",
   "fps_30": "30 FPS",
   "fps_60": "60 FPS",
-  "fps_100": "100 FPS"
+  "fps_100": "100 FPS",
+  "auto_pause_label": "Pause both monitors for DP-1 fullscreen",
+  "auto_pause_description": "Pause shared video playback when DP-1 has visible true fullscreen. Secondary-monitor fullscreen is ignored; manual pause always wins."
 }

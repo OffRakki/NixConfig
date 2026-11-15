@@ -1,10 +1,11 @@
-//! Noctalia owns the UI and palette; this process owns every renderer child.
+//! Noctalia owns the UI and palette; this process owns one shared renderer.
+mod hyprland;
 use fs2::FileExt;
 use serde::Deserialize;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
-    collections::{BTreeMap, HashSet},
+    collections::HashSet,
     env, fs,
     fs::{File, OpenOptions},
     io::{self, BufRead, BufReader, Read, Write},
@@ -15,8 +16,9 @@ use std::{
     path::{Path, PathBuf},
     process::{Child, Command, Stdio},
     sync::{
-        Arc,
+        Arc, Mutex,
         atomic::{AtomicBool, Ordering},
+        mpsc,
     },
     thread,
     time::{Duration, Instant, UNIX_EPOCH},
@@ -48,6 +50,9 @@ enum Request {
     Control {
         output: String,
         command: Control,
+    },
+    Configure {
+        auto_pause: bool,
     },
     Status {},
     Shutdown {},
@@ -326,51 +331,133 @@ impl Drop for Player {
         let _ = fs::remove_file(&self.socket);
     }
 }
+#[derive(Default)]
+struct PausePolicy {
+    manual: bool,
+    automatic: bool,
+}
+impl PausePolicy {
+    fn paused(&self) -> bool {
+        self.manual || self.automatic
+    }
+}
 struct Server {
-    players: BTreeMap<String, Player>,
+    player: Option<Player>,
+    policy: PausePolicy,
+    auto_pause: bool,
+    observation: Arc<Mutex<hyprland::Observation>>,
+    last_policy: Value,
+    applied_pause: Option<bool>,
     runtime: PathBuf,
     cache: PathBuf,
     quit: Arc<AtomicBool>,
 }
 impl Server {
-    fn play(&mut self, output: String, path: PathBuf, scale: Scale, fps: u32) -> Result<Value> {
-        if output.is_empty()
-            || output.len() > 64
-            || !output
-                .bytes()
-                .all(|c| c.is_ascii_alphanumeric() || b"-_.".contains(&c))
-        {
-            return Err("invalid output connector".into());
+    fn stop(&mut self) {
+        self.player = None;
+        self.applied_pause = None;
+    }
+    fn policy_state(&self) -> Value {
+        let observation = self
+            .observation
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .clone();
+        json!({"manual_paused":self.policy.manual,"auto_paused":self.policy.automatic,
+        "paused":self.policy.paused(),"auto_pause_enabled":self.auto_pause,
+        "observer_error":observation.error,
+        "reason": match (self.policy.manual,self.policy.automatic) {
+            (true,true) => "Paused: manual + fullscreen on DP-1",
+            (true,false) => "Paused: manual",
+            (false,true) => "Paused: fullscreen on DP-1",
+            (false,false) if self.auto_pause && observation.error.is_some() => "Auto-pause unavailable · Observer reconnecting",
+            (false,false) => "Shared playback · Colors update on selection",
+        }})
+    }
+    fn reconcile_pause(&mut self) -> Result<()> {
+        let observation = self
+            .observation
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .clone();
+        self.policy.automatic =
+            self.auto_pause && observation.error.is_none() && observation.fullscreen;
+        let paused = self.policy.paused();
+        if let Some(player) = &self.player {
+            if self.applied_pause != Some(paused) {
+                let reply = ipc(&player.socket, if paused { "pause" } else { "resume" })?;
+                if reply != "OK" {
+                    return Err(format!("unexpected renderer response: {reply}").into());
+                }
+                let actual = ipc(&player.socket, "query")?;
+                let expected = format!(
+                    "STATUS: {} video {}",
+                    if paused { "paused" } else { "playing" },
+                    player.path.display()
+                );
+                if actual != expected {
+                    return Err(format!("renderer did not reach requested state: {actual}").into());
+                }
+                self.applied_pause = Some(paused);
+            }
+        }
+        let state = self.policy_state();
+        if state != self.last_policy {
+            emit(json!({"event":"policy","policy":state}));
+            self.last_policy = state;
+        }
+        Ok(())
+    }
+    fn status(&mut self) -> Result<Value> {
+        let playback = match &self.player {
+            Some(player) => match ipc(&player.socket, "query") {
+                Ok(state) => json!({"path":player.path,"pid":player.child.id(),"state":state}),
+                Err(e) => {
+                    self.stop();
+                    emit(
+                        json!({"event":"stopped","error":format!("renderer health check failed: {e}")}),
+                    );
+                    Value::Null
+                }
+            },
+            None => Value::Null,
+        };
+        Ok(json!({"ok":true,"playback":playback,"policy":self.policy_state()}))
+    }
+    fn play(
+        &mut self,
+        output: String,
+        path: PathBuf,
+        image: PathBuf,
+        scale: Scale,
+        fps: u32,
+    ) -> Result<Value> {
+        if output != "*" {
+            return Err("shared playback requires output '*'".into());
         }
         if ![30, 60, 100].contains(&fps) {
             return Err("FPS must be 30, 60 or 100".into());
         }
-        let path = media_path(&path)?;
-        let image = preview(&path, &self.cache, &self.quit, false)?;
+        // Media validation and FFmpeg stay on the worker, never the policy owner.
+        self.stop();
         if kind(&path) == Some("image") {
-            self.players.remove(&output);
             return Ok(json!({"ok":true,"path":path,"preview":image,"kind":"image"}));
         }
-        // Only replace a running wallpaper after the new source and preview validate.
-        self.players.remove(&output);
-        let socket = self
-            .runtime
-            .join(format!("{}.sock", &digest(&output)[..16]));
-        let log = self.runtime.join(format!("{}.log", &digest(&output)[..16]));
-        // The daemon holds the exclusive runtime lock and owns all sockets here.
+        let socket = self.runtime.join("playback.sock");
+        let log = self.runtime.join("playback.log");
         if socket.exists() {
             fs::remove_file(&socket)?;
         }
         let child = Command::new("gslapper")
-            // Renderer visibility auto-pause can strand playback on this compositor.
-            // Keep pause ownership explicit through the control socket instead.
+            // One global playbin/appsink/EGL texture feeds all output surfaces.
+            // Never delegate pause ownership to the renderer's broken visibility logic.
             .args(["--no-save-state", "--fps-cap"])
             .arg(fps.to_string())
             .arg("--ipc-socket")
             .arg(&socket)
             .arg("--gst-options")
             .arg(format!("no-audio loop {}", scale.option()))
-            .arg(&output)
+            .arg("*")
             .arg(&path)
             .stdin(Stdio::null())
             .stdout(Stdio::null())
@@ -405,7 +492,11 @@ impl Server {
             }
             thread::sleep(Duration::from_millis(40));
         }
-        self.players.insert(output, player);
+        self.player = Some(player);
+        if let Err(e) = self.reconcile_pause() {
+            self.stop();
+            return Err(e);
+        }
         Ok(json!({"ok":true,"path":path,"preview":image,"kind":"video"}))
     }
     fn handle(&mut self, request: Request) -> Result<Value> {
@@ -415,46 +506,25 @@ impl Server {
                 let path = media_path(&path)?;
                 Ok(json!({"ok":true,"preview":preview(&path,&self.cache,&self.quit,thumbnail)?}))
             }
-            Request::Play {
-                output,
-                path,
-                scale,
-                fps,
-            } => self.play(output, path, scale, fps),
+            Request::Play { .. } => Err("play must be prepared by the media worker".into()),
             Request::Control { output, command } => {
+                if output != "*" {
+                    return Err("shared controls require output '*'".into());
+                }
                 match command {
-                    Control::Stop => {
-                        self.players.remove(&output);
-                    }
-                    Control::Pause | Control::Resume => {
-                        let player = self
-                            .players
-                            .get(&output)
-                            .ok_or("no running wallpaper on this output")?;
-                        let reply = ipc(
-                            &player.socket,
-                            if matches!(command, Control::Pause) {
-                                "pause"
-                            } else {
-                                "resume"
-                            },
-                        )?;
-                        if reply != "OK" {
-                            return Err(format!("unexpected renderer response: {reply}").into());
-                        }
-                    }
+                    Control::Stop => self.stop(),
+                    Control::Pause => self.policy.manual = true,
+                    Control::Resume => self.policy.manual = false,
                 }
-                Ok(json!({"ok":true}))
+                self.reconcile_pause()?;
+                Ok(json!({"ok":true,"policy":self.policy_state()}))
             }
-            Request::Status {} => {
-                let mut outputs = serde_json::Map::new();
-                for (output, player) in &self.players {
-                    let state =
-                        ipc(&player.socket, "query").unwrap_or_else(|e| format!("ERROR: {e}"));
-                    outputs.insert(output.clone(), json!({"path":player.path,"state":state}));
-                }
-                Ok(json!({"ok":true,"outputs":outputs}))
+            Request::Configure { auto_pause } => {
+                self.auto_pause = auto_pause;
+                self.reconcile_pause()?;
+                Ok(json!({"ok":true,"policy":self.policy_state()}))
             }
+            Request::Status {} => self.status(),
             Request::Shutdown {} => {
                 self.quit.store(true, Ordering::Relaxed);
                 Ok(json!({"ok":true}))
@@ -462,26 +532,32 @@ impl Server {
         }
     }
     fn reap(&mut self) {
-        let dead: Vec<_> = self
-            .players
-            .iter_mut()
-            .filter_map(|(output, player)| match player.child.try_wait() {
+        let dead = self
+            .player
+            .as_mut()
+            .and_then(|player| match player.child.try_wait() {
                 Ok(None) => None,
-                result => Some((
-                    output.clone(),
-                    format!(
-                        "renderer stopped: {result:?}; {}",
-                        read_excerpt(&player.log)
-                    ),
+                result => Some(format!(
+                    "renderer stopped: {result:?}; {}",
+                    read_excerpt(&player.log)
                 )),
-            })
-            .collect();
-        for (output, message) in dead {
-            self.players.remove(&output);
-            emit(json!({"event":"stopped","output":output,"error":message}));
+            });
+        if let Some(message) = dead {
+            self.stop();
+            emit(json!({"event":"stopped","error":message}));
         }
     }
 }
+enum MediaResult {
+    Reply(Value),
+    Play { path: PathBuf, preview: PathBuf },
+}
+type Prepared = (
+    UnixStream,
+    Request,
+    std::result::Result<MediaResult, String>,
+    u64,
+);
 fn serve(data: &Path) -> Result<()> {
     let runtime = runtime_dir()?;
     let lock = OpenOptions::new()
@@ -515,31 +591,133 @@ fn serve(data: &Path) -> Result<()> {
     for signal in [signal_hook::consts::SIGTERM, signal_hook::consts::SIGINT] {
         signal_hook::flag::register(signal, Arc::clone(&quit))?;
     }
+    let (observation, observer) = hyprland::start(Arc::clone(&quit));
     let mut server = Server {
-        players: BTreeMap::new(),
+        player: None,
+        policy: PausePolicy::default(),
+        auto_pause: true,
+        observation,
+        last_policy: Value::Null,
+        applied_pause: None,
         runtime,
         cache,
         quit: Arc::clone(&quit),
     };
+    // One bounded media worker; the owner remains responsive to fullscreen and controls.
+    // Worker results are generation-checked so Stop cannot resurrect an in-flight selection.
+    let (tx, rx) = mpsc::sync_channel::<Prepared>(1);
+    let mut worker: Option<thread::JoinHandle<()>> = None;
+    let mut generation = 0u64;
     emit(json!({"event":"ready"}));
     while !quit.load(Ordering::Relaxed) {
         server.reap();
+        if let Err(e) = server.reconcile_pause() {
+            // Do not leave two visible outputs stranded behind an unresponsive renderer.
+            // The shell shows their stills and permits at most one automatic restart.
+            server.stop();
+            emit(json!({"event":"stopped","error":e.to_string()}));
+        }
+        if let Ok((mut stream, request, result, prepared_generation)) = rx.try_recv() {
+            if let Some(worker) = worker.take() {
+                let _ = worker.join();
+            }
+            let response = if prepared_generation != generation {
+                error("selection cancelled by a newer control")
+            } else {
+                result
+                    .and_then(|value| match (value, request) {
+                        (MediaResult::Reply(value), _) => Ok(value),
+                        (
+                            MediaResult::Play { path, preview },
+                            Request::Play {
+                                output, scale, fps, ..
+                            },
+                        ) => server
+                            .play(output, path, preview, scale, fps)
+                            .map_err(|e| e.to_string()),
+                        _ => Err("invalid prepared request".into()),
+                    })
+                    .unwrap_or_else(error)
+            };
+            let _ = writeln!(stream, "{response}");
+        }
         match listener.accept() {
             Ok((mut stream, _)) => {
-                stream.set_read_timeout(Some(Duration::from_secs(2)))?;
+                stream.set_read_timeout(Some(Duration::from_millis(200)))?;
                 stream.set_write_timeout(Some(Duration::from_secs(2)))?;
-                let response = line(&mut stream)
-                    .and_then(|s| Ok(serde_json::from_str::<Request>(&s)?))
-                    .and_then(|r| server.handle(r))
-                    .unwrap_or_else(error);
-                let _ = writeln!(stream, "{response}");
+                let request =
+                    line(&mut stream).and_then(|s| Ok(serde_json::from_str::<Request>(&s)?));
+                match request {
+                    Err(e) => {
+                        let _ = writeln!(stream, "{}", error(e));
+                    }
+                    Ok(request) => {
+                        if matches!(
+                            &request,
+                            Request::Scan { .. } | Request::Preview { .. } | Request::Play { .. }
+                        ) {
+                            if worker.is_some() {
+                                let _ = writeln!(
+                                    stream,
+                                    "{}",
+                                    error("media worker busy; retry after the current request")
+                                );
+                                continue;
+                            }
+                            let cache = server.cache.clone();
+                            let quit = Arc::clone(&quit);
+                            let tx = tx.clone();
+                            let prepared_generation = generation;
+                            worker = Some(thread::spawn(move || {
+                                let result=(|| -> Result<MediaResult> {
+                                    match &request {
+                                        Request::Scan{root} => Ok(MediaResult::Reply(scan(root)?)),
+                                        Request::Preview{path,thumbnail} => {
+                                            let path=media_path(path)?;
+                                            Ok(MediaResult::Reply(json!({"ok":true,"preview":preview(&path,&cache,&quit,*thumbnail)?})))
+                                        }
+                                        Request::Play{path,output,fps,..} => {
+                                            if output!="*" || ![30,60,100].contains(fps) { return Err("invalid shared play options".into()); }
+                                            let path=media_path(path)?;
+                                            let preview=preview(&path,&cache,&quit,false)?;
+                                            Ok(MediaResult::Play { path, preview })
+                                        }
+                                        _ => unreachable!("only media requests go to this worker"),
+                                    }
+                                })().map_err(|e|e.to_string());
+                                let _ = tx.send((stream, request, result, prepared_generation));
+                            }));
+                        } else {
+                            if matches!(
+                                &request,
+                                Request::Control {
+                                    command: Control::Stop,
+                                    ..
+                                } | Request::Shutdown {}
+                            ) {
+                                generation = generation.wrapping_add(1);
+                            }
+                            let response = server.handle(request).unwrap_or_else(error);
+                            let _ = writeln!(stream, "{response}");
+                        }
+                    }
+                }
             }
             Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
                 thread::sleep(Duration::from_millis(20))
             }
-            Err(e) => return Err(e.into()),
+            Err(e) => {
+                quit.store(true, Ordering::Relaxed);
+                emit(error(e));
+                break;
+            }
         }
     }
+    quit.store(true, Ordering::Relaxed);
+    if let Some(worker) = worker {
+        let _ = worker.join();
+    }
+    let _ = observer.join();
     drop(server); // Children die before releasing the daemon lock.
     fs::remove_file(socket)?;
     Ok(())
@@ -705,19 +883,96 @@ mod tests {
         writer.shutdown(std::net::Shutdown::Write).unwrap();
         assert!(line(&mut reader).is_err());
         let mut server = Server {
-            players: BTreeMap::new(),
+            player: None,
+            policy: PausePolicy::default(),
+            auto_pause: true,
+            observation: Arc::new(Mutex::new(hyprland::Observation::default())),
+            last_policy: Value::Null,
+            applied_pause: None,
             runtime: PathBuf::new(),
             cache: PathBuf::new(),
             quit: Arc::new(AtomicBool::new(false)),
         };
         assert!(
             server
-                .play("DP-1".into(), PathBuf::new(), Scale::Fill, 0)
+                .play("*".into(), PathBuf::new(), PathBuf::new(), Scale::Fill, 0)
                 .is_err()
         );
         assert!(
             server
-                .play("DP-1; stop".into(), PathBuf::new(), Scale::Fill, 30)
+                .play(
+                    "DP-1; stop".into(),
+                    PathBuf::new(),
+                    PathBuf::new(),
+                    Scale::Fill,
+                    30
+                )
+                .is_err()
+        );
+    }
+    #[test]
+    fn automatic_and_manual_pause_reasons_are_independent() {
+        let observation = Arc::new(Mutex::new(hyprland::Observation::default()));
+        let mut server = Server {
+            player: None,
+            policy: PausePolicy::default(),
+            auto_pause: true,
+            observation: Arc::clone(&observation),
+            last_policy: Value::Null,
+            applied_pause: None,
+            runtime: PathBuf::new(),
+            cache: PathBuf::new(),
+            quit: Arc::new(AtomicBool::new(false)),
+        };
+        observation.lock().unwrap().fullscreen = true;
+        server.reconcile_pause().unwrap();
+        assert!(server.policy.automatic && server.policy.paused());
+        server
+            .handle(Request::Control {
+                output: "*".into(),
+                command: Control::Pause,
+            })
+            .unwrap();
+        observation.lock().unwrap().fullscreen = false;
+        server.reconcile_pause().unwrap();
+        assert!(server.policy.manual && !server.policy.automatic && server.policy.paused());
+        observation.lock().unwrap().fullscreen = true;
+        server
+            .handle(Request::Control {
+                output: "*".into(),
+                command: Control::Resume,
+            })
+            .unwrap();
+        assert!(!server.policy.manual && server.policy.automatic && server.policy.paused());
+        server
+            .handle(Request::Configure { auto_pause: false })
+            .unwrap();
+        assert!(!server.policy.paused());
+        server
+            .handle(Request::Configure { auto_pause: true })
+            .unwrap();
+        server
+            .handle(Request::Control {
+                output: "*".into(),
+                command: Control::Pause,
+            })
+            .unwrap();
+        observation.lock().unwrap().error = Some("disconnected".into());
+        server.reconcile_pause().unwrap();
+        assert!(server.policy.manual && !server.policy.automatic && server.policy.paused());
+        server
+            .handle(Request::Control {
+                output: "*".into(),
+                command: Control::Resume,
+            })
+            .unwrap();
+        assert!(!server.policy.paused());
+        assert!(
+            server
+                .handle(Request::Control {
+                    output: "DP-1".into(),
+                    command: Control::Pause
+                })
                 .is_err()
         );
     }

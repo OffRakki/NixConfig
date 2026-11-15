@@ -17,10 +17,13 @@ in
     src = pkgs.lib.cleanSource ./.;
     cargoHash = "sha256-w5rDDxThs2B/hmxbrgGGC4Uz+IcpDMJGO8CqmdNAHBs=";
     nativeBuildInputs = [pkgs.makeWrapper];
-    nativeCheckInputs = [pkgs.ffmpeg pkgs.luau];
+    nativeCheckInputs = [pkgs.ffmpeg pkgs.luau pkgs.python3];
     postCheck = ''
       sed '/-- @panel@/r plugin/panel.luau' tests/picker.luau > picker-test.luau
       luau picker-test.luau
+      sed '/-- @service@/r plugin/service.luau' tests/service.luau > service-test.luau
+      luau service-test.luau
+      python3 tests/backend.py target/${pkgs.stdenv.hostPlatform.rust.rustcTarget}/release/motionwall
     '';
     postInstall = ''
       wrapProgram $out/bin/motionwall \
