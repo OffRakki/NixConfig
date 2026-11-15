@@ -1,0 +1,58 @@
+id = "local/motionwall"
+name = "Motion Wallpapers"
+version = "0.1.0"
+plugin_api = 26
+author = "local"
+license = "MIT"
+icon = "wallpaper-selector"
+description = "Image and video wallpapers with cached previews and selection-time colors."
+tags = ["bar", "panel", "service", "video", "wallpaper"]
+
+[[setting]]
+key = "directory"
+type = "folder"
+label_key = "directory_label"
+description_key = "directory_description"
+default = ""
+
+[[setting]]
+key = "scale"
+type = "select"
+label_key = "scale_label"
+default = "fill"
+options = [
+  { value = "fill", label_key = "scale_fill" },
+  { value = "fit", label_key = "scale_fit" },
+  { value = "stretch", label_key = "scale_stretch" },
+  { value = "original", label_key = "scale_original" },
+]
+
+[[setting]]
+key = "fps"
+type = "select"
+label_key = "fps_label"
+default = "30"
+options = [
+  { value = "30", label_key = "fps_30" },
+  { value = "60", label_key = "fps_60" },
+  { value = "100", label_key = "fps_100" },
+]
+
+[[service]]
+id = "service"
+entry = "service.luau"
+
+[[panel]]
+id = "picker"
+entry = "panel.luau"
+width = 920
+height = 820
+placement = "attached"
+position = "auto"
+keyboard_focus = "exclusive"
+dismiss_on_outside_click = true
+capture_keys = ["Left", "Right", "Up", "Down", "Return", "Home", "End", "Page_Up", "Page_Down"]
+
+[[widget]]
+id = "wallpaper"
+entry = "widget.luau"

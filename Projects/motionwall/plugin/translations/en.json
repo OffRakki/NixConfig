@@ -1,0 +1,13 @@
+{
+  "directory_label": "Wallpaper folder",
+  "directory_description": "Leave empty to use Noctalia's wallpaper folder. Symlinks are followed safely.",
+  "scale_label": "Video scaling",
+  "fps_label": "Frame-rate cap",
+  "scale_fill": "Fill (crop)",
+  "scale_fit": "Fit",
+  "scale_stretch": "Stretch",
+  "scale_original": "Original size",
+  "fps_30": "30 FPS",
+  "fps_60": "60 FPS",
+  "fps_100": "100 FPS"
+}

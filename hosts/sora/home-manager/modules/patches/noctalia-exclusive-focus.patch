@@ -1,0 +1,30 @@
+--- a/src/shell/panel/panel_manager.cpp
++++ b/src/shell/panel/panel_manager.cpp
+@@ -56,11 +56,10 @@
+   };
+ 
+   // A panel asking for None never takes keyboard focus, so the app the user is
+-  // typing into keeps it. Everything else reproduces the per-path behavior the
+-  // compositor workarounds need: a focus grab maps Exclusive so the panel wins the
+-  // keyboard from the grab and hands it back once settled, and an attached panel
+-  // takes focus only after the bar-anchored map, which the reveal would otherwise
+-  // race. `mode` therefore only selects between OnDemand and Exclusive on the
+-  // detached path of a compositor without focus-grab support.
++  // typing into keeps it. Honor explicit Exclusive requests even with a focus
++  // grab: relaxing them to OnDemand loses keyboard focus on Hyprland. The grab
++  // still handles outside-click dismissal independently of keyboard interactivity.
++  // OnDemand panels retain the delayed handoff; without focus-grab support,
++  // attached panels take focus after the bar-anchored map to avoid reveal races.
+   PanelKeyboardPlan
+   resolvePanelKeyboardPlan(LayerShellKeyboard mode, bool hasFocusGrab, bool grabWillActivate, bool attached) {
+@@ -70,7 +69,9 @@
+     if (hasFocusGrab) {
+       return {
+           .initial = LayerShellKeyboard::Exclusive,
+-          .relaxed = grabWillActivate ? std::optional{LayerShellKeyboard::OnDemand} : std::nullopt
++          .relaxed = grabWillActivate && mode != LayerShellKeyboard::Exclusive
++              ? std::optional{LayerShellKeyboard::OnDemand}
++              : std::nullopt
+       };
+     }
+     if (attached) {

@@ -525,7 +525,7 @@ in {
         hl.bind("${mod} + SHIFT + S",           hl.dsp.exec_cmd("pypr toggle spotify")) -- Spotify
         hl.bind("${mod} + M",                   hl.dsp.exec_cmd("noctalia msg panel-toggle session"))
         hl.bind("${mod} + N",                   hl.dsp.exec_cmd("noctalia msg panel-toggle control-center notifications"))
-        hl.bind("${mod} + SHIFT + W",           hl.dsp.exec_cmd("noctalia msg panel-toggle wallpaper"))
+        hl.bind("${mod} + SHIFT + W",           hl.dsp.exec_cmd("noctalia msg panel-toggle local/motionwall:picker"))
         hl.bind("CTRL + ALT + N",               hl.dsp.exec_cmd("${terminal} --class middleFloat -e hx"))
         hl.bind("${mod} + SHIFT + P",           hl.dsp.exec_cmd("${terminal} --class middleFloat --directory /home/rakki -e pi"))
         hl.bind("${mod} + I",                   hl.dsp.window.pin({ action = "toggle" }))

@@ -6,6 +6,14 @@
   nixConfigRoot,
   ...
 }: let
+  motionwall = import ../../../../Projects/motionwall {
+    inherit pkgs;
+    gslapper = inputs.gslapper.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  };
+  localPlugins = pkgs.symlinkJoin {
+    name = "noctalia-local-plugins";
+    paths = [./noctalia-plugins "${motionwall}/share/noctalia-plugins"];
+  };
   communityPlugins = pkgs.fetchFromGitHub {
     owner = "noctalia-dev";
     repo = "community-plugins";
@@ -27,14 +35,15 @@ in {
     pkgs.ddcutil
     pkgs.gst_all_1.gstreamer
     pkgs.socat
-    inputs.gslapper.packages.${pkgs.stdenv.hostPlatform.system}.default
+    motionwall.renderer
+    motionwall
   ];
 
   # Stable paths: Noctalia copies plugin sources into its GUI-owned settings.toml,
   # so raw store paths there would pin stale plugin versions across rebuilds.
   xdg.configFile = {
     "noctalia/plugin-sources/community".source = communityPlugins;
-    "noctalia/plugin-sources/local".source = ./noctalia-plugins;
+    "noctalia/plugin-sources/local".source = localPlugins;
     "noctalia/templates/app-launcher.json".source = ../../../../Projects/appLauncher/theme.json.in;
     "noctalia/templates/hyprland-borders.lua".text = ''
       hl.config({ general = { col = {
@@ -66,7 +75,9 @@ in {
 
   programs.noctalia = {
     enable = true;
-    package = inputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default;
+    package = inputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
+      patches = (old.patches or []) ++ [./patches/noctalia-exclusive-focus.patch];
+    });
     settings = {
       shell = {
         font_family = "Noto Sans";
@@ -197,7 +208,7 @@ in {
             members = ["notifications" "todos" "davemhammer/tailscale:status" "battery"];
           }
         ];
-        end = ["local/pi-usage:bar" "tray" "privacy" "group:hardware-controls" "group:status-tools" "clock"];
+        end = ["local/pi-usage:bar" "local/motionwall:wallpaper" "tray" "privacy" "group:hardware-controls" "group:status-tools" "clock"];
         monitor.dp2 = {
           match = "DP-2";
           position = "bottom";
@@ -313,7 +324,7 @@ in {
         };
       };
       plugins = {
-        enabled = ["davemhammer/tailscale" "dotnetrob/cat" "local/pi-usage"];
+        enabled = ["davemhammer/tailscale" "dotnetrob/cat" "local/pi-usage" "local/motionwall"];
         auto_update = "none";
         source = [
           {
