@@ -299,7 +299,7 @@ ShellRoot {
             anchors.centerIn: parent
             width: Math.min(760, root.width - 48)
             height: Math.min(610, root.height - 48)
-            radius: 24
+            radius: 0
             color: Qt.rgba(0, 0, 0, 0.60)
             border.width: 1
             border.color: launcherPalette.outlineVariant
@@ -323,7 +323,7 @@ ShellRoot {
                     Rectangle {
                         width: 40
                         height: 40
-                        radius: 12
+                        radius: 0
                         color: launcherPalette.surfaceContainer
                         border.color: launcherPalette.outlineVariant
 
@@ -360,7 +360,7 @@ ShellRoot {
                     Rectangle {
                         width: 42
                         height: 28
-                        radius: 8
+                        radius: 0
                         color: launcherPalette.surfaceContainer
                         border.color: launcherPalette.outlineVariant
                         Text {
@@ -376,7 +376,7 @@ ShellRoot {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 60
-                    radius: 16
+                    radius: 0
                     color: launcherPalette.surfaceContainerLow
                     border.width: 1
                     border.color: search.activeFocus ? launcherPalette.primary : launcherPalette.outlineVariant
@@ -481,7 +481,7 @@ ShellRoot {
                             required property var modelData
                             width: sortText.width + 24
                             height: 30
-                            radius: 9
+                            radius: 0
                             color: root.sortMode === modelData.key ? launcherPalette.primaryContainer : "transparent"
                             border.width: 1
                             border.color: root.sortMode === modelData.key ? launcherPalette.primary : launcherPalette.outlineVariant
@@ -510,7 +510,7 @@ ShellRoot {
                     Rectangle {
                         width: favoritesText.width + 26
                         height: 30
-                        radius: 9
+                        radius: 0
                         color: root.favoritesOnly ? launcherPalette.primaryContainer : "transparent"
                         border.width: 1
                         border.color: root.favoritesOnly ? launcherPalette.primary : launcherPalette.outlineVariant
@@ -551,7 +551,7 @@ ShellRoot {
                         required property int index
                         width: list.width
                         height: 56
-                        radius: 14
+                        radius: 0
                         color: index === list.currentIndex ? launcherPalette.primaryContainer : rowMouse.containsMouse ? launcherPalette.surfaceContainerHigh : "transparent"
                         border.width: index === list.currentIndex ? 1 : 0
                         border.color: launcherPalette.primary
@@ -578,7 +578,7 @@ ShellRoot {
                             Rectangle {
                                 width: 40
                                 height: 40
-                                radius: 11
+                                radius: 0
                                 color: launcherPalette.surfaceContainerHigh
                                 border.color: launcherPalette.outlineVariant
 
@@ -631,7 +631,7 @@ ShellRoot {
                                 visible: !root.passwordMode
                                 width: 34
                                 height: 34
-                                radius: 10
+                                radius: 0
                                 color: favoriteMouse.containsMouse ? launcherPalette.surfaceContainerHigh : "transparent"
 
                                 Text {
