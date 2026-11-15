@@ -3,7 +3,6 @@
   pkgs,
   lib,
   inputs,
-  nixConfigRoot,
   ...
 }: let
   motionwall = import ../../../../Projects/motionwall {
@@ -156,8 +155,8 @@ in {
         };
       };
       wallpaper = {
-        directory = "${nixConfigRoot}/assets/wallpapers";
-        default.path = "${nixConfigRoot}/assets/wallpapers/6eaZOze.jpeg";
+        directory = "${config.home.homeDirectory}/Pictures/Wallpapers";
+        default.path = "${config.home.homeDirectory}/Pictures/Wallpapers/6eaZOze.jpeg";
         fill_mode = "crop";
         edge_smoothness = 0.05;
       };

@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  nixConfigRoot,
   ...
 }: let
   themePath = "${config.xdg.stateHome}/noctalia/hyprlock-theme.conf";
@@ -42,7 +41,7 @@ in {
   programs.hyprlock = {
     enable = true;
     settings = {
-      "$lockWallpaper" = "${nixConfigRoot}/assets/wallpapers/6eaZOze.jpeg";
+      "$lockWallpaper" = "${config.home.homeDirectory}/Pictures/Wallpapers/6eaZOze.jpeg";
       "$lockPrimary" = "rgba(bfa16eff)";
       "$lockText" = "rgba(e1e1e1ff)";
       "$lockMuted" = "rgba(e1e1e1bf)";
@@ -62,7 +61,7 @@ in {
       background = [
         {
           monitor = mainMonitor;
-          path = "${nixConfigRoot}/assets/wallpapers/wallhaven-lygzqq.jpg";
+          path = "${config.home.homeDirectory}/Pictures/Wallpapers/wallhaven-lygzqq.jpg";
           blur_passes = 0;
         }
       ];

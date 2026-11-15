@@ -1,13 +1,5 @@
-{pkgs, ...}: let
-  wallpaper = (
-    pkgs.fetchFromGitHub {
-      owner = "OffRakki";
-      repo = "walls-catppuccin-mocha";
-      rev = "master";
-      hash = "sha256-N+MZHSRcwOldS5Ai8B3YfKquKs9oeUW/GkV1iKM5+i8=";
-    }
-    + "/solidBackground.png"
-  );
+{config, ...}: let
+  wallpaper = "${config.home.homeDirectory}/Pictures/Wallpapers/solidBackground.png";
 in {
   services.hyprpaper = {
     enable = true;

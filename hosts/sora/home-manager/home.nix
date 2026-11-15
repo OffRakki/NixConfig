@@ -1,5 +1,6 @@
 {
   inputs,
+  config,
   lib,
   osConfig,
   ...
@@ -25,6 +26,7 @@
   home = {
     username = "rakki";
     homeDirectory = "/home/rakki";
+    file."Pictures/Wallpapers".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/sync/geral/Wallpapers";
     sessionVariables = {
       OPENCODE_SERVER_PASSWORD = "$(cat ${osConfig.sops.secrets.opencodeServerPass.path})";
       OPENCODE_SERVER_USERNAME = "rakki";
