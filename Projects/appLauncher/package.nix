@@ -22,6 +22,7 @@ rustPlatform.buildRustPackage {
   doCheck = true;
   postInstall = ''
     ${lib.getExe python3} tests/integration.py "$out/bin/app-launcher-passwords"
+    ${lib.getExe python3} tests/lifecycle.py "$out/bin/app-launcher"
   '';
   postFixup = ''
     wrapProgram "$out/bin/app-launcher-passwords" \

@@ -6,11 +6,12 @@ After a NixOS/Home Manager rebuild, start the launcher with:
 app-launcher
 ```
 
-The project owns its lifecycle manager. Hyprland preloads one hidden instance, and each call toggles it over IPC. Stale, duplicate, or outdated instances are cleaned up before exactly one current copy starts. Scripts and keybindings must use this command instead of invoking `qs` directly.
+The Rust `app-launcher` binary owns lifecycle management, filesystem locking, typed Quickshell registry parsing, and IPC routing. Hyprland preloads one hidden instance, and each call toggles it over IPC. Stale, duplicate, or outdated instances are cleaned up before exactly one current copy starts. Scripts and keybindings must use this command instead of invoking `qs` directly. QML still owns the UI; the separate Rust password helper retains the credential boundary.
 
-The same lifecycle guarantees apply during source-tree development:
+The same lifecycle guarantees apply during source-tree development. `./launch` is only an exec shim that selects the source QML directory and uses the installed lifecycle binary. To test a newly built manager before activation, set `APP_LAUNCHER_BINARY` to its absolute path:
 
 ```sh
+export APP_LAUNCHER_BINARY=/tmp/app-launcher-target/debug/app-launcher
 ./launch --foreground
 ./launch --hidden
 ./launch --stop
@@ -73,11 +74,13 @@ is still a manual acceptance gate; it was not exercised against running apps.
 The real Qutebrowser instance was likewise not contacted during implementation;
 the userscript transport was exercised with fake processes only.
 
-For source-tree password development, build the helper first and point at its
-unwrapped binary (normal app-only source mode needs no helper):
+For source-tree development, build both Rust binaries first. Point the exec shim
+at the new lifecycle binary; password mode additionally needs the helper's
+unwrapped binary (normal app-only mode does not fetch password context):
 
 ```sh
 CARGO_TARGET_DIR=/tmp/app-launcher-target cargo build --locked --manifest-path Cargo.toml
+export APP_LAUNCHER_BINARY=/tmp/app-launcher-target/debug/app-launcher
 APP_LAUNCHER_PASSWORD_HELPER=/tmp/app-launcher-target/debug/app-launcher-passwords ./launch --passwords
 ```
 
@@ -90,6 +93,7 @@ cargo test --locked --manifest-path Projects/appLauncher/Cargo.toml
 cargo clippy --locked --manifest-path Projects/appLauncher/Cargo.toml --all-targets -- -D warnings
 cargo build --locked --manifest-path Projects/appLauncher/Cargo.toml
 python3 Projects/appLauncher/tests/integration.py "$CARGO_TARGET_DIR/debug/app-launcher-passwords"
+python3 Projects/appLauncher/tests/lifecycle.py "$CARGO_TARGET_DIR/debug/app-launcher"
 bash -n Projects/appLauncher/launch Projects/appLauncher/test-theme
 ```
 
@@ -97,12 +101,12 @@ Optional installed-stack regression checks use a **separate headless Sway**, a
 fresh HOME/runtime/state/cache, fake helper processes, and a disposable cliphist
 DB. They never connect to the existing Wayland clipboard or input service. They
 also run `test-theme` only in that private session, not the desktop. Requirements:
-Sway, Quickshell, wl-clipboard, cliphist, wtype, jq, flock and Python. Compile the
+Sway, Quickshell, wl-clipboard, cliphist, wtype, jq and Python. Compile the
 clip-notify source for the notification assertion, then run:
 
 ```sh
 rustc --edition=2024 hosts/sora/home-manager/modules/clip-notify/src/main.rs -o /tmp/fixture-clip-notify
-python3 Projects/appLauncher/tests/runtime.py /absolute/path/to/sway /tmp/fixture-clip-notify "$CARGO_TARGET_DIR/debug/app-launcher-passwords"
+APP_LAUNCHER_BINARY="$CARGO_TARGET_DIR/debug/app-launcher" python3 Projects/appLauncher/tests/runtime.py /absolute/path/to/sway /tmp/fixture-clip-notify "$CARGO_TARGET_DIR/debug/app-launcher-passwords"
 ```
 
 The optional third argument must be an **unwrapped ELF**: a package wrapper could

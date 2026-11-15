@@ -1,10 +1,12 @@
-{pkgs}:
-pkgs.writeShellApplication {
-  name = "app-launcher";
-  runtimeInputs = [pkgs.coreutils pkgs.jq pkgs.quickshell pkgs.util-linux];
-  text = ''
-    export QUICKSHELL_CONFIG_PATH=${./.}
-    export APP_LAUNCHER_PASSWORD_HELPER=${pkgs.callPackage ./package.nix {}}/bin/app-launcher-passwords
-    ${builtins.readFile ./launch}
-  '';
-}
+{pkgs}: let
+  tools = pkgs.callPackage ./package.nix {};
+in
+  pkgs.runCommand "app-launcher" {
+    nativeBuildInputs = [pkgs.makeWrapper];
+    meta.mainProgram = "app-launcher";
+  } ''
+    makeWrapper ${tools}/bin/app-launcher "$out/bin/app-launcher" \
+      --prefix PATH : ${pkgs.lib.makeBinPath [pkgs.quickshell]} \
+      --set-default QUICKSHELL_CONFIG_PATH ${./.} \
+      --set-default APP_LAUNCHER_PASSWORD_HELPER ${tools}/bin/app-launcher-passwords
+  ''

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Opt-in installed-stack checks in a PRIVATE headless Sway, never the live session.
 Usage: python3 tests/runtime.py /absolute/path/to/sway /absolute/path/to/clip-notify
-Requires qs, wl-copy, wl-paste, cliphist, wtype, jq, flock, and Python on PATH.
+Requires qs, wl-copy, wl-paste, cliphist, wtype, jq, and Python on PATH.
+Set APP_LAUNCHER_BINARY to the unwrapped lifecycle binary when testing a build.
 """
 import json
 import os
@@ -43,6 +44,8 @@ with tempfile.TemporaryDirectory(prefix="password-isolated-runtime-") as tmp:
                XDG_STATE_HOME=str(root / "state"), XDG_CACHE_HOME=str(root / "cache"),
                DBUS_SESSION_BUS_ADDRESS="unix:path=" + str(root / "no-session-bus"),
                WLR_BACKENDS="headless", WLR_RENDERER="pixman", QT_QPA_PLATFORM="wayland")
+    if os.environ.get("APP_LAUNCHER_BINARY"):
+        env["APP_LAUNCHER_BINARY"] = str(Path(os.environ["APP_LAUNCHER_BINARY"]).resolve())
     notifier_log = root / "notifications"
     notify = tools / "notify-send"
     notify.write_text("#!" + sys.executable + "\nimport json,sys\nwith open(" + repr(str(notifier_log)) + ", 'a') as f: f.write(json.dumps(sys.argv[1:])+'\\n')\n")
@@ -241,15 +244,18 @@ ShellRoot {
         assert shells()[0]["config_path"] == str(PROJECT / "shell.qml")
         assert any(p["pid"] == other_pid for p in instances())
         launcher("--stop")
-        foreground_log = open(root / "foreground.log", "w")
-        foreground = subprocess.Popen([str(PROJECT / "launch"), "--passwords", "--path", str(PROJECT)], env=env, stdout=foreground_log, stderr=foreground_log)
-        children.append(foreground)
-        wait(lambda: len(shells()) == 1, "source-path password foreground did not start")
-        assert foreground.poll() is None, "foreground returned prematurely"
-        foreground.terminate()
-        foreground.wait(timeout=5)
-        wait(lambda: not shells(), "foreground termination left shell alive")
-        foreground_log.close()
+        for mode_args in [[], ["--passwords"]]:
+            with open(root / "foreground.log", "w") as foreground_log:
+                foreground = subprocess.Popen([str(PROJECT / "launch"), *mode_args, "--path", str(PROJECT)], env=env, stdout=foreground_log, stderr=foreground_log)
+                children.append(foreground)
+                wait(lambda: len(shells()) == 1, "source-path foreground did not start")
+                foreground_pid = launch_pid()
+                assert foreground.poll() is None, "foreground returned prematurely"
+                launcher("--hidden")  # verifies no inherited/retained lifecycle lock
+                assert launch_pid() == foreground_pid
+                foreground.terminate()
+                foreground.wait(timeout=5)
+                wait(lambda: not shells(), "foreground termination left shell alive")
         print("PASS: cold password start, app/password/hidden repeated routing, foreground source path and shutdown, one unchanged PID, unrelated shell preserved, no metadata persistence/logging or QML runtime errors")
 
         # Existing theme test is safe ONLY because all its lifecycle commands and
