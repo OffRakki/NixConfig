@@ -6,6 +6,7 @@
   privateContextFile,
   apiKeyFile,
 }: let
+  resources = import ../resources.nix {inherit pkgs;};
   browserConfig = pkgs.writeText "mail-browser-config.json" (builtins.toJSON {
     version = 1;
     browser.executablePath = "${pkgs.chromium}/bin/chromium";
@@ -21,11 +22,11 @@
       # Private facts are loaded only after investigation approval, never for public/safe replies.
       contextPaths = [privateContextFile];
       assistantProfile = {
-        personaFile = "${../context.md}";
+        personaFile = "${resources.context}";
         shellPath = "${pkgs.bash}/bin/bash";
         browserConfigFile = "${browserConfig}";
         browserNativeConfigFile = "${nativeBrowserConfig}";
-        skillPaths = ["${../skills}"];
+        skillPaths = ["${resources.skills}"];
         # These integrations expose tools through Pi's guarded (including nested) dispatch.
         # Delegation, scheduling, intercom and general session-control plugins stay out:
         # their child/background effects do not inherit the mail approval ledger.

@@ -5,6 +5,7 @@
   inputs,
   ...
 }: let
+  resources = import ./resources.nix {inherit pkgs;};
   # Keep Pi/REA on a newer Node without rebuilding unrelated Node consumers.
   nodejs = inputs.nixpkgs-node.legacyPackages.${pkgs.stdenv.hostPlatform.system}.nodejs_24;
   piBasePackage = pkgs.pi-coding-agent.override {
@@ -180,7 +181,7 @@ in {
   # Keep custom agents Nix-sourced while leaving the runtime directory writable
   # for Pi's agent-management commands.
   home.activation.syncPiCustomAgents = ''
-    src=${./agents}
+    src=${resources.agents}
     dst="$HOME/.pi/agent/agents"
     manifest="$dst/.nix-managed-custom-agents"
 
@@ -190,7 +191,7 @@ in {
     mkdir -p "$dst"
 
     tmp="$(${pkgs.coreutils}/bin/mktemp)"
-    (cd "$src" && ${pkgs.findutils}/bin/find . -type f | ${pkgs.gnused}/bin/sed 's#^\./##' | ${pkgs.coreutils}/bin/sort) > "$tmp"
+    (cd "$src" && ${pkgs.findutils}/bin/find -L . -type f | ${pkgs.gnused}/bin/sed 's#^\./##' | ${pkgs.coreutils}/bin/sort) > "$tmp"
 
     if [ -f "$manifest" ]; then
       while IFS= read -r rel; do
@@ -216,7 +217,7 @@ in {
   programs.pi-coding-agent = {
     enable = true;
     package = piPackage;
-    context = ./context.md;
+    context = resources.context;
     # Node provides npx for the Obsidian MCP server.
     # agent-browser is the upstream binary used by pi-agent-browser-native;
     # Chromium is the isolated automation browser it drives via CDP.
@@ -379,8 +380,8 @@ in {
         };
       };
     };
-    ".pi/agent/skills".source = ./skills;
-    ".pi/agent/prompts".source = ./prompts;
+    ".pi/agent/skills".source = resources.skills;
+    ".pi/agent/prompts".source = resources.prompts;
     ".pi/agent/themes".source = ./themes;
     # Browser automation config (pi-agent-browser-native)
     ".pi/config/pi-agent-browser-native/config.json".text = builtins.toJSON {

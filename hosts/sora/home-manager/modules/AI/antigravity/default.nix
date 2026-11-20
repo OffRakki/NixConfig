@@ -25,6 +25,7 @@
     allowNonWorkspaceAccess = false;
   });
 
+  resources = import ../pi/resources.nix {inherit pkgs;};
   workflows = import ./workflows.nix {inherit lib pkgs;};
 
   launcher = pkgs.writeShellScriptBin "agy" ''
@@ -47,7 +48,7 @@ in {
     (lib.mkIf cfg.enable {
       home.packages = [launcher];
       home.file = {
-        ".gemini/config/AGENTS.md".source = ../pi/context.md;
+        ".gemini/config/AGENTS.md".source = resources.context;
         ".gemini/config/plugins.json".text = builtins.toJSON {
           entries = [{path = toString workflows;}];
         };

@@ -35,12 +35,11 @@ paths under `~/.pi/agent/` update only after Home Manager activation.
 
 When adding a Nix-managed Pi skill or agent:
 
-1. Put the source under `hosts/sora/home-manager/modules/AI/pi/skills/` or `agents/`.
+1. Put Pi-only skills in `hosts/sora/home-manager/modules/AI/pi/skills/`, portable skills in `hosts/sora/home-manager/modules/AI/shared/skills/`, and Pi agent adapters in `hosts/sora/home-manager/modules/AI/pi/agents/`.
 2. Add a routing line to `context.md` only if it should be proactively loaded.
 3. Build/check before claiming it is available at runtime.
 
-`pi.nix` already exposes the whole skills directory and synchronizes custom
-agents; do not add per-item `home.file` entries.
+`hosts/sora/home-manager/modules/AI/pi/resources.nix` composes the installed skill and agent trees. Register new custom agents there; do not add per-item `home.file` entries. Antigravity has an independent skill allowlist in `hosts/sora/home-manager/modules/AI/antigravity/workflows.nix`.
 
 Load `pi-tools` for the installed package/tool inventory.
 

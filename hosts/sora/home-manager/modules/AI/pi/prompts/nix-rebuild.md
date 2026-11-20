@@ -7,4 +7,3 @@ Perform a full NixOS rebuild for the current host:
 2. Build first: `nixos-rebuild build --flake /home/rakki/Projects/NixConfig`
 3. If build succeeds, spawn kitty to apply: `kitty --directory /home/rakki/Projects/NixConfig -e sh -c 'nh os switch /home/rakki/Projects/NixConfig || exec bash'`
 
-Important: always build first, then apply. Never skip the build step.

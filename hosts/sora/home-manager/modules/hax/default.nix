@@ -9,7 +9,7 @@
     hax-tools = ./skills/hax-tools;
     browser = ./skills/browser;
     nix = ./skills/nix;
-    jujutsu = ../AI/pi/skills/jujutsu;
+    jujutsu = ../AI/shared/skills/jujutsu;
   };
   hax = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.hax;
   smokeCheck = pkgs.runCommand "hax-smoke-check" {} ''

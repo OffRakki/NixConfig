@@ -16,14 +16,13 @@ Check the display server before choosing a tool:
 
 | Environment | Full screen | Focused monitor | Region | Browser page |
 |---|---|---|---|---|
-| Wayland + Hyprland | `grim` | `grim -o $(hyprctl monitors -j \| jq -r '.[] \| select(.focused) \| .name')` | `slurp \| grim -g -` | Use `browser` skill |
+| Wayland + Hyprland | `grim` | `grim -o $(hyprctl monitors -j \| jq -r '.[] \| select(.focused) \| .name')` | `slurp \| grim -g -` | {{browserTable}} |
 | Wayland + wlroots | `grim` | `grim -o <output>` | `slurp \| grim -g -` | Same |
 | X11 | `import -window root` | `import -window root -crop <geo>` | `import` (click-drag) | Same |
 
 ### Browser screenshots
 
-When the target is a **web page** (not the desktop/app), load the `browser`
-skill and use `agent_browser` instead of grim. It can capture JavaScript-rendered
+When the target is a **web page** (not the desktop/app), {{browserInstructions}} instead of grim. It can capture JavaScript-rendered
 content and full-page screenshots. Pair the result with the `image-analyzer`
 subagent when visual analysis is needed.
 
@@ -32,26 +31,26 @@ subagent when visual analysis is needed.
 **Full screen (Wayland):**
 
 ```bash
-nix run nixpkgs#grim -- /tmp/pi/screenshot.png
+nix run nixpkgs#grim -- {{scratch}}screenshot.png
 ```
 
 **Single monitor (Hyprland):**
 
 ```bash
 monitor=$(hyprctl monitors -j | jq -r '.[] | select(.focused) | .name')
-nix run nixpkgs#grim -- -o "$monitor" /tmp/pi/screenshot.png
+nix run nixpkgs#grim -- -o "$monitor" {{scratch}}screenshot.png
 ```
 
 **Region select (Wayland):**
 
 ```bash
-nix run nixpkgs#slurp -- | nix run nixpkgs#grim -- -g - /tmp/pi/screenshot.png
+nix run nixpkgs#slurp -- | nix run nixpkgs#grim -- -g - {{scratch}}screenshot.png
 ```
 
 **Full screen (X11):**
 
 ```bash
-nix run nixpkgs#imagemagick -- import -window root /tmp/pi/screenshot.png
+nix run nixpkgs#imagemagick -- import -window root {{scratch}}screenshot.png
 ```
 
 ### Viewing
@@ -59,13 +58,13 @@ nix run nixpkgs#imagemagick -- import -window root /tmp/pi/screenshot.png
 Open with the default image viewer:
 
 ```bash
-handlr open /tmp/pi/screenshot.png
+handlr open {{scratch}}screenshot.png
 ```
 
 ### Analysis
 
 After taking a screenshot, use the `image-analyzer` subagent to describe the image:
 
-Use `subagent` with the configured `image-analyzer` agent and pass the image path.
+Use `{{delegate}}` with the configured `image-analyzer` agent and pass the image path.
 
 Note: the image-analyzer may hallucinate visual details. Treat its descriptions as approximate.
