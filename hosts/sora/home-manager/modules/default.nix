@@ -3,6 +3,7 @@
     ./herdr.nix
     ./hax
     ./pi
+    ./antigravity.nix
     ./obs.nix
     ./steam/steam.nix
     ./steam/millennium.nix
