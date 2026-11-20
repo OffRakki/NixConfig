@@ -2,8 +2,7 @@
   imports = [
     ./herdr.nix
     ./hax
-    ./pi
-    ./antigravity.nix
+    ./AI
     ./obs.nix
     ./steam/steam.nix
     ./steam/millennium.nix

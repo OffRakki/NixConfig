@@ -30,12 +30,12 @@ and distinguish necessary configuration from redundant copies of defaults.
 ## Pi module changes
 
 Pi packages, custom extensions, skills, prompts, themes, custom agents, and model
-providers are declared in `hosts/sora/home-manager/modules/pi/pi.nix`. Runtime
+providers are declared in `hosts/sora/home-manager/modules/AI/pi/pi.nix`. Runtime
 paths under `~/.pi/agent/` update only after Home Manager activation.
 
 When adding a Nix-managed Pi skill or agent:
 
-1. Put the source under `hosts/sora/home-manager/modules/pi/skills/` or `agents/`.
+1. Put the source under `hosts/sora/home-manager/modules/AI/pi/skills/` or `agents/`.
 2. Add a routing line to `context.md` only if it should be proactively loaded.
 3. Build/check before claiming it is available at runtime.
 

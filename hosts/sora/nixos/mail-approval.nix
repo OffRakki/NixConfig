@@ -3,7 +3,7 @@
   pkgs,
   ...
 }: let
-  source = ../home-manager/modules/pi/mail;
+  source = ../home-manager/modules/AI/pi/mail;
   credentials = "/var/lib/mail-approval-credentials";
   login = pkgs.writeShellScriptBin "mail-approval-login" ''
     printf '%s\n' 'Username: lucky' 'URL: http://localhost:8765' 'Password: your mailApprovalPass value in SOPS secrets.yaml.'

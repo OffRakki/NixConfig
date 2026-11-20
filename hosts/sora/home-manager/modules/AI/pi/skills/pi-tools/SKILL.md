@@ -5,7 +5,7 @@ description: Use when Lucky asks about Pi runtime tools, extensions, packages, p
 
 # Pi Tools & Packages
 
-Pi is managed from `~/Projects/NixConfig/hosts/sora/home-manager/modules/pi/`.
+Pi is managed from `~/Projects/NixConfig/hosts/sora/home-manager/modules/AI/pi/`.
 Runtime files under `~/.pi/agent/` are outputs, not sources; never edit them.
 
 ## Source of truth

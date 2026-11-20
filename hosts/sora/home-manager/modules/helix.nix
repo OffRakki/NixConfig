@@ -4,7 +4,7 @@
   nixConfigRoot,
   ...
 }: let
-  llmSuggestLsp = pkgs.callPackage ./pi/llm-suggest-lsp.nix {};
+  llmSuggestLsp = pkgs.callPackage ./AI/pi/llm-suggest-lsp.nix {};
   flake = ''(builtins.getFlake "path:${nixConfigRoot}")'';
   # Helix has no global-language-servers setting; attach Pi's quickfix server explicitly.
   language = name: servers: {

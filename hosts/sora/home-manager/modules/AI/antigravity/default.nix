@@ -25,7 +25,7 @@
     allowNonWorkspaceAccess = false;
   });
 
-  workflows = import ./antigravity-workflows.nix {inherit lib pkgs;};
+  workflows = import ./workflows.nix {inherit lib pkgs;};
 
   launcher = pkgs.writeShellScriptBin "agy" ''
     export AGY_CLI_DISABLE_AUTO_UPDATE=true
@@ -47,7 +47,7 @@ in {
     (lib.mkIf cfg.enable {
       home.packages = [launcher];
       home.file = {
-        ".gemini/config/AGENTS.md".source = ./pi/context.md;
+        ".gemini/config/AGENTS.md".source = ../pi/context.md;
         ".gemini/config/plugins.json".text = builtins.toJSON {
           entries = [{path = toString workflows;}];
         };

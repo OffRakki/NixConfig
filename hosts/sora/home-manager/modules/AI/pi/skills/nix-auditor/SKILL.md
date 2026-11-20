@@ -16,7 +16,7 @@ Cover:
 3. duplicate packages/options and redundant defaults
 4. overlays or packages defined but unused
 5. plaintext credential patterns and unsafe secret reads, without reproducing values
-6. Pi runtime configuration when the audit touches `modules/pi/`
+6. Pi runtime configuration when the audit touches `modules/AI/pi/`
 
 Confirm every finding with a repository-wide search before reporting it. Return
 an inline report with Summary, Unused/Redundant, Improvement Opportunities,

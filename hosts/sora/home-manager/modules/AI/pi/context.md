@@ -155,7 +155,7 @@ add the thing to the appropriate skill or context file. Non-negotiable.
 
 # SOPS secrets
 
-Private info: `~/Projects/NixConfig/hosts/sora/home-manager/modules/pi/private.yaml`
+Private info: `~/Projects/NixConfig/hosts/sora/home-manager/modules/AI/pi/private.yaml`
 View: `sops --decrypt <path>`, Edit: `sops <path>`.
 Keys: `lucky-info` (→ APPEND_SYSTEM.md), `skillFireflyPrivate`, `skillLumisPrivate`.
 When asked for private info, read APPEND_SYSTEM.md or decrypt `lucky-info`.
