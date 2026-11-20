@@ -9,22 +9,22 @@
     "@jamesjfoong/pi-ollama": "1.0.3",
     "@juanibiapina/pi-extension-settings": "0.10.0",
     "@juicesharp/rpiv-ask-user-question": "2.15.0",
-    "billion-context": "0.1.213",
-    "pi-agent-browser-native": "0.9.18",
-    "pi-codex-image-gen": "0.3.1",
+    "billion-context": "0.1.216",
+    "pi-agent-browser-native": "0.9.23",
+    "pi-codex-image-gen": "0.3.2",
     "pi-context-view": "0.8.4",
     "pi-intercom": "0.18.1",
     "pi-invisible-continue": "0.3.19",
     "pi-multi-account": "1.28.1",
     "pi-powerline": "0.11.2",
-    "pi-subagents": "0.88.0",
-    "pi-web-access": "0.47.0",
-    "rea-agents": "6.8.0",
+    "pi-subagents": "0.89.1",
+    "pi-web-access": "0.48.0",
+    "rea-agents": "6.10.1",
     "rinco-pi-sakura": "1.0.2"
   },
   "overrides": {
     "glob": "14.0.4",
-    "minimatch": "11.0.5",
+    "minimatch": "11.0.9",
     "rea-agents": {
       "zod": "4.6.7"
     }

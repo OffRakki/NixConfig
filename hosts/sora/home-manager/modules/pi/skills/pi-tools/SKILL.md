@@ -171,13 +171,15 @@ Keep REA on that same runtime. Do not override `pkgs.nodejs_24` globally: doing
 so also rebuilds unrelated consumers, including the llama.cpp web UI.
 REA 6.8 requires Node >=24.22.1 on the 24.x line; browser-native 0.8–0.9
 requires Node >=24.21.0. Check current engine constraints before changing pins.
+The browser extension is held at 0.9.23: newer releases require Node >=24.22.3,
+while the pinned Nix Node 24 package provides 24.22.2.
 REA is pinned in the same npm closure and registered in Nix-managed `mcp.json`.
 Its `rea` wrapper uses the same Node as Pi and includes procps; do not run `rea setup` or `rea update`
 to rewrite Nix-owned installation/configuration. Load `reverse-engineer-anything`
 for shipped-artifact investigations, not ordinary source-code exploration.
-Discover its `mcp__rea` tools through codemode; its 229 tools are not declared
+Discover its `mcp__rea` tools through codemode; its 263 tools are not declared
 up front. Its output-schema profile accepts `full` or `off`, not the `compact`
-option documented on repository main; use `off` for 6.8.0.
+option documented on repository main; use `off` for 6.10.1.
 Native decompilers and optional instrumentation engines are not auto-installed.
 The npm overrides update REA's vulnerable Zod/glob/minimatch pins; retain them
 until upstream pins pass audit without overrides. `tests/rea.smoke.mjs` checks

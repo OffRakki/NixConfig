@@ -39,14 +39,14 @@
     },
     {
       "name": "billion-context",
-      "version": "0.1.213",
+      "version": "0.1.216",
       "source": "npm",
       "trust": "pinned-third-party",
       "capabilities": ["extension", "tools", "network", "filesystem", "process", "session-control"]
     },
     {
       "name": "pi-agent-browser-native",
-      "version": "0.9.18",
+      "version": "0.9.23",
       "source": "npm",
       "trust": "pinned-third-party",
       "capabilities": [
@@ -60,7 +60,7 @@
     },
     {
       "name": "pi-codex-image-gen",
-      "version": "0.3.1",
+      "version": "0.3.2",
       "source": "npm",
       "trust": "pinned-third-party",
       "capabilities": ["extension", "tool", "network", "filesystem", "credentials"]
@@ -102,7 +102,7 @@
     },
     {
       "name": "pi-subagents",
-      "version": "0.88.0",
+      "version": "0.89.1",
       "source": "npm",
       "trust": "pinned-third-party",
       "capabilities": [
@@ -115,14 +115,14 @@
     },
     {
       "name": "pi-web-access",
-      "version": "0.47.0",
+      "version": "0.48.0",
       "source": "npm",
       "trust": "pinned-third-party",
       "capabilities": ["extension", "tools", "network", "filesystem"]
     },
     {
       "name": "rea-agents",
-      "version": "6.8.0",
+      "version": "6.10.1",
       "source": "npm",
       "trust": "pinned-third-party",
       "capabilities": ["cli", "mcp", "skills", "filesystem", "process", "network", "browser", "runtime-inspection"]

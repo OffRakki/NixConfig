@@ -1,12 +1,10 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { once } from "node:events";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { createRequire } from "node:module";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
-import { pathToFileURL } from "node:url";
 
 const [entry] = process.argv.slice(2);
 assert.ok(entry, "Usage: node rea.smoke.mjs <rea entry script>");
@@ -15,7 +13,7 @@ const home = mkdtempSync(join(tmpdir(), "rea-smoke-"));
 const env = { HOME: home, PATH: process.env.PATH, REA_MCP_OUTPUT_SCHEMA_PROFILE: "off" };
 const cli = spawnSync(process.execPath, [entry, "--version"], { cwd: home, env, encoding: "utf8", timeout: 30000 });
 assert.equal(cli.status, 0, cli.stderr);
-assert.equal(cli.stdout.trim(), "6.8.0");
+assert.equal(cli.stdout.trim(), "6.10.1");
 const child = spawn(process.execPath, [entry, "mcp"], { cwd: home, env, stdio: ["pipe", "pipe", "pipe"] });
 const exited = once(child, "exit");
 let stderr = "";
@@ -61,10 +59,10 @@ try {
     protocolVersion: "2025-11-25", capabilities: {}, clientInfo: { name: "pi-rea-smoke", version: "1" },
   });
   assert.equal(initialized.serverInfo.name, "rea");
-  assert.equal(initialized.serverInfo.version, "6.8.0");
+  assert.equal(initialized.serverInfo.version, "6.10.1");
   child.stdin.write(JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" }) + "\n");
   const { tools } = await request("tools/list");
-  assert.equal(tools.length, 229);
+  assert.equal(tools.length, 263);
   assert.ok(tools.every(tool => !tool.outputSchema), "Output schemas must stay omitted");
   assert.equal((await call("inspect_analysis_settings", {})).scope, "rea-runtime");
 
@@ -75,15 +73,23 @@ try {
   writeFileSync(model, Buffer.concat([size, header, Buffer.alloc(4)]));
   assert.match(JSON.stringify(await call("inspect_model_artifact", { path: model, detail: "complete" })), /fixture_tensor/);
 
-  // Exercise ASAR/glob overrides and the owned JavaScript worker without executing the target.
-  const app = join(home, "fixture-app");
-  mkdirSync(app);
-  writeFileSync(join(app, "package.json"), JSON.stringify({ name: "rea-fixture", main: "main.js" }));
-  writeFileSync(join(app, "main.js"), "exports.fixtureSum = (a, b) => a + b;\n");
-  const require = createRequire(pathToFileURL(entry));
-  const asar = await import(pathToFileURL(require.resolve("@electron/asar")).href);
+  // REA now owns its ASAR reader rather than depending on @electron/asar.
+  // Encode a tiny ASAR fixture (two Pickle headers, then file bytes).
+  const manifest = Buffer.from(JSON.stringify({ name: "rea-fixture", main: "main.js" }));
+  const source = Buffer.from("exports.fixtureSum = (a, b) => a + b;\n");
+  const listing = Buffer.from(JSON.stringify({ files: {
+    "package.json": { size: manifest.length, offset: "0" },
+    "main.js": { size: source.length, offset: String(manifest.length) },
+  } }));
+  const pickle = Buffer.alloc(8 + Math.ceil(listing.length / 4) * 4);
+  pickle.writeUInt32LE(pickle.length - 4, 0);
+  pickle.writeUInt32LE(listing.length, 4);
+  listing.copy(pickle, 8);
+  const prefix = Buffer.alloc(8);
+  prefix.writeUInt32LE(4, 0);
+  prefix.writeUInt32LE(pickle.length, 4);
   const archive = join(home, "fixture.asar");
-  await asar.createPackage(app, archive);
+  writeFileSync(archive, Buffer.concat([prefix, pickle, manifest, source]));
   const analysis = await call("analyze_javascript_application", {
     input_path: archive, detail: "summary", max_heap_mb: 256, analysis_timeout_ms: 30000,
   });
@@ -92,7 +98,7 @@ try {
   assert.equal(summary.statistics.parsed_javascript_files, 1);
   assert.equal(summary.statistics.parse_failures, 0);
   assert.equal(summary.coverage.application.status, "complete");
-  console.log("PASS: REA CLI, 229 MCP tools, runtime settings, model inspection, ASAR/JavaScript analysis; no target execution.");
+  console.log("PASS: REA CLI, 263 MCP tools, runtime settings, model inspection, ASAR/JavaScript analysis; no target execution.");
 } finally {
   child.stdin.end();
   const timer = setTimeout(() => child.kill("SIGKILL"), 10000);

@@ -11,19 +11,19 @@
     buildNpmPackage = pkgs.buildNpmPackage.override {inherit nodejs;};
   };
   piPackage = piBasePackage.overrideAttrs (finalAttrs: _: {
-    version = "1.5.2";
+    version = "1.6.0";
     src = pkgs.fetchurl {
       url = "https://github.com/earendil-works/pi/releases/download/v${finalAttrs.version}/pi-${finalAttrs.version}-source.tar.gz";
-      hash = "sha256-2hS3Ll1nSVm2T8VB5KkkGsn836JDQxR5EZ0+21mLIjE=";
+      hash = "sha256-FFGeKI6E5xNimyILtq3mgY4y1P8j8gX9gKfMSd7cQT4=";
     };
     npmDeps = pkgs.fetchNpmDeps {
       name = "${finalAttrs.pname}-${finalAttrs.version}-npm-deps";
       inherit (finalAttrs) src;
-      hash = "sha256-uHehffbEB2uU9U9uSpfWojzxvQyqeicbh/esCwk4neQ=";
+      hash = "sha256-V7fRy44X50tqfFewWQ/k5UjvUt+AoMOZkTw/v0bib6o=";
     };
     modelData = pkgs.fetchurl {
       url = "https://registry.npmjs.org/@earendil-works/pi-ai/-/pi-ai-${finalAttrs.version}.tgz";
-      hash = "sha256-1XFe+oNMI7/fEKBCtJ307hacyZAAvxbXmY+rLVM7Rfg=";
+      hash = "sha256-1oMS7FdLyVnLf+4m2k9IdtBnrtm7vnbodjWeYNIpR0c=";
     };
     buildPhase = ''
       runHook preBuild
