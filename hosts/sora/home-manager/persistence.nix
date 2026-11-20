@@ -28,6 +28,10 @@
     ".config/OpenRGB"
     ".cache/nix-index"
     {
+      directory = ".config/gh";
+      mode = "0700";
+    }
+    {
       directory = ".ssh";
       mode = "0700";
     }

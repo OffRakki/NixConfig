@@ -97,6 +97,7 @@
     nixd
     evil-helix
     curl
+    gh
     wireplumber
     wl-clipboard-rs
     wl-clip-persist
