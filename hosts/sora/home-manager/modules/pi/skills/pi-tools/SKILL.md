@@ -77,15 +77,15 @@ shell injection through these arguments, not prompt injection or misleading repl
 
 ## Subscription-first OpenAI failover
 
-`pi.nix` keeps `openai-codex/gpt-6.1-sol` as the startup default and activates
+`pi.nix` keeps `openai-codex/gpt-6.2-sol` as the startup default and activates
 a writable `provider-failover.json` restricted to that subscription route and
-`openai/gpt-6.1-sol`. OpenAI API credentials resolve from the existing SOPS
+`openai/gpt-6.2-sol`. OpenAI API credentials resolve from the existing SOPS
 secret; never paste keys into source or account config.
 Automatic discovery and child proxy publication are disabled to avoid unrelated
 paid routes and extension rewrites of Nix-managed model configuration.
 API fallback is deliberately authorized, but subscription recovery does not
 automatically switch a healthy API session back. Use
-`/multi-account switch openai-codex/gpt-6.1-sol` after the reset;
+`/multi-account switch openai-codex/gpt-6.2-sol` after the reset;
 `/multi-account status` and `/multi-account limits refresh` inspect routing/quota.
 Fresh sessions start on the subscription; resumed sessions retain their route.
 Provider spending limits must be managed separately; this extension is not a

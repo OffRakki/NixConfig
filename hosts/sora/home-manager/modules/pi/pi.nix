@@ -172,8 +172,8 @@ in {
       # Avoid awaited quota-network probes at startup; manual limits refresh still works.
       showUsage = false;
       fallbacks = [
-        "openai-codex/gpt-6.1-sol"
-        "openai/gpt-6.1-sol"
+        "openai-codex/gpt-6.2-sol"
+        "openai/gpt-6.2-sol"
       ];
     }}'
   '';
@@ -234,7 +234,7 @@ in {
       enableInstallTelemtry = false;
       enableAnalytics = false;
       defaultProvider = "openai-codex";
-      defaultModel = "gpt-6.1-sol";
+      defaultModel = "gpt-6.2-sol";
       defaultThinkingLevel = "medium";
       cacheWarming = "idle";
       showCacheMissNotices = true;

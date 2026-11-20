@@ -28,7 +28,7 @@ globalThis.fetch = async () => {
   fetches++;
   return new Response("{}", { status: 503 });
 };
-const routes = ["openai-codex/gpt-6.1-sol", "openai/gpt-6.1-sol"];
+const routes = ["openai-codex/gpt-6.2-sol", "openai/gpt-6.2-sol"];
 writeFileSync(join(agentDir, "provider-failover.json"), JSON.stringify({
   enabled: true, autoContinue: false, autoDiscover: false,
   autoDiscoverModels: false, childProxy: false, antigravitySubscription: false,
@@ -46,7 +46,7 @@ const { createAgentSession, DefaultResourceLoader, SessionManager, SettingsManag
   await import(pathToFileURL(join(host, "dist/index.js")).href);
 const settingsManager = SettingsManager.inMemory({
   packages: [join(closure, "node_modules/pi-multi-account")],
-  defaultProvider: "openai-codex", defaultModel: "gpt-6.1-sol",
+  defaultProvider: "openai-codex", defaultModel: "gpt-6.2-sol",
   enableAnalytics: false, enableInstallTelemtry: false,
 });
 const resourceLoader = new DefaultResourceLoader({
@@ -60,7 +60,7 @@ const { session } = await createAgentSession({
 });
 try {
   for (const provider of ["openai-codex", "openai"])
-    assert.ok(session.modelRuntime.getModel(provider, "gpt-6.1-sol"), `Missing ${provider}/gpt-6.1-sol`);
+    assert.ok(session.modelRuntime.getModel(provider, "gpt-6.2-sol"), `Missing ${provider}/gpt-6.2-sol`);
   const errors = [];
   await session.bindExtensions({ onError: error => errors.push(error) });
   assert.equal(fetches, 0, "Startup must not wait on quota-network probes");
@@ -70,7 +70,7 @@ try {
   await session.extensionRunner.emit({
     type: "message_end",
     message: {
-      role: "assistant", provider: "openai-codex", model: "gpt-6.1-sol",
+      role: "assistant", provider: "openai-codex", model: "gpt-6.2-sol",
       api: "openai-codex-responses", content: [],
       usage: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, totalTokens: 0,
         cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 } },
@@ -79,8 +79,8 @@ try {
     },
   });
   assert.equal(session.model.provider, "openai", "Quota refusal must switch to API");
-  assert.equal(session.model.id, "gpt-6.1-sol");
-  await command.handler("switch openai-codex/gpt-6.1-sol", session.extensionRunner.createContext());
+  assert.equal(session.model.id, "gpt-6.2-sol");
+  await command.handler("switch openai-codex/gpt-6.2-sol", session.extensionRunner.createContext());
   assert.equal(session.model.provider, "openai-codex", "Manual return must work");
   const beforeRefresh = fetches;
   await command.handler("limits refresh", session.extensionRunner.createContext());
