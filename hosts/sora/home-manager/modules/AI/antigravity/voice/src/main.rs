@@ -4,6 +4,7 @@
 mod acp;
 mod audio;
 mod models;
+mod pi;
 mod sherpa;
 mod speech;
 mod stt;
@@ -22,6 +23,7 @@ use crossterm::terminal::{
     EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode,
 };
 use models::{resolve_models, setup_models};
+use pi::PiClient;
 use ratatui::Terminal;
 use ratatui::backend::CrosstermBackend;
 use sherpa::{KokoroTts, SileroVad, VadOptions};
@@ -33,12 +35,18 @@ use std::sync::{Arc, Mutex, mpsc};
 use std::thread;
 use std::time::{Duration, Instant};
 use stt::WhisperStt;
-use tui::{AgentStatus, AppState, MicMode, ModalState, Role};
+use tui::{AgentStatus, AppState, MicMode, ModalState, Role, RouterBackend};
 
 #[derive(Clone, Copy, ValueEnum)]
 enum CliMode {
     Vad,
     Ptt,
+}
+
+#[derive(Clone, Copy, ValueEnum)]
+enum CliBackend {
+    Agy,
+    Pi,
 }
 
 #[derive(Parser)]
@@ -51,6 +59,10 @@ struct Cli {
     /// Download required local models (Silero VAD, Kokoro-82M int8, Whisper small-q5_1) and exit
     #[arg(long)]
     setup_models: bool,
+
+    /// Initial agent backend to route prompts to (switchable live with `r`)
+    #[arg(long, value_enum, default_value_t = CliBackend::Agy)]
+    backend: CliBackend,
 
     /// Initial microphone trigger mode (hybrid: switchable anytime with `v` or `Space`)
     #[arg(long, value_enum, default_value_t = CliMode::Vad)]
@@ -139,7 +151,175 @@ enum AppEvent {
     TtsStarted,
     TtsFinished,
     TtsError(String),
-    Acp(AcpEvent),
+    Backend(RouterBackend, AcpEvent),
+}
+
+struct BackendRouter {
+    active: RouterBackend,
+    agy: Option<AcpClient>,
+    pi: Option<PiClient>,
+    agy_model: String,
+    pi_model: String,
+    agy_usage: (u64, u64),
+    pi_usage: (u64, u64),
+    cwd: PathBuf,
+    agy_model_arg: String,
+    agy_effort_arg: String,
+    skip_permissions: bool,
+    app_tx: mpsc::Sender<AppEvent>,
+}
+
+impl BackendRouter {
+    fn new(
+        initial: RouterBackend,
+        cwd: PathBuf,
+        agy_model_arg: String,
+        agy_effort_arg: String,
+        skip_permissions: bool,
+        app_tx: mpsc::Sender<AppEvent>,
+    ) -> Result<Self> {
+        let mut router = Self {
+            active: initial,
+            agy: None,
+            pi: None,
+            agy_model: agy_model_arg.clone(),
+            pi_model: "pi rpc".to_string(),
+            agy_usage: (0, 0),
+            pi_usage: (0, 0),
+            cwd,
+            agy_model_arg,
+            agy_effort_arg,
+            skip_permissions,
+            app_tx,
+        };
+        router.ensure_started(initial)?;
+        Ok(router)
+    }
+
+    fn ensure_started(&mut self, target: RouterBackend) -> Result<()> {
+        match target {
+            RouterBackend::Agy if self.agy.is_none() => {
+                let (tx, rx) = mpsc::channel::<AcpEvent>();
+                let client = AcpClient::start(
+                    &self.cwd,
+                    Some(self.agy_model_arg.as_str()),
+                    Some(self.agy_effort_arg.as_str()),
+                    self.skip_permissions,
+                    tx,
+                )?;
+                let app_tx = self.app_tx.clone();
+                thread::spawn(move || {
+                    while let Ok(ev) = rx.recv() {
+                        if app_tx
+                            .send(AppEvent::Backend(RouterBackend::Agy, ev))
+                            .is_err()
+                        {
+                            break;
+                        }
+                    }
+                });
+                self.agy = Some(client);
+            }
+            RouterBackend::Pi if self.pi.is_none() => {
+                let (tx, rx) = mpsc::channel::<AcpEvent>();
+                let client = PiClient::start(&self.cwd, tx)?;
+                let app_tx = self.app_tx.clone();
+                thread::spawn(move || {
+                    while let Ok(ev) = rx.recv() {
+                        if app_tx
+                            .send(AppEvent::Backend(RouterBackend::Pi, ev))
+                            .is_err()
+                        {
+                            break;
+                        }
+                    }
+                });
+                self.pi = Some(client);
+            }
+            _ => {}
+        }
+        Ok(())
+    }
+
+    fn switch_to(&mut self, target: RouterBackend) -> Result<()> {
+        self.ensure_started(target)?;
+        self.active = target;
+        Ok(())
+    }
+
+    fn active_model_label(&self) -> String {
+        match self.active {
+            RouterBackend::Agy => self.agy_model.clone(),
+            RouterBackend::Pi => self.pi_model.clone(),
+        }
+    }
+
+    fn active_usage(&self) -> (u64, u64) {
+        match self.active {
+            RouterBackend::Agy => self.agy_usage,
+            RouterBackend::Pi => self.pi_usage,
+        }
+    }
+
+    fn record_model(&mut self, backend: RouterBackend, model: String) {
+        match backend {
+            RouterBackend::Agy => self.agy_model = model,
+            RouterBackend::Pi => self.pi_model = model,
+        }
+    }
+
+    fn record_usage(&mut self, backend: RouterBackend, used: u64, size: u64) {
+        match backend {
+            RouterBackend::Agy => self.agy_usage = (used, size),
+            RouterBackend::Pi => self.pi_usage = (used, size),
+        }
+    }
+
+    fn send_prompt(&self, text: &str) -> Result<()> {
+        match self.active {
+            RouterBackend::Agy => self
+                .agy
+                .as_ref()
+                .context("agy backend not connected")?
+                .send_prompt(text),
+            RouterBackend::Pi => self
+                .pi
+                .as_ref()
+                .context("pi backend not connected")?
+                .send_prompt(text),
+        }
+    }
+
+    fn cancel(&self) -> Result<()> {
+        match self.active {
+            RouterBackend::Agy => {
+                if let Some(c) = &self.agy {
+                    c.cancel()?;
+                }
+            }
+            RouterBackend::Pi => {
+                if let Some(c) = &self.pi {
+                    c.cancel()?;
+                }
+            }
+        }
+        Ok(())
+    }
+
+    fn reply_modal(&self, rpc_id: serde_json::Value, option_id: Option<&str>) -> Result<()> {
+        match self.active {
+            RouterBackend::Agy => self
+                .agy
+                .as_ref()
+                .context("agy backend not connected")?
+                .reply_permission(rpc_id, option_id),
+            RouterBackend::Pi => self
+                .pi
+                .as_ref()
+                .context("pi backend not connected")?
+                .reply_ui(rpc_id, option_id),
+        }
+    }
 }
 
 enum TtsCommand {
@@ -213,29 +393,26 @@ fn main() -> Result<()> {
     };
 
     let (app_tx, app_rx) = mpsc::channel::<AppEvent>();
-    let (acp_tx, acp_rx) = mpsc::channel::<AcpEvent>();
+    let initial_backend = match cli.backend {
+        CliBackend::Agy => RouterBackend::Agy,
+        CliBackend::Pi => RouterBackend::Pi,
+    };
 
-    eprintln!(
-        "Connecting to `agy acp` ({}, effort={})...",
-        cli.model, cli.effort
-    );
-    let acp = Arc::new(AcpClient::start(
-        &cwd,
-        Some(cli.model.as_str()),
-        Some(cli.effort.as_str()),
+    match initial_backend {
+        RouterBackend::Agy => eprintln!(
+            "Connecting to `agy acp` ({}, effort={})...",
+            cli.model, cli.effort
+        ),
+        RouterBackend::Pi => eprintln!("Connecting to `pi --mode rpc`..."),
+    }
+    let mut router = BackendRouter::new(
+        initial_backend,
+        cwd,
+        cli.model.clone(),
+        cli.effort.clone(),
         !cli.ask_permissions,
-        acp_tx,
-    )?);
-
-    // Bridge ACP events into unified AppEvent channel.
-    let app_tx_acp = app_tx.clone();
-    thread::spawn(move || {
-        while let Ok(ev) = acp_rx.recv() {
-            if app_tx_acp.send(AppEvent::Acp(ev)).is_err() {
-                break;
-            }
-        }
-    });
+        app_tx.clone(),
+    )?;
 
     let initial_mode = match cli.mode {
         CliMode::Vad => MicMode::Vad,
@@ -297,7 +474,7 @@ fn main() -> Result<()> {
     let mut terminal = Terminal::new(backend)?;
     terminal.clear()?;
 
-    let mut state = AppState::new(initial_mode, cli.duplex);
+    let mut state = AppState::new(initial_backend, initial_mode, cli.duplex);
     let mut sentences = SentenceStream::new(cli.max_spoken_chars);
     let mut turn_active = false;
     let mut active_tools: std::collections::HashSet<String> = std::collections::HashSet::new();
@@ -330,7 +507,7 @@ fn main() -> Result<()> {
                         } else {
                             submit_prompt(
                                 &text,
-                                &acp,
+                                &router,
                                 &mut state,
                                 &mut sentences,
                                 &tts_cancel,
@@ -360,21 +537,29 @@ fn main() -> Result<()> {
                     AppEvent::TtsError(e) => {
                         state.notice = Some(format!("TTS error: {e}"));
                     }
-                    AppEvent::Acp(acp_ev) => match acp_ev {
+                    AppEvent::Backend(source, acp_ev) => match acp_ev {
                         AcpEvent::Ready {
                             session_id,
                             model_label,
                         } => {
                             if let Some(m) = model_label {
-                                state.model_label = m;
+                                router.record_model(source, m.clone());
+                                if source == state.router {
+                                    state.model_label = m;
+                                }
                             }
-                            state.status = idle_status(&state);
+                            if source == state.router {
+                                state.status = idle_status(&state);
+                            }
                             state.push_entry(
                                 Role::System,
-                                format!("Connected to agy acp (session {session_id})"),
+                                format!("Connected to {} (session {session_id})", source.label()),
                             );
                         }
                         AcpEvent::TextDelta(delta) => {
+                            if source != state.router {
+                                continue;
+                            }
                             state.append_assistant_delta(&delta);
                             // Stay quiet while tools are actively executing; speak clean
                             // conversational responses once tool work settles.
@@ -385,11 +570,16 @@ fn main() -> Result<()> {
                             }
                         }
                         AcpEvent::Thinking => {
-                            if !mic_ctrl.is_speaking.load(Ordering::Relaxed) {
+                            if source == state.router
+                                && !mic_ctrl.is_speaking.load(Ordering::Relaxed)
+                            {
                                 state.status = AgentStatus::Thinking;
                             }
                         }
                         AcpEvent::ToolCall { id, title, status } => {
+                            if source != state.router {
+                                continue;
+                            }
                             let is_done = matches!(
                                 status.as_str(),
                                 "completed" | "done" | "failed" | "error" | "cancelled"
@@ -407,14 +597,22 @@ fn main() -> Result<()> {
                             state.upsert_tool_call(id, title, status);
                         }
                         AcpEvent::Usage { used, size } => {
-                            state.tokens_used = used;
-                            state.tokens_limit = size;
+                            router.record_usage(source, used, size);
+                            if source == state.router {
+                                state.tokens_used = used;
+                                state.tokens_limit = size;
+                            }
                         }
                         AcpEvent::Title(title) => {
-                            state.session_title = title;
+                            if source == state.router {
+                                state.session_title = title;
+                            }
                         }
                         AcpEvent::PermissionRequest(req) => {
-                            let spoken = format!("Permission requested: {}", req.title);
+                            if source != state.router {
+                                continue;
+                            }
+                            let spoken = format!("Selection requested: {}", req.title);
                             let _ = tts_tx.send(TtsCommand::Speak(spoken));
                             state.modal = Some(ModalState {
                                 request: req,
@@ -422,6 +620,9 @@ fn main() -> Result<()> {
                             });
                         }
                         AcpEvent::TurnComplete { stop_reason, error } => {
+                            if source != state.router {
+                                continue;
+                            }
                             turn_active = false;
                             active_tools.clear();
                             state.streaming_assistant = None;
@@ -438,12 +639,17 @@ fn main() -> Result<()> {
                             }
                         }
                         AcpEvent::Error(e) => {
-                            state.notice = Some(e);
+                            state.notice = Some(format!("[{}] {e}", source.label()));
                         }
                         AcpEvent::Disconnected => {
-                            state.push_entry(Role::System, "agy acp disconnected.");
-                            turn_active = false;
-                            state.status = AgentStatus::Muted;
+                            state.push_entry(
+                                Role::System,
+                                format!("{} backend disconnected.", source.label()),
+                            );
+                            if source == state.router {
+                                turn_active = false;
+                                state.status = AgentStatus::Muted;
+                            }
                         }
                     },
                 }
@@ -458,7 +664,7 @@ fn main() -> Result<()> {
                     key,
                     &mut state,
                     &mic_ctrl,
-                    &acp,
+                    &mut router,
                     &mut sentences,
                     &tts_cancel,
                     &mut turn_active,
@@ -499,7 +705,7 @@ fn idle_status(state: &AppState) -> AgentStatus {
 
 fn submit_prompt(
     text: &str,
-    acp: &AcpClient,
+    router: &BackendRouter,
     state: &mut AppState,
     sentences: &mut SentenceStream,
     tts_cancel: &Arc<AtomicBool>,
@@ -514,7 +720,7 @@ fn submit_prompt(
     state.push_entry(Role::User, trimmed);
     state.status = AgentStatus::Thinking;
     *turn_active = true;
-    if let Err(e) = acp.send_prompt(trimmed) {
+    if let Err(e) = router.send_prompt(trimmed) {
         *turn_active = false;
         state.push_entry(Role::System, format!("Failed to send prompt: {e}"));
         state.status = idle_status(state);
@@ -526,7 +732,7 @@ fn handle_key(
     key: KeyEvent,
     state: &mut AppState,
     mic_ctrl: &Arc<MicControl>,
-    acp: &AcpClient,
+    router: &mut BackendRouter,
     sentences: &mut SentenceStream,
     tts_cancel: &Arc<AtomicBool>,
     turn_active: &mut bool,
@@ -553,7 +759,7 @@ fn handle_key(
                     let chosen = m.request.options.get(m.selected);
                     let opt_id = chosen.map(|o| o.option_id.as_str());
                     let label = chosen.map(|o| o.name.as_str()).unwrap_or("cancelled");
-                    let _ = acp.reply_permission(m.request.rpc_id, opt_id);
+                    let _ = router.reply_modal(m.request.rpc_id, opt_id);
                     state.push_entry(Role::System, format!("Selected: {label}"));
                 }
             }
@@ -563,14 +769,14 @@ fn handle_key(
                     && let Some(m) = state.modal.take()
                 {
                     let opt = &m.request.options[idx];
-                    let _ = acp.reply_permission(m.request.rpc_id, Some(&opt.option_id));
+                    let _ = router.reply_modal(m.request.rpc_id, Some(&opt.option_id));
                     state.push_entry(Role::System, format!("Selected: {}", opt.name));
                 }
             }
             KeyCode::Esc => {
                 if let Some(m) = state.modal.take() {
-                    let _ = acp.reply_permission(m.request.rpc_id, None);
-                    state.push_entry(Role::System, "Permission cancelled.");
+                    let _ = router.reply_modal(m.request.rpc_id, None);
+                    state.push_entry(Role::System, "Selection cancelled.");
                 }
             }
             _ => {}
@@ -588,7 +794,7 @@ fn handle_key(
                 let prompt = std::mem::take(&mut state.input_buf);
                 state.typing = false;
                 if !prompt.trim().is_empty() && !*turn_active {
-                    submit_prompt(&prompt, acp, state, sentences, tts_cancel, turn_active);
+                    submit_prompt(&prompt, router, state, sentences, tts_cancel, turn_active);
                 }
             }
             KeyCode::Backspace => {
@@ -613,6 +819,41 @@ fn handle_key(
             mic_ctrl.muted.store(state.muted, Ordering::Relaxed);
             if !*turn_active && !mic_ctrl.is_speaking.load(Ordering::Relaxed) {
                 state.status = idle_status(state);
+            }
+        }
+        KeyCode::Char('d') => {
+            state.duplex = !state.duplex;
+            mic_ctrl.duplex.store(state.duplex, Ordering::Relaxed);
+            state.notice = Some(if state.duplex {
+                "Duplex barge-in ON (use headphones)".to_string()
+            } else {
+                "Duplex barge-in OFF (echo-safe)".to_string()
+            });
+        }
+        KeyCode::Char('r') => {
+            if *turn_active {
+                state.notice = Some(
+                    "Finish or Esc-cancel the active turn before switching router".to_string(),
+                );
+            } else {
+                let target = state.router.other();
+                match router.switch_to(target) {
+                    Ok(()) => {
+                        state.router = target;
+                        state.model_label = router.active_model_label();
+                        let (used, size) = router.active_usage();
+                        state.tokens_used = used;
+                        state.tokens_limit = size;
+                        state.notice = Some(format!("Routing prompts to [{}]", target.label()));
+                        state.push_entry(
+                            Role::System,
+                            format!("Switched router -> [{}]", target.label()),
+                        );
+                    }
+                    Err(e) => {
+                        state.notice = Some(format!("Failed to start [{}]: {e}", target.label()));
+                    }
+                }
             }
         }
         KeyCode::Char('v') => {
@@ -659,7 +900,7 @@ fn handle_key(
             tts_cancel.store(true, Ordering::Relaxed);
             sentences.clear();
             if *turn_active {
-                let _ = acp.cancel();
+                let _ = router.cancel();
             }
             if state.ptt_active {
                 state.ptt_active = false;

@@ -15,6 +15,28 @@ pub enum MicMode {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum RouterBackend {
+    Agy,
+    Pi,
+}
+
+impl RouterBackend {
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Agy => "AGY",
+            Self::Pi => "PI",
+        }
+    }
+
+    pub fn other(self) -> Self {
+        match self {
+            Self::Agy => Self::Pi,
+            Self::Pi => Self::Agy,
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum AgentStatus {
     Starting,
     Listening,
@@ -48,6 +70,7 @@ pub struct ModalState {
 
 pub struct AppState {
     pub status: AgentStatus,
+    pub router: RouterBackend,
     pub mic_mode: MicMode,
     pub muted: bool,
     pub ptt_active: bool,
@@ -67,16 +90,20 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub fn new(mic_mode: MicMode, duplex: bool) -> Self {
+    pub fn new(router: RouterBackend, mic_mode: MicMode, duplex: bool) -> Self {
         Self {
             status: AgentStatus::Starting,
+            router,
             mic_mode,
             muted: false,
             ptt_active: false,
             duplex,
             rms: 0.0,
             session_title: "Antigravity Voice".to_string(),
-            model_label: "agy acp".to_string(),
+            model_label: match router {
+                RouterBackend::Agy => "agy acp".to_string(),
+                RouterBackend::Pi => "pi rpc".to_string(),
+            },
             tokens_used: 0,
             tokens_limit: 0,
             entries: Vec::new(),
@@ -193,6 +220,11 @@ fn render_header(frame: &mut Frame<'_>, area: Rect, state: &AppState) {
         "—".to_string()
     };
 
+    let router_color = match state.router {
+        RouterBackend::Agy => Color::Cyan,
+        RouterBackend::Pi => Color::LightGreen,
+    };
+
     let line = Line::from(vec![
         Span::styled(
             format!(" {badge} "),
@@ -201,6 +233,13 @@ fn render_header(frame: &mut Frame<'_>, area: Rect, state: &AppState) {
                 .add_modifier(Modifier::BOLD),
         ),
         Span::raw("│ "),
+        Span::styled(
+            format!("[{}]", state.router.label()),
+            Style::default()
+                .fg(router_color)
+                .add_modifier(Modifier::BOLD),
+        ),
+        Span::raw(" │ "),
         Span::styled(mode_tag, Style::default().fg(Color::Yellow)),
         Span::raw(" │ "),
         Span::styled(&state.model_label, Style::default().fg(Color::Cyan)),
@@ -337,7 +376,7 @@ fn render_footer(frame: &mut Frame<'_>, area: Rect, state: &AppState) {
     } else if state.typing {
         " Enter send · Esc normal mode · Ctrl+C quit "
     } else {
-        " Space PTT · m mute · v VAD/PTT · s stop TTS · i type · ↑/↓ scroll · Esc cancel · q quit "
+        " Space PTT · m mute · v VAD/PTT · d duplex · r router(agy/pi) · s stop TTS · i type · Esc cancel · q quit "
     };
     let footer = Paragraph::new(hint)
         .style(Style::default().fg(Color::DarkGray))

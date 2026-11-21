@@ -9,6 +9,8 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, mpsc};
 use std::thread;
 
+pub const VOICE_SYSTEM_APPEND: &str = "Live voice session (agy-voice): your replies are shown in the terminal and spoken aloud by local TTS. Keep spoken prose concise, natural, and conversational. Put code, file paths, CLI commands, diffs, and tables in markdown for the screen without spelling out raw flags, paths, URLs, or commit hashes in prose. Stay quiet while tools execute instead of narrating every step; speak only meaningful updates or the final answer.";
+
 #[derive(Clone, Debug)]
 pub struct PermissionOption {
     pub option_id: String,
@@ -113,7 +115,6 @@ impl AcpClient {
 
         // 2. JSON-RPC session/new
         let cwd_str = cwd.to_str().context("non-UTF-8 workspace path")?;
-        const VOICE_SYSTEM_APPEND: &str = "Live voice session (agy-voice): your replies are shown in the terminal and spoken aloud by local TTS. Keep spoken prose concise, natural, and conversational. Put code, file paths, CLI commands, diffs, and tables in markdown for the screen without spelling out raw flags, paths, URLs, or commit hashes in prose. Stay quiet while tools execute instead of narrating every step; speak only meaningful updates or the final answer.";
         write_json_line(
             &mut stdin,
             &json!({
