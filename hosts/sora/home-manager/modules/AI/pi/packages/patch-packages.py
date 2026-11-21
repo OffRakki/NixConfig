@@ -110,3 +110,80 @@ for browser_environment in [browser_entry, browser / "dist/packaged/lib/runtime.
 with browser_entry.open("a") as entry:
     entry.write("\nexport { loadAgentBrowserConfigStateSync, getAgentBrowserProcessEnvironment, "
                 "withAgentBrowserProcessEnvironment, withNativeSessionDefaults };\n")
+
+# Gemini 3+ attaches thoughtSignature only to the first functionCall in a parallel
+# batch. When billion-context folds earlier calls of a batch into a block while
+# leaving later calls visible (e.g. protected recent messages), coreToGoogle emits
+# the surviving calls with no thoughtSignature and Google rejects the turn (400).
+# Preserve the batch's leading signature on a non-enumerable Symbol so unsplit turns
+# stay byte-identical and split turns promote the signature to the first surviving call.
+bili_root = root / "billion-context"
+bili_fc_old = (
+    'for(const part of parts){const fc=part.functionCall;'
+    'if(!fc||typeof fc.name!=="string")continue;'
+    'const text2=jsonText(fc.args??{});'
+    'const wireId=typeof fc.id==="string"?fc.id:void 0;'
+    'const base=deriveCanonicalMessageId("assistant","tool-call",canonicalToolArgs(text2),{toolName:fc.name});'
+    'const id=clusters.next(base);'
+    'const toolCallId=wireId??id;'
+    'const queue=unmatchedCalls.get(fc.name);'
+    'if(queue)queue.push(toolCallId);else unmatchedCalls.set(fc.name,[toolCallId]);'
+    'msgs.push({id,role:"assistant",contentType:"tool-call",toolName:fc.name,toolCallId,text:text2,'
+    'rawGoogleParts:[part],...signatureField("googleThoughtSignature",part.thoughtSignature)})}'
+)
+bili_fc_new = (
+    'let batchCallSig;'
+    'for(const part of parts){const fc=part.functionCall;'
+    'if(!fc||typeof fc.name!=="string")continue;'
+    'if(!batchCallSig&&typeof part.thoughtSignature==="string"&&part.thoughtSignature.length>0)'
+    'batchCallSig=part.thoughtSignature;'
+    'const text2=jsonText(fc.args??{});'
+    'const wireId=typeof fc.id==="string"?fc.id:void 0;'
+    'const base=deriveCanonicalMessageId("assistant","tool-call",canonicalToolArgs(text2),{toolName:fc.name});'
+    'const id=clusters.next(base);'
+    'const toolCallId=wireId??id;'
+    'const queue=unmatchedCalls.get(fc.name);'
+    'if(queue)queue.push(toolCallId);else unmatchedCalls.set(fc.name,[toolCallId]);'
+    'msgs.push({id,role:"assistant",contentType:"tool-call",toolName:fc.name,toolCallId,text:text2,'
+    'rawGoogleParts:[part],...signatureField("googleThoughtSignature",part.thoughtSignature),'
+    '...batchCallSig&&!part.thoughtSignature?{[googleBatchThoughtSignature]:batchCallSig}:{}})}'
+)
+bili_flush_old = (
+    'function coreToGoogle(messages,opts){const out=[];let model=null;let user=null;'
+    'const flushModel=()=>{if(!model)return;'
+    'const parts=[...model.reasoning,...model.text,...model.calls];'
+    'model=null;if(parts.length>0)out.push({role:"model",parts})};'
+)
+bili_flush_new = (
+    'function coreToGoogle(messages,opts){const out=[];let model=null;let user=null;'
+    'const flushModel=()=>{if(!model)return;'
+    'if(model.calls.length>0&&model.batchCallSig){const first=model.calls[0];'
+    'if(typeof first.thoughtSignature!=="string"||first.thoughtSignature.length===0)'
+    'model.calls[0]={...first,thoughtSignature:model.batchCallSig}}'
+    'const parts=[...model.reasoning,...model.text,...model.calls];'
+    'model=null;if(parts.length>0)out.push({role:"model",parts})};'
+)
+for rel, loop_var in [
+    ("dist/index.js", "m2"),
+    ("dist/agent/pi-native.js", "m4"),
+    ("dist/agent/opencode-native.js", "m2"),
+]:
+    target = bili_root / rel
+    text = target.read_text()
+    text = replace_once(
+        text,
+        "function googleToCore(body){",
+        'var googleBatchThoughtSignature=Symbol("googleBatchThoughtSignature");'
+        "function googleToCore(body){",
+    )
+    text = replace_once(text, bili_fc_old, bili_fc_new)
+    text = replace_once(text, bili_flush_old, bili_flush_new)
+    text = replace_once(
+        text,
+        f'else if({loop_var}.contentType==="tool-call")model.calls.push(toolCallPart({loop_var}));',
+        f'else if({loop_var}.contentType==="tool-call"){{model.calls.push(toolCallPart({loop_var}));'
+        f'if(!model.batchCallSig&&typeof {loop_var}[googleBatchThoughtSignature]==="string"'
+        f'&&{loop_var}[googleBatchThoughtSignature].length>0)'
+        f'model.batchCallSig={loop_var}[googleBatchThoughtSignature]}}',
+    )
+    target.write_text(text)

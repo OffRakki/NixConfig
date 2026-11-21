@@ -77,6 +77,7 @@
       ${nodejs}/bin/node ${../tests/failover.smoke.mjs} \
         ${piPackage}/lib/node_modules/pi-monorepo "$out"
       ${nodejs}/bin/node ${../tests/rea.smoke.mjs} "$out/node_modules/rea-agents/scripts/rea.mjs"
+      ${nodejs}/bin/node ${../tests/bili-thought-signature.smoke.mjs} "$out/node_modules/billion-context"
       runHook postInstallCheck
     '';
   };
