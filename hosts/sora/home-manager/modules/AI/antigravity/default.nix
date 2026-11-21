@@ -37,6 +37,9 @@
       type = "command";
       command = "${lib.getExe agyStatusline} --title";
     };
+    voice = {
+      fullDuplex = true;
+    };
   });
 
   resources = import ../pi/resources.nix {inherit pkgs;};
