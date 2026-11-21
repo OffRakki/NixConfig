@@ -1,8 +1,10 @@
 use serde_json::Value;
 use std::env;
 use std::fs;
-use std::io::{self, Read};
+use std::io::{self, Read, Write};
+use std::net::{SocketAddr, TcpStream, ToSocketAddrs};
 use std::path::{Path, PathBuf};
+use std::time::Duration;
 
 const RESET: &str = "\x1b[0m";
 const BOLD: &str = "\x1b[1m";
@@ -216,11 +218,190 @@ fn lowest_quota_pct(value: &Value) -> Option<u64> {
     lowest.map(|v| v.round() as u64)
 }
 
+#[derive(Clone, Debug, PartialEq)]
+struct BiliContext {
+    session_id: String,
+    pct: f64,
+    blocks: u64,
+    is_usage: bool,
+}
+
+fn parse_bili_loopback_addr(cloud_code_url: &str) -> Option<String> {
+    let rest = cloud_code_url
+        .trim()
+        .strip_prefix("http://")
+        .or_else(|| cloud_code_url.trim().strip_prefix("https://"))?;
+    let host_port = rest.split('/').next()?;
+    let (host, port) = if let Some(stripped) = host_port.strip_prefix('[') {
+        let (h, p) = stripped.split_once("]:")?;
+        (h, p)
+    } else {
+        host_port.rsplit_once(':')?
+    };
+    if !matches!(host, "127.0.0.1" | "localhost" | "::1") {
+        return None;
+    }
+    let port_num: u16 = port.parse().ok()?;
+    Some(format!("{host}:{port_num}"))
+}
+
+fn decode_http_body(raw: &[u8]) -> Option<String> {
+    let sep = raw.windows(4).position(|w| w == b"\r\n\r\n")?;
+    let headers = std::str::from_utf8(&raw[..sep]).ok()?;
+    let body = &raw[sep + 4..];
+    let is_chunked = headers.lines().any(|line| {
+        let lower = line.to_ascii_lowercase();
+        lower.starts_with("transfer-encoding:") && lower.contains("chunked")
+    });
+    if !is_chunked {
+        return std::str::from_utf8(body).ok().map(ToString::to_string);
+    }
+    let mut out = Vec::with_capacity(body.len());
+    let mut cursor = body;
+    while !cursor.is_empty() {
+        let crlf = cursor.windows(2).position(|w| w == b"\r\n")?;
+        let size_line = std::str::from_utf8(&cursor[..crlf]).ok()?.trim();
+        let size_hex = size_line.split(';').next()?.trim();
+        let size = usize::from_str_radix(size_hex, 16).ok()?;
+        cursor = &cursor[crlf + 2..];
+        if size == 0 {
+            break;
+        }
+        if cursor.len() < size {
+            return None;
+        }
+        out.extend_from_slice(&cursor[..size]);
+        cursor = cursor.get(size + 2..).unwrap_or(&[]);
+    }
+    String::from_utf8(out).ok()
+}
+
+fn select_bili_context(stats: &Value, session_id: Option<&str>) -> Option<BiliContext> {
+    let sessions = stats.get("sessions")?.as_array()?;
+    let extract = |s: &Value| -> Option<BiliContext> {
+        let id = s.get("id").and_then(Value::as_str).unwrap_or("default");
+        let tokens = s.get("contextTokens")?.as_f64()?;
+        let window = s.get("contextWindow")?.as_f64()?;
+        if window <= 0.0 || tokens < 0.0 {
+            return None;
+        }
+        let blocks = s.get("blocks").and_then(Value::as_u64).unwrap_or(0);
+        let is_usage = s.get("contextTokensSource").and_then(Value::as_str) == Some("usage");
+        Some(BiliContext {
+            session_id: id.to_string(),
+            pct: ((tokens / window) * 100.0).clamp(0.0, 100.0),
+            blocks,
+            is_usage,
+        })
+    };
+
+    if let Some(sid) = session_id.filter(|s| !s.trim().is_empty())
+        && let Some(found) = sessions
+            .iter()
+            .find(|s| s.get("id").and_then(Value::as_str) == Some(sid))
+            .and_then(extract)
+    {
+        return Some(found);
+    }
+
+    sessions
+        .iter()
+        .filter(|s| {
+            s.get("contextWindow")
+                .and_then(Value::as_f64)
+                .unwrap_or(0.0)
+                > 0.0
+        })
+        .max_by(|a, b| {
+            let ta = a.get("lastSeen").and_then(Value::as_str).unwrap_or("");
+            let tb = b.get("lastSeen").and_then(Value::as_str).unwrap_or("");
+            ta.cmp(tb)
+        })
+        .and_then(extract)
+}
+
+fn bili_cache_dir() -> Option<PathBuf> {
+    env::var("XDG_RUNTIME_DIR")
+        .ok()
+        .filter(|d| !d.trim().is_empty())
+        .map(PathBuf::from)
+        .or_else(|| Some(env::temp_dir()))
+}
+
+fn bili_cache_file(dir: &Path, session_id: &str) -> PathBuf {
+    let safe: String = session_id
+        .chars()
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || c == '-' || c == '_' {
+                c
+            } else {
+                '_'
+            }
+        })
+        .take(64)
+        .collect();
+    dir.join(format!("agy-statusline-bili-{safe}.json"))
+}
+
+fn stabilize_bili_context(ctx: BiliContext, cache_dir: Option<&Path>) -> BiliContext {
+    let Some(dir) = cache_dir else {
+        return ctx;
+    };
+    let path = bili_cache_file(dir, &ctx.session_id);
+    if ctx.is_usage {
+        let payload = format!("{{\"pct\":{:.6}}}", ctx.pct);
+        let _ = fs::write(&path, payload);
+        return ctx;
+    }
+    if let Ok(raw) = fs::read_to_string(&path)
+        && let Ok(parsed) = serde_json::from_str::<Value>(&raw)
+        && let Some(cached_pct) = parsed.get("pct").and_then(Value::as_f64)
+        && cached_pct.is_finite()
+    {
+        return BiliContext {
+            pct: cached_pct.clamp(0.0, 100.0),
+            ..ctx
+        };
+    }
+    ctx
+}
+
+fn fetch_bili_context(payload: &Value) -> Option<BiliContext> {
+    let url = env::var("CLOUD_CODE_URL").ok()?;
+    let host_port = parse_bili_loopback_addr(&url)?;
+    let addr: SocketAddr = host_port
+        .to_socket_addrs()
+        .ok()?
+        .find(|a| a.ip().is_loopback())?;
+    let mut stream = TcpStream::connect_timeout(&addr, Duration::from_millis(80)).ok()?;
+    let _ = stream.set_write_timeout(Some(Duration::from_millis(80)));
+    let _ = stream.set_read_timeout(Some(Duration::from_millis(120)));
+    let req =
+        format!("GET /__bili/stats HTTP/1.1\r\nHost: {host_port}\r\nConnection: close\r\n\r\n");
+    stream.write_all(req.as_bytes()).ok()?;
+    let mut raw = Vec::with_capacity(4096);
+    stream.read_to_end(&mut raw).ok()?;
+    let body = decode_http_body(&raw)?;
+    let stats: Value = serde_json::from_str(&body).ok()?;
+    let sid = payload
+        .get("session_id")
+        .and_then(Value::as_str)
+        .or_else(|| payload.get("conversation_id").and_then(Value::as_str));
+    let ctx = select_bili_context(&stats, sid)?;
+    let cache_dir = bili_cache_dir();
+    Some(stabilize_bili_context(ctx, cache_dir.as_deref()))
+}
+
 fn render_segment(text: &str, fg: Rgb, bg: Rgb) -> String {
     format!("{}{} {} {}", bg.bg(), fg.fg(), text, RESET)
 }
 
-fn render_statusline(payload: &Value, palette: Palette, home: Option<&str>) -> String {
+fn render_statusline(
+    payload: &Value,
+    palette: Palette,
+    home: Option<&str>,
+    bili: Option<&BiliContext>,
+) -> String {
     let cwd = payload
         .get("workspace")
         .and_then(|w| w.get("current_dir"))
@@ -273,9 +454,14 @@ fn render_statusline(payload: &Value, palette: Palette, home: Option<&str>) -> S
         segments.push(render_segment(&label, palette.purple, palette.panel));
     }
 
-    if let Some(ctx) = payload.get("context_window").filter(|v| v.is_object())
-        && let Some(pct) = ctx.get("used_percentage").and_then(Value::as_f64)
-    {
+    let ctx_pct = bili.map(|b| b.pct).or_else(|| {
+        payload
+            .get("context_window")
+            .filter(|v| v.is_object())
+            .and_then(|ctx| ctx.get("used_percentage"))
+            .and_then(Value::as_f64)
+    });
+    if let Some(pct) = ctx_pct {
         let ctx_color = if pct >= 80.0 {
             palette.red
         } else if pct >= 50.0 {
@@ -283,10 +469,14 @@ fn render_statusline(payload: &Value, palette: Palette, home: Option<&str>) -> S
         } else {
             palette.green
         };
+        let suffix = match bili.filter(|b| b.blocks > 0) {
+            Some(b) => format!(" ({}b)", b.blocks),
+            None => String::new(),
+        };
         let label = if terminal_width >= 90 {
-            format!("{} {:.0}%", render_progress_bar(pct, 6), pct)
+            format!("{} {:.0}%{suffix}", render_progress_bar(pct, 6), pct)
         } else {
-            format!("{:.0}%", pct)
+            format!("{:.0}%{suffix}", pct)
         };
         segments.push(render_segment(&label, ctx_color, palette.panel_alt));
     }
@@ -484,7 +674,11 @@ fn main() {
             let payload = read_stdin_json();
             let palette = Palette::load();
             let home = env::var("HOME").ok();
-            println!("{}", render_statusline(&payload, palette, home.as_deref()));
+            let bili = fetch_bili_context(&payload);
+            println!(
+                "{}",
+                render_statusline(&payload, palette, home.as_deref(), bili.as_ref())
+            );
         }
     }
 }
@@ -529,7 +723,7 @@ mod tests {
             "artifact_count": 2,
             "terminal_width": 120
         });
-        let out = render_statusline(&payload, Palette::default(), Some("/home/rakki"));
+        let out = render_statusline(&payload, Palette::default(), Some("/home/rakki"), None);
         let lines: Vec<&str> = out.lines().collect();
         assert_eq!(lines.len(), 1);
         assert!(lines[0].contains("~/Projects/NixConfig"));
@@ -546,9 +740,92 @@ mod tests {
 
     #[test]
     fn handles_empty_payload_cleanly() {
-        let out = render_statusline(&json!({}), Palette::default(), Some("/home/rakki"));
+        let out = render_statusline(&json!({}), Palette::default(), Some("/home/rakki"), None);
         assert_eq!(out.lines().count(), 1);
         assert!(out.contains("~"));
+    }
+
+    #[test]
+    fn parses_bili_stats_and_overrides_inflated_context_percentage() {
+        assert_eq!(
+            parse_bili_loopback_addr(
+                "http://127.0.0.1:18787/bili/https://daily-cloudcode-pa.googleapis.com"
+            ),
+            Some("127.0.0.1:18787".to_string())
+        );
+        assert_eq!(
+            parse_bili_loopback_addr("https://daily-cloudcode-pa.googleapis.com"),
+            None
+        );
+
+        let chunked = b"HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n10\r\n{\"sessions\": []}\r\n0\r\n\r\n";
+        assert_eq!(
+            decode_http_body(chunked).as_deref(),
+            Some("{\"sessions\": []}")
+        );
+
+        let stats = json!({
+            "sessions": [
+                {
+                    "id": "old-sess",
+                    "contextTokens": 500000,
+                    "contextWindow": 1000000,
+                    "contextTokensSource": "usage",
+                    "blocks": 0,
+                    "lastSeen": "2026-11-21T10:00:00.000Z"
+                },
+                {
+                    "id": "cur-sess",
+                    "contextTokens": 62145,
+                    "contextWindow": 1048576,
+                    "contextTokensSource": "usage",
+                    "blocks": 2,
+                    "lastSeen": "2026-11-21T13:49:07.528Z"
+                }
+            ]
+        });
+        let bili = select_bili_context(&stats, Some("cur-sess")).expect("matching session");
+        assert_eq!(bili.blocks, 2);
+        assert!(bili.is_usage);
+        assert!((bili.pct - 5.926).abs() < 0.01);
+
+        let cache_dir = env::temp_dir().join(format!("agy-sl-test-{}", std::process::id()));
+        let _ = fs::create_dir_all(&cache_dir);
+        let usage = stabilize_bili_context(bili, Some(&cache_dir));
+        assert!((usage.pct - 5.926).abs() < 0.01);
+
+        let estimate_flicker = BiliContext {
+            session_id: "cur-sess".to_string(),
+            pct: 20.0,
+            blocks: 2,
+            is_usage: false,
+        };
+        let held = stabilize_bili_context(estimate_flicker, Some(&cache_dir));
+        assert!((held.pct - 5.926).abs() < 0.01);
+
+        let fresh_estimate = BiliContext {
+            session_id: "brand-new-sess".to_string(),
+            pct: 12.0,
+            blocks: 0,
+            is_usage: false,
+        };
+        let turn1 = stabilize_bili_context(fresh_estimate, Some(&cache_dir));
+        assert!((turn1.pct - 12.0).abs() < 0.01);
+        let _ = fs::remove_dir_all(&cache_dir);
+
+        let payload = json!({
+            "cwd": "/home/rakki/Projects/NixConfig",
+            "context_window": { "used_percentage": 36.0 },
+            "terminal_width": 120
+        });
+        let out = render_statusline(
+            &payload,
+            Palette::default(),
+            Some("/home/rakki"),
+            Some(&held),
+        );
+        assert!(out.contains("6% (2b)"));
+        assert!(!out.contains("36%"));
     }
 
     #[test]
