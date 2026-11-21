@@ -32,6 +32,7 @@ in {
   xdg.configFile."app-launcher/config.json".text = builtins.toJSON {
     pinned = [
       "agy"
+      "agy-voice"
       "pi-coding-agent"
       "firefox"
       "aerc"

@@ -20,6 +20,7 @@
   };
 
   agyStatusline = pkgs.callPackage ./statusline.nix {};
+  agyVoice = pkgs.callPackage ./voice.nix {};
 
   settings = pkgs.writeText "antigravity-settings.json" (builtins.toJSON {
     editor = "hx";
@@ -87,19 +88,34 @@ in {
     }
     (lib.mkIf cfg.enable (lib.mkMerge [
       {
-        home.packages = [launcher];
-        xdg.desktopEntries.agy = {
-          name = "Agy";
-          genericName = "AI Coding Assistant";
-          comment = "Antigravity terminal-based AI coding assistant";
-          exec = "kitty --directory /home/rakki/Projects/NixConfig -e agy";
-          icon = "utilities-terminal";
-          terminal = false;
-          categories = [
-            "Development"
-            "ConsoleOnly"
-          ];
-          type = "Application";
+        home.packages = [launcher agyVoice];
+        xdg.desktopEntries = {
+          agy = {
+            name = "Antigravity";
+            genericName = "AI Coding Assistant";
+            comment = "Antigravity terminal-based AI coding assistant";
+            exec = "kitty --directory /home/rakki/Projects/NixConfig -e agy";
+            icon = "utilities-terminal";
+            terminal = false;
+            categories = [
+              "Development"
+              "ConsoleOnly"
+            ];
+            type = "Application";
+          };
+          agy-voice = {
+            name = "Antigravity Voice";
+            genericName = "Voice AI Coding Assistant";
+            comment = "Local voice TUI for Antigravity CLI";
+            exec = "kitty --directory /home/rakki/Projects/NixConfig -e agy-voice --duplex";
+            icon = "audio-input-microphone";
+            terminal = false;
+            categories = [
+              "Development"
+              "ConsoleOnly"
+            ];
+            type = "Application";
+          };
         };
         home.file = {
           ".gemini/config/AGENTS.md".source = resources.context;

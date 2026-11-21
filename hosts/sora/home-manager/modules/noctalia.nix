@@ -99,7 +99,7 @@ in {
         };
         launcher = {
           app_grid = true;
-          pinned = ["agy" "pi-coding-agent" "firefox" "thunderbird"];
+          pinned = ["agy" "agy-voice" "pi-coding-agent" "firefox" "thunderbird"];
           providers.session.global = true;
           providers.windows.global = true;
         };
