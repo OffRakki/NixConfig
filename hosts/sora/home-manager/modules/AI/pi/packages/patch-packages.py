@@ -110,14 +110,3 @@ for browser_environment in [browser_entry, browser / "dist/packaged/lib/runtime.
 with browser_entry.open("a") as entry:
     entry.write("\nexport { loadAgentBrowserConfigStateSync, getAgentBrowserProcessEnvironment, "
                 "withAgentBrowserProcessEnvironment, withNativeSessionDefaults };\n")
-
-# Pi 1.0 supplies TypeBox; use its host alias instead of a private runtime copy.
-orchestrator = root / "@groeponline/pi-agent-orchestrator"
-manifest_path = orchestrator / "package.json"
-manifest = json.loads(manifest_path.read_text())
-del manifest["dependencies"]["@sinclair/typebox"]
-manifest["peerDependencies"]["typebox"] = "*"
-manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
-for source in [*orchestrator.rglob("*.js"), *orchestrator.rglob("*.ts")]:
-    text = source.read_text()
-    source.write_text(text.replace('"@sinclair/typebox"', '"typebox"'))

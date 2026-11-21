@@ -6,29 +6,30 @@
   package = builtins.fromJSON (builtins.readFile ./package.json);
   activeNpmPackages = [
     "@apat183/pi-buddy"
-    "@groeponline/pi-agent-orchestrator"
     "@jamesjfoong/pi-ollama"
-    "@juanibiapina/pi-extension-settings"
     "@juicesharp/rpiv-ask-user-question"
     "billion-context"
     "pi-agent-browser-native"
     "pi-codex-image-gen"
     "pi-context-view"
     "pi-intercom"
-    "pi-invisible-continue"
     "pi-multi-account"
     "pi-powerline"
     "pi-subagents"
     "pi-web-access"
-    "rea-agents"
     "rinco-pi-sakura"
   ];
+  # Retained in the shared closure for CLI/MCP/skill consumption without loading as a Pi extension.
+  sharedOnlyNpmPackages = [
+    "rea-agents"
+  ];
+  allNpmPackages = activeNpmPackages ++ sharedOnlyNpmPackages;
   npmClosure = pkgs.buildNpmPackage {
     inherit nodejs;
     pname = package.name;
     inherit (package) version;
     src = ./.;
-    npmDepsHash = "sha256-F0P2Ny6QxU9iYbhUoieIl96w9r3w+8zojl7PGIRgh3k=";
+    npmDepsHash = "sha256-WeKRlwJ32uLnf/BbeWg4j+6Iq5cNFwEyIU1z6dwp5mI=";
     npmFlags = ["--legacy-peer-deps"];
     # Use shipped native prebuilds; never download/build optional engines during install.
     npmRebuildFlags = ["--ignore-scripts"];
@@ -63,7 +64,6 @@
       const settingsManager = SettingsManager.inMemory({ packages: process.argv.slice(2), enableAnalytics: false, enableInstallTelemtry: false });
       const resourceLoader = new DefaultResourceLoader({ cwd, agentDir, settingsManager, noContextFiles: true });
       await resourceLoader.reload();
-      if (!resourceLoader.getSkills().skills.some(skill => skill.name === "reverse-engineer-anything")) throw new Error("REA skill missing");
       const { errors, warnings = [] } = resourceLoader.getExtensions();
       if (errors.length || warnings.length) throw new Error(JSON.stringify({ errors, warnings }));
       const { session } = await createAgentSession({ cwd, agentDir, settingsManager, resourceLoader, sessionManager: SessionManager.inMemory(cwd) });
@@ -73,6 +73,7 @@
       if (runtimeErrors.length) throw new Error(JSON.stringify(runtimeErrors));
       process.exit(0);
       JS
+      test -f "$out/node_modules/rea-agents/skills/reverse-engineer-anything/SKILL.md"
       ${nodejs}/bin/node ${../tests/failover.smoke.mjs} \
         ${piPackage}/lib/node_modules/pi-monorepo "$out"
       ${nodejs}/bin/node ${../tests/rea.smoke.mjs} "$out/node_modules/rea-agents/scripts/rea.mjs"
@@ -83,7 +84,7 @@
   inventoryNpmPackages = builtins.filter (entry: entry.source == "npm") inventory.packages;
   sort = builtins.sort builtins.lessThan;
 in
-  assert sort activeNpmPackages == sort (map (entry: entry.name) inventoryNpmPackages);
+  assert sort allNpmPackages == sort (map (entry: entry.name) inventoryNpmPackages);
   assert builtins.all (
     entry:
       builtins.hasAttr entry.name package.dependencies

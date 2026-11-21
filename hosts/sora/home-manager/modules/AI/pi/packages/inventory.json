@@ -10,25 +10,11 @@
       "capabilities": ["extension", "ui", "filesystem"]
     },
     {
-      "name": "@groeponline/pi-agent-orchestrator",
-      "version": "0.19.1",
-      "source": "npm",
-      "trust": "pinned-third-party",
-      "capabilities": ["extension", "tools", "skills", "prompts", "ui", "sessions", "session-control", "filesystem", "process", "scheduling"]
-    },
-    {
       "name": "@jamesjfoong/pi-ollama",
       "version": "1.0.3",
       "source": "npm",
       "trust": "pinned-third-party",
       "capabilities": ["extension", "network", "filesystem", "ui"]
-    },
-    {
-      "name": "@juanibiapina/pi-extension-settings",
-      "version": "0.10.0",
-      "source": "npm",
-      "trust": "pinned-third-party",
-      "capabilities": ["extension", "ui", "filesystem"]
     },
     {
       "name": "@juicesharp/rpiv-ask-user-question",
@@ -77,14 +63,7 @@
       "version": "0.18.1",
       "source": "npm",
       "trust": "pinned-third-party",
-      "capabilities": ["extension", "tool", "ipc", "sessions", "network", "filesystem", "process"]
-    },
-    {
-      "name": "pi-invisible-continue",
-      "version": "0.3.19",
-      "source": "npm",
-      "trust": "pinned-third-party",
-      "capabilities": ["extension", "session-control"]
+      "capabilities": ["extension", "tool", "cli", "ipc", "sessions", "network", "filesystem", "process"]
     },
     {
       "name": "pi-multi-account",

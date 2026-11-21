@@ -6,7 +6,8 @@
   ...
 }: let
   cfg = config.programs.agy;
-  nodejs = inputs.nixpkgs-node.legacyPackages.${pkgs.stdenv.hostPlatform.system}.nodejs_24;
+  sharedTools = import ../shared/tools.nix {inherit pkgs inputs;};
+  inherit (sharedTools) nodejs;
 
   antigravity = pkgs.antigravity-cli.overrideAttrs {
     version = "1.5.13";
@@ -28,7 +29,10 @@
   });
 
   resources = import ../pi/resources.nix {inherit pkgs;};
-  workflows = import ./workflows.nix {inherit lib pkgs;};
+  workflows = import ./workflows.nix {
+    inherit lib pkgs;
+    inherit (sharedTools) reaSkill;
+  };
 
   launcher = pkgs.writeShellScriptBin "agy" ''
     export AGY_CLI_DISABLE_AUTO_UPDATE=true
@@ -54,6 +58,13 @@ in {
           ".gemini/config/AGENTS.md".source = resources.context;
           ".gemini/config/plugins.json".text = builtins.toJSON {
             entries = [{path = toString workflows;}];
+          };
+          ".gemini/config/mcp_config.json".text = builtins.toJSON {
+            mcpServers = {
+              pi-web-access = {
+                command = "${sharedTools.piWebAccessMcp}/bin/pi-web-access-mcp";
+              };
+            };
           };
         };
       }

@@ -15,14 +15,15 @@ through Nix evaluation; do not read deployed config as source.
 
 - Native HAX read/edit/write/bash and managed background tasks; inspect current
   tool schemas rather than copying Pi calls. Images require a capable model.
-- `agent-browser` + Chromium through the browser skill, launched only when used.
-- Jujutsu through its skill. Nix evaluation/build/activation through `nix`.
+- `agent-browser` + Chromium through the shared `browser` skill, launched only when used.
+- Shared AI CLI helpers on `PATH` from `AI/shared/tools.nix`: `rea` (via `reverse-engineer-anything`), `pi-intercom` (via `intercom`), `bili` (via `context-compression`), and `ollama-check` (via `ollama`).
+- Shared methodology skills: `jujutsu`, `orchestration`, `council-mode`, `review-loop`, `web-research`, `structured-clarification`, and `real-product-showcase`. Nix evaluation/build/activation through `nix`.
 - Existing desktop tools; do not launch browsers, brokers or MCP at startup.
 
-No web-search CLI, MCP configuration, image-generation CLI, suggestion writer,
-intercom transport, custom specialist roles, council runner or workspace launcher
-is installed by this module yet. Existing Pi functionality is not HAX parity.
-Do not call Pi tool names or run Pi to fill a missing HAX capability silently.
+No HAX-native MCP client, image-generation CLI, suggestion writer, custom specialist
+roles, or workspace launcher is installed by this module yet. Existing Pi functionality
+is not HAX parity. Do not call Pi tool names or run Pi to fill a missing HAX capability
+silently.
 
 ## Configuration and credentials
 

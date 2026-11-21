@@ -95,7 +95,22 @@ class PilotSmoke(unittest.TestCase):
         self.assertNotIn("presets", settings)  # No unported advertised roles.
         self.assertEqual(
             {p.name for p in SKILLS.iterdir()},
-            {"hax-tools", "browser", "nix", "jujutsu"},
+            {
+                "hax-tools",
+                "browser",
+                "nix",
+                "jujutsu",
+                "web-research",
+                "intercom",
+                "orchestration",
+                "council-mode",
+                "review-loop",
+                "context-compression",
+                "ollama",
+                "structured-clarification",
+                "real-product-showcase",
+                "reverse-engineer-anything",
+            },
         )
         for folder in SKILLS.iterdir():
             text = (folder / "SKILL.md").read_text()

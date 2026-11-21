@@ -30,28 +30,21 @@ Runtime files under `~/.pi/agent/` are outputs, not sources; never edit them.
 | Package | Provides |
 |---|---|
 | `@apat183/pi-buddy` | animated Pi header, state widget, and spinner |
-| `@groeponline/pi-agent-orchestrator` | `Agent`, `get_subagent_result`, `steer_subagent`, `/agents`, scheduling, and orchestra workflows |
-| `@juanibiapina/pi-extension-settings` | shared extension settings UI |
 | `@juicesharp/rpiv-ask-user-question` | `ask_user_question` |
 | `@jamesjfoong/pi-ollama` | discovers downloaded Ollama chat models; `/ollama-refresh` refreshes them |
-| `billion-context` | reversible context compression and `/acp` diagnostics; native inline mode |
+| `billion-context` | reversible context compression and `/acp` diagnostics; native inline mode (`bili` CLI also shared across harnesses) |
 | `pi-agent-browser-native` | `agent_browser` and advanced browser tools discovered via native `tool_search`; orchestration via Pi `codemode` |
 | `pi-codex-image-gen` | `codex_generate_image` and `imagegen` |
 | `pi-context-view` | `/context` usage map and `/context injections` inspector |
-| `pi-intercom` | `intercom` and cross-session coordination |
-| `pi-invisible-continue` | manual invisible `/continue` command |
+| `pi-intercom` | `intercom` and cross-session coordination (`pi-intercom` CLI also shared across harnesses) |
 | `pi-multi-account` | subscription-to-API failover, quota display, and `/multi-account` controls |
 | `pi-powerline` | coordinated editor breadcrumbs and footer; Sakura retains the header |
 | `pi-subagents` | `subagents_enable`, `subagent`, `bg_wait`, and packaged agents |
-| `pi-web-access` | `web_enable`, `web_search`, `source_check`, `fetch_content`, and `get_search_content` |
-| `rea-agents` | `rea` CLI, REA MCP server, and bundled `reverse-engineer-anything` skill |
+| `pi-web-access` | `web_enable`, `web_search`, `source_check`, `fetch_content`, and `get_search_content` (`pi-web-access-mcp` also shared) |
 | `rinco-pi-sakura` | Sakura Macaron theme and animated header |
 
-Agent Orchestrator complements `pi-subagents`; existing delegation routing remains unchanged.
-Use its `/agents` dashboard or `/orchestra-audit` and `/orchestra-plan` workflows
-when explicitly requested. Its Git-worktree isolation is not suitable for this
-jj-managed workspace; do not enable it here. Multi-agent dispatch still requires
-authorization, regardless of which extension provides it.
+`rea-agents` stays in the shared npm closure (`AI/shared/tools.nix`) rather than Pi's extension list: it provides the shared `rea` CLI, Pi's `mcp.json` REA server, and the shared `reverse-engineer-anything` skill.
+`@groeponline/pi-agent-orchestrator`, `@juanibiapina/pi-extension-settings`, and `pi-invisible-continue` were retired from Pi's extensions; portable workflows (`orchestration`, `council-mode`, `review-loop`, `real-product-showcase`, `structured-clarification`, `browser`, `web-research`, `intercom`, `context-compression`, `ollama`) live under `AI/shared/skills/` for all harnesses. Multi-agent dispatch still requires authorization.
 
 `billion-context` runs its native Pi entry in-process by default. Nix disables
 its self-updater and advisory force-installer, persists its local session store,
