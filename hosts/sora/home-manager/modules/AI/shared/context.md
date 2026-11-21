@@ -197,5 +197,6 @@ load the `security-sweep` skill and execute its checklist. No exceptions.
 - **security-sweep** — post-secret-work verification checklist
 - **invest** — personal finance, stocks, FIIs, BTC, gold, AUVP/Sardinha
 - **personal-tools** — khal, khard, todoman, aerc, vdirsyncer
+- **finances** — personal finance spreadsheet (`gastos`), Firefly-to-Sheets sync, 3-bucket monthly caps, installment filter, and VR tab rules
 - **firefly** — Firefly III: transactions, budgets, reimbursements
 - **lumis** — MTG proxy printing: orders, supplies, tracking

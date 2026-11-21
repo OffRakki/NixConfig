@@ -42,6 +42,7 @@
     ciel-brain = ../shared/skills/ciel-brain;
     context-compression = ../shared/skills/context-compression;
     context-curation = ../shared/skills/context-curation;
+    finances = ../shared/skills/finances;
     firefly = ../shared/skills/firefly;
     i-have-adhd = ../shared/skills/i-have-adhd;
     improve = ../shared/skills/improve;
