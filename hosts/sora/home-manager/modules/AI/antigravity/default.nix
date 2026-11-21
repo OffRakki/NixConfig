@@ -54,6 +54,7 @@
     inherit lib pkgs;
     inherit (sharedTools) reaSkill piIntercomInboxHook;
   };
+  marketplacePlugins = import ./plugins.nix {inherit lib pkgs;};
 
   launcher = pkgs.writeShellScriptBin "agy" ''
     export AGY_CLI_DISABLE_AUTO_UPDATE=true
@@ -150,22 +151,28 @@ in {
             type = "Application";
           };
         };
-        home.file = {
-          ".gemini/config/AGENTS.md".source = context;
-          ".gemini/config/plugins.json".text = builtins.toJSON {
-            entries = [{path = toString workflows;}];
-          };
-          ".gemini/config/mcp_config.json".text = builtins.toJSON {
-            mcpServers = {
-              pi-web-access = {
-                command = "${sharedTools.piWebAccessMcp}/bin/pi-web-access-mcp";
-              };
-              pi-intercom = {
-                command = "${sharedTools.piIntercomMcp}/bin/pi-intercom-mcp";
+        home.file =
+          {
+            ".gemini/config/AGENTS.md".source = context;
+            ".gemini/config/plugins.json".text = builtins.toJSON {
+              entries = [{path = toString workflows;}];
+            };
+            ".gemini/config/mcp_config.json".text = builtins.toJSON {
+              mcpServers = {
+                pi-web-access = {
+                  command = "${sharedTools.piWebAccessMcp}/bin/pi-web-access-mcp";
+                };
+                pi-intercom = {
+                  command = "${sharedTools.piIntercomMcp}/bin/pi-intercom-mcp";
+                };
               };
             };
-          };
-        };
+          }
+          // lib.mapAttrs' (name: drv:
+            lib.nameValuePair ".gemini/config/plugins/${name}" {
+              source = drv;
+            })
+          marketplacePlugins;
       }
       (import ./usage {
         inherit pkgs nodejs;
