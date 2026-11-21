@@ -173,6 +173,18 @@ in {
               source = drv;
             })
           marketplacePlugins;
+
+        home.persistence."/persist".directories = [
+          {
+            directory = ".gemini/antigravity-cli";
+            mode = "0700";
+          }
+          ".gemini/config"
+          {
+            directory = ".config/antigravity";
+            mode = "0700";
+          }
+        ];
       }
       (import ./usage {
         inherit pkgs nodejs;
@@ -180,13 +192,6 @@ in {
       })
     ]))
     (lib.mkIf (cfg.enable && cfg.remoteControl.enable) {
-      home.persistence."/persist".directories = [
-        {
-          directory = ".gemini/antigravity-cli";
-          mode = "0700";
-        }
-      ];
-
       # Sora's linger flag is persisted under /var/lib/systemd.
       systemd.user.services.antigravity-cli-daemon = {
         Unit = {
