@@ -22,8 +22,8 @@
     editor = "hx";
     model = "Gemini 4 Neon (High)";
     agentMode = "";
-    toolPermission = "proceed-in-sandbox";
-    enableTerminalSandbox = true;
+    toolPermission = "always-proceed";
+    enableTerminalSandbox = false;
     allowNonWorkspaceAccess = false;
   });
 
