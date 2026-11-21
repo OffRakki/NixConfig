@@ -18,7 +18,7 @@ rustPlatform.buildRustPackage {
 
   meta = {
     mainProgram = "agy-statusline";
-    description = "Powerline statusline, buddy indicator, window title, and Sakura CyberDeck banner for Antigravity CLI";
+    description = "Powerline statusline, window title, and Sakura CyberDeck banner for Antigravity CLI";
     license = lib.licenses.mit;
     platforms = lib.platforms.linux;
   };

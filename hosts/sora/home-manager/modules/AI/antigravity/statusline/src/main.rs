@@ -6,7 +6,6 @@ use std::path::{Path, PathBuf};
 
 const RESET: &str = "\x1b[0m";
 const BOLD: &str = "\x1b[1m";
-const DIM: &str = "\x1b[2m";
 
 const SAKURA: Rgb = Rgb(242, 167, 198);
 const PEACH: Rgb = Rgb(252, 201, 185);
@@ -63,7 +62,6 @@ struct Palette {
     orange: Rgb,
     red: Rgb,
     text: Rgb,
-    muted: Rgb,
     dim: Rgb,
 }
 
@@ -81,7 +79,6 @@ impl Default for Palette {
             orange: Rgb(250, 179, 135),
             red: Rgb(243, 139, 168),
             text: Rgb(205, 214, 244),
-            muted: Rgb(166, 173, 200),
             dim: Rgb(108, 112, 134),
         }
     }
@@ -107,7 +104,6 @@ impl Palette {
         palette.orange = pick("orange", palette.orange);
         palette.red = pick("red", palette.red);
         palette.text = pick("text", palette.text);
-        palette.muted = pick("muted", palette.muted);
         palette.dim = pick("dim", palette.dim);
         palette
     }
@@ -191,18 +187,6 @@ fn format_effort(raw: &str) -> &'static str {
         "xhigh" => "xhi",
         "max" => "max",
         _ => "",
-    }
-}
-
-fn buddy_style(state: &str, palette: Palette) -> (&'static str, &'static str, Rgb) {
-    match state {
-        "working" => ("· •", "thinking", palette.accent),
-        "tool_use" => ("◉ ◉", "working", palette.cyan),
-        "reviewing" => ("⌕ ⌕", "reviewing", palette.purple),
-        "initializing" => ("· ·", "starting", palette.muted),
-        "authenticating" => ("◈ ◈", "auth", palette.yellow),
-        "error" => ("× ×", "uh-oh", palette.red),
-        _ => ("• •", "ready", palette.muted),
     }
 }
 
@@ -364,29 +348,7 @@ fn render_statusline(payload: &Value, palette: Palette, home: Option<&str>) -> S
     }
 
     let sep = format!("{}│{}", palette.dim.fg(), RESET);
-    let line1 = segments.join(&sep);
-
-    let state = payload
-        .get("agent_state")
-        .and_then(Value::as_str)
-        .unwrap_or("idle");
-    let (eyes, label, color) = buddy_style(state, palette);
-    let agent_tag = payload
-        .get("agent")
-        .and_then(|a| a.get("name"))
-        .and_then(Value::as_str)
-        .filter(|n| !n.is_empty())
-        .map(|n| format!(" {}[{n}]{}", DIM, RESET))
-        .unwrap_or_default();
-
-    let line2 = format!(
-        "{}╭─ π ─╮ {}│ {eyes} │{} {BOLD}{label}{RESET}{agent_tag}",
-        color.fg(),
-        color.fg(),
-        color.fg()
-    );
-
-    format!("{line1}\n{line2}")
+    segments.join(&sep)
 }
 
 fn sanitize_title(input: &str) -> String {
@@ -547,7 +509,7 @@ mod tests {
     }
 
     #[test]
-    fn renders_full_statusline_and_buddy() {
+    fn renders_single_line_powerline_statusline() {
         let payload = json!({
             "cwd": "/home/rakki/Projects/NixConfig",
             "vcs": { "type": "jj" },
@@ -569,7 +531,7 @@ mod tests {
         });
         let out = render_statusline(&payload, Palette::default(), Some("/home/rakki"));
         let lines: Vec<&str> = out.lines().collect();
-        assert_eq!(lines.len(), 2);
+        assert_eq!(lines.len(), 1);
         assert!(lines[0].contains("~/Projects/NixConfig"));
         assert!(lines[0].contains("jj"));
         assert!(lines[0].contains("Gemini 4 Neon  high"));
@@ -579,27 +541,14 @@ mod tests {
         assert!(lines[0].contains("sandbox"));
         assert!(lines[0].contains("󰚩 1"));
         assert!(lines[0].contains("󰈙 2"));
-        assert!(lines[1].contains("◉ ◉"));
-        assert!(lines[1].contains("working"));
+        assert!(!out.contains("╭─ π ─╮"));
     }
 
     #[test]
-    fn handles_empty_payload_and_all_states() {
-        let palette = Palette::default();
-        let empty = render_statusline(&json!({}), palette, Some("/home/rakki"));
-        assert!(empty.contains("ready"));
-        for (state, expected_label) in [
-            ("idle", "ready"),
-            ("working", "thinking"),
-            ("tool_use", "working"),
-            ("reviewing", "reviewing"),
-            ("initializing", "starting"),
-            ("authenticating", "auth"),
-            ("error", "uh-oh"),
-        ] {
-            let out = render_statusline(&json!({ "agent_state": state }), palette, None);
-            assert!(out.contains(expected_label), "state={state} out={out}");
-        }
+    fn handles_empty_payload_cleanly() {
+        let out = render_statusline(&json!({}), Palette::default(), Some("/home/rakki"));
+        assert_eq!(out.lines().count(), 1);
+        assert!(out.contains("~"));
     }
 
     #[test]
