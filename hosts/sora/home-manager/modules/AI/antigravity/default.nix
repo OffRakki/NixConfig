@@ -46,7 +46,7 @@
   resources = import ../pi/resources.nix {inherit pkgs;};
   workflows = import ./workflows.nix {
     inherit lib pkgs;
-    inherit (sharedTools) reaSkill;
+    inherit (sharedTools) reaSkill piIntercomInboxHook;
   };
 
   launcher = pkgs.writeShellScriptBin "agy" ''
@@ -153,6 +153,9 @@ in {
             mcpServers = {
               pi-web-access = {
                 command = "${sharedTools.piWebAccessMcp}/bin/pi-web-access-mcp";
+              };
+              pi-intercom = {
+                command = "${sharedTools.piIntercomMcp}/bin/pi-intercom-mcp";
               };
             };
           };

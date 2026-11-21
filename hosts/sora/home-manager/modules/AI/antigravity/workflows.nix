@@ -2,6 +2,7 @@
   lib,
   pkgs,
   reaSkill,
+  piIntercomInboxHook,
 }: let
   render = import ../shared/render.nix;
   shared = path: builtins.readFile (../shared + "/${path}");
@@ -59,11 +60,26 @@
     version = "1.0.0";
     description = "Nix-managed skills, workflows, and specialist agents.";
   });
+  hooks = pkgs.writeText "hooks.json" (builtins.toJSON {
+    pi-intercom-inbox = {
+      PreInvocation = [
+        {
+          type = "command";
+          command = "${piIntercomInboxHook}/bin/pi-intercom-inbox-hook";
+          timeout = 5;
+        }
+      ];
+    };
+  });
 in
   pkgs.linkFarm "antigravity-personal-workflows" ([
       {
         name = "plugin.json";
         path = manifest;
+      }
+      {
+        name = "hooks.json";
+        path = hooks;
       }
       (renderedSharedSkill "politics" {toolWorkflow = builtins.readFile ./politics-tool-workflow.md;})
       {
@@ -87,12 +103,15 @@ in
       })
       (renderedSharedSkill "intercom" {
         intercomAdapter = ''
-          Use the `pi-intercom` CLI via `run_command`:
-          - `pi-intercom list --json` — inspect active sessions on the local broker.
-          - `pi-intercom send --to <target> --text "<message>" --name agy` — fire-and-forget handoff.
-          - `pi-intercom ask --to <target> --text "<question>" --timeout-ms 60000 --name agy --json` — wait for a reply.
+          Use the `pi-intercom` MCP server's `intercom` tool (auto-registers this Antigravity session in the shared local broker and spawns the broker automatically if needed):
+          - `action: "list"` — inspect all connected Pi and Antigravity sessions.
+          - `action: "rename", name: "<alias>"` — set a human-friendly session alias (default is `agy-<folder>-<4char>`).
+          - `action: "send", to: "<target>", message: "<text>"` — fire-and-forget handoff.
+          - `action: "ask", to: "<target>", message: "<question>", timeoutMs: 60000` — synchronous request waiting for a reply.
+          - `action: "inbox"` — read unread inbound messages and pending asks sent to this session.
+          - `action: "reply", message: "<answer>"` — reply to a pending ask (optional `to` or `replyTo`).
 
-          Note that CLI invocations connect only for the duration of the command (`ask` waits for a reply; unsolicited push messages require a persistent listener session).
+          A `PreInvocation` hook also surfaces unread inbound messages automatically during active turns. The `pi-intercom` CLI (`pi-intercom list|send|ask`) remains available on `PATH` as a fallback.
         '';
       })
       (renderedSharedSkill "orchestration" {

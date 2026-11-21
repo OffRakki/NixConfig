@@ -14,6 +14,7 @@ in {
     tools.rea
     tools.piWebAccessMcp
     tools.piIntercom
+    tools.piIntercomMcp
     tools.bili
     tools.ollamaCheck
     pkgs.agent-browser

@@ -31,6 +31,24 @@
     '';
   };
 
+  piIntercomMcp = pkgs.writeShellApplication {
+    name = "pi-intercom-mcp";
+    runtimeInputs = [nodejs];
+    text = ''
+      export PI_INTERCOM_PKG_DIR="${closure}/node_modules/pi-intercom"
+      export PI_INTERCOM_NODE_MODULES="${closure}/node_modules"
+      exec node --import "file://${closure}/node_modules/tsx/dist/loader.mjs" "${./intercom-mcp/server.mts}" "$@"
+    '';
+  };
+
+  piIntercomInboxHook = pkgs.writeShellApplication {
+    name = "pi-intercom-inbox-hook";
+    runtimeInputs = [nodejs];
+    text = ''
+      exec node "${./intercom-mcp/inbox-hook.mjs}" "$@"
+    '';
+  };
+
   bili = pkgs.writeShellApplication {
     name = "bili";
     runtimeInputs = [nodejs];
@@ -81,6 +99,8 @@ in {
     rea
     piWebAccessMcp
     piIntercom
+    piIntercomMcp
+    piIntercomInboxHook
     bili
     ollamaCheck
     reaSkill
