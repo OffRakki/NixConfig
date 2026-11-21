@@ -69,6 +69,15 @@
     fi
     exec ${lib.getExe antigravity} --settings ${settings} "$@"
   '';
+
+  seedRemoteControlToken = pkgs.writeShellScript "agy-seed-remote-control-token" ''
+    token_file="$HOME/.gemini/antigravity-cli/antigravity-oauth-token"
+    if [ ! -s "$token_file" ]; then
+      # Interactive agy removes the file token after refreshing via keyring;
+      # remote-control start re-seeds it before hitting the read-only Nix unit.
+      ${lib.getExe launcher} remote-control start >/dev/null 2>&1 || true
+    fi
+  '';
 in {
   imports = [
     ./noctalia.nix
@@ -151,6 +160,7 @@ in {
           StartLimitIntervalSec = 0;
         };
         Service = {
+          ExecStartPre = "${seedRemoteControlToken}";
           ExecStart = "${lib.getExe launcher} remote-control serve";
           Restart = "on-failure";
           RestartSec = "10s";
