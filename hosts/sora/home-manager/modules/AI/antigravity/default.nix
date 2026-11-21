@@ -23,7 +23,7 @@
 
   settings = pkgs.writeText "antigravity-settings.json" (builtins.toJSON {
     editor = "hx";
-    model = "Gemini 4 Neon (High)";
+    model = "Gemini 4 Neon (Medium)";
     agentMode = "";
     toolPermission = "always-proceed";
     enableTerminalSandbox = false;
