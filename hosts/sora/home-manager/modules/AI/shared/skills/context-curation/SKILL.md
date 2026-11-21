@@ -9,7 +9,7 @@ AI guidance lives under `hosts/sora/home-manager/modules/AI/`:
 
 - `shared/context.md` and `shared/operator.md` — portable identity, rules, and operator preferences.
 - `pi/context.md` — Pi conventions and skill routing. Antigravity still receives this layer for compatibility.
-- `shared/skills/<name>/SKILL.md` or `pi/skills/<name>/SKILL.md` — portable or Pi-specific domain guidance, with references kept alongside.
+- `shared/skills/<name>/SKILL.md` — domain guidance for all harnesses, with references kept alongside.
 
 Use `read` before changing a file, `bash` for bounded search, and `edit` or
 `write` for source changes. Load `pi-tools` before changing tool guidance.

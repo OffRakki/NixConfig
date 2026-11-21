@@ -35,7 +35,7 @@ paths under `~/.pi/agent/` update only after Home Manager activation.
 
 When adding a Nix-managed Pi skill or agent:
 
-1. Put Pi-only skills in `hosts/sora/home-manager/modules/AI/pi/skills/`, portable skills in `hosts/sora/home-manager/modules/AI/shared/skills/`, and Pi agent adapters in `hosts/sora/home-manager/modules/AI/pi/agents/`.
+1. Put skills in `hosts/sora/home-manager/modules/AI/shared/skills/` and Pi agent adapters in `hosts/sora/home-manager/modules/AI/pi/agents/`.
 2. Add a routing line to `context.md` only if it should be proactively loaded.
 3. Build/check before claiming it is available at runtime.
 

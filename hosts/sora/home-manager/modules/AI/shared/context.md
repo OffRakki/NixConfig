@@ -145,7 +145,7 @@ add the thing to the appropriate skill or context file. Non-negotiable.
 
 # SOPS secrets
 
-Private info: `~/Projects/NixConfig/hosts/sora/home-manager/modules/AI/pi/private.yaml`
+Private info: `~/Projects/NixConfig/hosts/sora/home-manager/modules/AI/shared/private.yaml`
 View: `sops --decrypt <path>`, Edit: `sops <path>`.
 Keys: `lucky-info`, `skillFireflyPrivate`, `skillLumisPrivate`.
 Never put secrets in the Nix store, command arguments, transcripts, or reports.
@@ -195,3 +195,7 @@ load the `security-sweep` skill and execute its checklist. No exceptions.
 - **ciel-brain** — Obsidian long-term memory, session notes, chat pins, and
   Ciel's standalone brain vault
 - **security-sweep** — post-secret-work verification checklist
+- **invest** — personal finance, stocks, FIIs, BTC, gold, AUVP/Sardinha
+- **personal-tools** — khal, khard, todoman, aerc, vdirsyncer
+- **firefly** — Firefly III: transactions, budgets, reimbursements
+- **lumis** — MTG proxy printing: orders, supplies, tracking

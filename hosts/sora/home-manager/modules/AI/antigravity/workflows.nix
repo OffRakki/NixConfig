@@ -39,20 +39,26 @@
     '';
   };
   sharedSkills = {
-    ciel-brain = ../pi/skills/ciel-brain;
+    ciel-brain = ../shared/skills/ciel-brain;
     context-compression = ../shared/skills/context-compression;
-    context-curation = ../pi/skills/context-curation;
-    i-have-adhd = ../pi/skills/i-have-adhd;
+    context-curation = ../shared/skills/context-curation;
+    firefly = ../shared/skills/firefly;
+    i-have-adhd = ../shared/skills/i-have-adhd;
+    improve = ../shared/skills/improve;
+    invest = ../shared/skills/invest;
     jujutsu = ../shared/skills/jujutsu;
     linux = ../shared/skills/linux;
+    lumis = ../shared/skills/lumis;
     modeling = ../shared/skills/modeling;
-    nix = ../pi/skills/nix;
+    nix = ../shared/skills/nix;
     nix-refactor = ../shared/skills/nix-refactor;
     ollama = ../shared/skills/ollama;
+    personal-tools = ../shared/skills/personal-tools;
+    pi-tools = ../shared/skills/pi-tools;
     quickshell = ../shared/skills/quickshell;
     real-product-showcase = ../shared/skills/real-product-showcase;
     rust = ../shared/skills/rust;
-    security-sweep = ../pi/skills/security-sweep;
+    security-sweep = ../shared/skills/security-sweep;
     seo = ../shared/skills/seo;
   };
   manifest = pkgs.writeText "plugin.json" (builtins.toJSON {
@@ -151,7 +157,7 @@ in
         name = "skills/reverse-engineer-anything/references";
         path = "${reaSkill}/references";
       }
-      (skill "nix-auditor" "Audit NixOS and Home Manager configuration without edits." (builtins.replaceStrings ["`read`" "`bash`"] ["`view_file`" "`run_command`"] (markdownBody (builtins.readFile ../pi/skills/nix-auditor/SKILL.md))))
+      (skill "nix-auditor" "Audit NixOS and Home Manager configuration without edits." (builtins.replaceStrings ["`read`" "`bash`"] ["`view_file`" "`run_command`"] (markdownBody (builtins.readFile ../shared/skills/nix-auditor/SKILL.md))))
       (skill "screenshot" "Capture desktop or browser screenshots and optionally analyze them." (markdownBody (render {
         browserTable = "Use `browser` skill (native `/browser` or `agent-browser`)";
         browserInstructions = "load the `browser` skill and use native Antigravity browser controls or `agent-browser`";

@@ -16,7 +16,7 @@ Runtime files under `~/.pi/agent/` are outputs, not sources; never edit them.
 | Nix-built packages | `packages/` |
 | Trust/capabilities | `packages/inventory.json` |
 | Context | `context.md` plus `../shared/context.md` and `../shared/operator.md` |
-| Skills | `skills/<name>/SKILL.md` or `../shared/skills/<name>/SKILL.md` |
+| Skills | `../shared/skills/<name>/SKILL.md` |
 | Agents and prompts | `agents/` and `prompts/` for Pi adapters; `../shared/agents/` and `../shared/workflows/` for reusable bodies |
 | Extensions and themes | `extensions/` and `themes/` |
 

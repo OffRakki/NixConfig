@@ -28,7 +28,3 @@ When asked for private info, read `APPEND_SYSTEM.md` or decrypt `lucky-info`.
 ## Pi-only skill routing
 
 - **pi-tools** — Pi runtime tools, packages, extensions, agents, prompts, and tool-routing inventory
-- **invest** — personal finance, stocks, FIIs, BTC, gold, AUVP/Sardinha
-- **personal-tools** — khal, khard, todoman, aerc, vdirsyncer
-- **firefly** — Firefly III: transactions, budgets, reimbursements
-- **lumis** — MTG proxy printing: orders, supplies, tracking

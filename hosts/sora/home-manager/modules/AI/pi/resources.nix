@@ -41,10 +41,9 @@
     "reverse-engineer-anything"
   ];
   skills = pkgs.linkFarm "pi-skills" (
-    skillDirs ./skills
-    ++ lib.filter (entry: !(builtins.elem entry.name excludedRawSharedSkills)) (skillDirs ../shared/skills)
+    lib.filter (entry: !(builtins.elem entry.name excludedRawSharedSkills)) (skillDirs ../shared/skills)
     ++ [
-      (renderedSharedSkill "politics" {toolWorkflow = readFile ./skills/politics-tool-workflow.md;})
+      (renderedSharedSkill "politics" {toolWorkflow = readFile ./politics-tool-workflow.md;})
       {
         name = "politics/references";
         path = ../shared/skills/politics/references;

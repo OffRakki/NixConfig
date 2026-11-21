@@ -1,6 +1,6 @@
 {config, ...}: {
   # Two SOPS files: ../../../secrets.yaml (system/general) and
-  # ../home-manager/modules/AI/pi/private.yaml (Pi/AI-related: keys, skills, private info).
+  # ../home-manager/modules/AI/shared/private.yaml (AI-related: keys, skills, private info).
   sops = {
     age.sshKeyPaths = ["/persist/etc/ssh/ssh_host_ed25519_key"];
     defaultSopsFile = ../../../secrets.yaml;
@@ -46,38 +46,38 @@
     };
 
     secrets.mailRecipientPolicy = {
-      sopsFile = ../home-manager/modules/AI/pi/private.yaml;
+      sopsFile = ../home-manager/modules/AI/shared/private.yaml;
       owner = "rakki";
       mode = "0400";
     };
     secrets.lucky-info = {
-      sopsFile = ../home-manager/modules/AI/pi/private.yaml;
+      sopsFile = ../home-manager/modules/AI/shared/private.yaml;
       owner = "rakki";
     };
     secrets.skillFireflyPrivate = {
-      sopsFile = ../home-manager/modules/AI/pi/private.yaml;
+      sopsFile = ../home-manager/modules/AI/shared/private.yaml;
       owner = "rakki";
     };
     secrets.skillLumisPrivate = {
-      sopsFile = ../home-manager/modules/AI/pi/private.yaml;
+      sopsFile = ../home-manager/modules/AI/shared/private.yaml;
       owner = "rakki";
     };
     secrets.webSearchJson = {
-      sopsFile = ../home-manager/modules/AI/pi/private.yaml;
+      sopsFile = ../home-manager/modules/AI/shared/private.yaml;
       owner = "rakki";
     };
     secrets.anthropicApiKey = {
-      sopsFile = ../home-manager/modules/AI/pi/private.yaml;
+      sopsFile = ../home-manager/modules/AI/shared/private.yaml;
       owner = "rakki";
     };
     secrets.auvpApiKey = {
-      sopsFile = ../home-manager/modules/AI/pi/private.yaml;
+      sopsFile = ../home-manager/modules/AI/shared/private.yaml;
       owner = "rakki";
       mode = "0400";
     };
     #Charm (free ai api 10m tokensish/month)
     secrets.hyperApiKey = {
-      sopsFile = ../home-manager/modules/AI/pi/private.yaml;
+      sopsFile = ../home-manager/modules/AI/shared/private.yaml;
       owner = "rakki";
     };
   };
