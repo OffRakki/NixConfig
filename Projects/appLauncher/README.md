@@ -17,7 +17,9 @@ export APP_LAUNCHER_BINARY=/tmp/app-launcher-target/debug/app-launcher
 ./launch --stop
 ```
 
-Keyboard controls: fuzzy type-to-search; `↑/↓`, `Ctrl+J/K`, or `Ctrl+N/P` to navigate; `Enter` to launch; `Ctrl+Space` to favorite; `Ctrl+F` for favorites-only; `Ctrl+1/2/3` to sort; `Ctrl+L` to clear; `Esc` to close. The mouse is optional.
+Keyboard controls: fuzzy type-to-search; `↑/↓`, `Ctrl+J/K`, or `Ctrl+N/P` to navigate; `Enter` to launch; `Ctrl+Space` to favorite; `Ctrl+Shift+↑/↓` or `Ctrl+Shift+J/K` to reorder runtime favorites in Smart sort; `Ctrl+F` for favorites-only; `Ctrl+1/2/3` to sort; `Ctrl+L` to clear; `Esc` to close. The mouse is optional.
+
+Declaratively pinned apps live in `$XDG_CONFIG_HOME/app-launcher/config.json` (overridable via `APP_LAUNCHER_CONFIG`) as `{"pinned": ["app-id", ...]}`; they always lead Smart sort in declared order ahead of runtime favorites.
 
 Hyprland starts or toggles it with `Super+D`; the launcher opens on the focused monitor.
 

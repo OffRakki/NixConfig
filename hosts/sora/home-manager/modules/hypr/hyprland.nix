@@ -29,6 +29,15 @@ in {
 
   home.packages = [appLauncher autoclicker];
 
+  xdg.configFile."app-launcher/config.json".text = builtins.toJSON {
+    pinned = [
+      "agy"
+      "pi-coding-agent"
+      "firefox"
+      "aerc"
+    ];
+  };
+
   # Deliberately not enabled at login: only the shortcut starts clicking.
   systemd.user.services.autoclicker = {
     Unit = {

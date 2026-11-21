@@ -36,6 +36,21 @@ ShellRoot {
             }
         }
 
+        FileView {
+            id: configFile
+            path: Quickshell.env("APP_LAUNCHER_CONFIG")
+                || (Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config")
+                    + "/app-launcher/config.json"
+            watchChanges: true
+            printErrors: false
+            onFileChanged: reload()
+
+            JsonAdapter {
+                id: launcherConfig
+                property list<string> pinned: []
+            }
+        }
+
         property bool passwordMode: false
         PasswordSession {
             id: passwords
@@ -91,18 +106,27 @@ ShellRoot {
         property bool favoritesOnly: false
         property string sortMode: "smart"
         readonly property var apps: DesktopEntries.applications.values.slice()
+        readonly property var orderedFavorites: {
+            const pinned = [...launcherConfig.pinned]
+            const runtime = [...state.favorites]
+            return [...pinned, ...runtime.filter(id => !pinned.includes(id))]
+        }
         readonly property var matchingApps: {
             const query = search.text.trim().toLowerCase()
-            const favorites = state.favorites
+            const favorites = orderedFavorites
             const counts = state.launches
             let matches = apps
                 .filter(app => !favoritesOnly || favorites.includes(app.id))
-                .map(app => ({
-                    entry: app,
-                    favorite: favorites.includes(app.id),
-                    launches: counts[app.id] || 0,
-                    score: query ? fuzzyScore(app, query) : 0
-                }))
+                .map(app => {
+                    const favoriteIndex = favorites.indexOf(app.id)
+                    return {
+                        entry: app,
+                        favorite: favoriteIndex >= 0,
+                        favoriteIndex: favoriteIndex,
+                        launches: counts[app.id] || 0,
+                        score: query ? fuzzyScore(app, query) : 0
+                    }
+                })
                 .filter(item => !query || item.score > -Infinity)
 
             matches.sort((a, b) => {
@@ -111,6 +135,8 @@ ShellRoot {
                 if (sortMode === "smart") {
                     if (a.favorite !== b.favorite)
                         return a.favorite ? -1 : 1
+                    if (a.favorite && b.favorite && a.favoriteIndex !== b.favoriteIndex)
+                        return a.favoriteIndex - b.favoriteIndex
                     if (a.launches !== b.launches)
                         return b.launches - a.launches
                 } else if (sortMode === "used" && a.launches !== b.launches) {
@@ -201,6 +227,8 @@ ShellRoot {
         }
 
         function toggleFavorite(app: var): void {
+            if ([...launcherConfig.pinned].includes(app.id))
+                return
             state.favorites = state.favorites.includes(app.id)
                 ? state.favorites.filter(id => id !== app.id)
                 : [...state.favorites, app.id]
@@ -212,6 +240,29 @@ ShellRoot {
             const index = Math.max(0, list.currentIndex)
             toggleFavorite(results[index].entry)
             Qt.callLater(() => list.currentIndex = Math.min(index, results.length - 1))
+        }
+
+        function moveSelectedFavorite(delta: int): void {
+            if (passwordMode || sortMode !== "smart" || search.text.trim() !== "" || results.length === 0)
+                return
+            const index = Math.max(0, list.currentIndex)
+            const targetIndex = index + delta
+            if (index >= results.length || targetIndex < 0 || targetIndex >= results.length)
+                return
+            const current = results[index]
+            const neighbor = results[targetIndex]
+            const pinned = [...launcherConfig.pinned]
+            if (!current.favorite || !neighbor.favorite || pinned.includes(current.entry.id) || pinned.includes(neighbor.entry.id))
+                return
+            const next = [...state.favorites]
+            const from = next.indexOf(current.entry.id)
+            const to = next.indexOf(neighbor.entry.id)
+            if (from < 0 || to < 0 || from === to)
+                return
+            next.splice(from, 1)
+            next.splice(to, 0, current.entry.id)
+            state.favorites = next
+            Qt.callLater(() => list.currentIndex = targetIndex)
         }
 
         function moveSelection(amount: int): void {
@@ -417,13 +468,16 @@ ShellRoot {
 
                             Keys.onPressed: event => {
                                 const ctrl = event.modifiers & Qt.ControlModifier
+                                const shift = event.modifiers & Qt.ShiftModifier
                                 if (root.passwordMode && passwords.busy) { event.accepted = true; return }
                                 if (root.passwordMode && ctrl && [Qt.Key_Space, Qt.Key_F, Qt.Key_1, Qt.Key_2, Qt.Key_3, Qt.Key_S].includes(event.key)) { event.accepted = true; return }
                                 if (event.key === Qt.Key_Escape || event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                                     event.accepted = true
                                     return
                                 }
-                                if (event.key === Qt.Key_Down || (ctrl && (event.key === Qt.Key_J || event.key === Qt.Key_N))) root.moveSelection(1)
+                                if (ctrl && shift && (event.key === Qt.Key_Down || event.key === Qt.Key_J)) root.moveSelectedFavorite(1)
+                                else if (ctrl && shift && (event.key === Qt.Key_Up || event.key === Qt.Key_K)) root.moveSelectedFavorite(-1)
+                                else if (event.key === Qt.Key_Down || (ctrl && (event.key === Qt.Key_J || event.key === Qt.Key_N))) root.moveSelection(1)
                                 else if (event.key === Qt.Key_Up || (ctrl && (event.key === Qt.Key_K || event.key === Qt.Key_P))) root.moveSelection(-1)
                                 else if (event.key === Qt.Key_PageDown) root.moveSelection(5)
                                 else if (event.key === Qt.Key_PageUp) root.moveSelection(-5)
@@ -672,7 +726,7 @@ ShellRoot {
                 RowLayout {
                     Layout.fillWidth: true
                     Text {
-                        text: root.passwordMode ? "↑↓ navigate   ↵ " + (passwords.selected ? "execute" : "actions") + "   esc back / close" : "↑↓ / ctrl+jk navigate   ↵ launch   ctrl+space favorite"
+                        text: root.passwordMode ? "↑↓ navigate   ↵ " + (passwords.selected ? "execute" : "actions") + "   esc back / close" : "↑↓ / ctrl+jk navigate   ↵ launch   ctrl+space fav   ctrl+shift+↑↓ reorder"
                         color: launcherPalette.mutedText
                         font.family: "Noto Sans"
                         font.pixelSize: 10
