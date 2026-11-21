@@ -52,13 +52,28 @@
   launcher = pkgs.writeShellScriptBin "agy" ''
     export AGY_CLI_DISABLE_AUTO_UPDATE=true
     show_banner=true
+    use_bili=true
     if [ ! -t 0 ] || [ ! -t 1 ]; then
+      show_banner=false
+    fi
+    if [ -n "''${BILI_AGY_WRAPPED:-}" ] || [ -n "''${CLOUD_CODE_URL:-}" ] || [ -n "''${AGY_DISABLE_BILI:-}" ]; then
+      use_bili=false
+    fi
+    if [ -n "''${BILI_AGY_WRAPPED:-}" ]; then
       show_banner=false
     fi
     for arg in "$@"; do
       case "$arg" in
-        -p|--print|--prompt|-h|--help|acp|agent|agents|changelog|help|install|mcp|mic-serve|models|plugin|plugins|remote-control|update)
+        -p|--print|--prompt)
           show_banner=false
+          ;;
+        --output-format|--output-format=*|--input-format|--input-format=*|--json-schema|--json-schema=*)
+          show_banner=false
+          use_bili=false
+          ;;
+        -h|--help|acp|agent|agents|changelog|help|install|mcp|mic-serve|models|plugin|plugins|remote-control|update)
+          show_banner=false
+          use_bili=false
           break
           ;;
       esac
@@ -66,6 +81,9 @@
     if [ "$show_banner" = true ]; then
       cols="''${COLUMNS:-$(${pkgs.ncurses}/bin/tput cols 2>/dev/null || echo 132)}"
       COLUMNS="$cols" ${lib.getExe agyStatusline} --banner || true
+    fi
+    if [ "$use_bili" = true ]; then
+      exec env BILI_AGY_WRAPPED=1 ${lib.getExe sharedTools.bili} antigravity -- "$@"
     fi
     exec ${lib.getExe antigravity} --settings ${settings} "$@"
   '';

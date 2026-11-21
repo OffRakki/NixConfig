@@ -26,4 +26,4 @@ description: Manage long-session context compression with billion-context (bili)
 
 - `bili` is installed on `PATH` from Sora's shared AI packages.
 - `~/.config/billion-context/billion-context.json` is Nix-managed (`autoUpdate = false`, `advisoryCheck = false`, `pi.subagents = false`); never run `bili` self-update commands.
-- `bili <harness>` wraps OpenAI/Anthropic-style API clients cleanly; Antigravity CLI authenticates against Google's managed backend, so verify compatibility before wrapping `agy` with `bili`.
+- On Sora, the `agy` wrapper automatically launches interactive and plain `-p` sessions through `bili antigravity` (`CLOUD_CODE_URL` `/bili/` rewrite), while bypassing `bili` for utility subcommands (`plugin`, `mcp`, `remote-control`, `acp`, etc.) and structured `--output-format` calls. Set `AGY_DISABLE_BILI=1` to bypass `bili` for a single `agy` invocation.
