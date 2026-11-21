@@ -85,6 +85,19 @@ in {
     (lib.mkIf cfg.enable (lib.mkMerge [
       {
         home.packages = [launcher];
+        xdg.desktopEntries.agy = {
+          name = "Agy";
+          genericName = "AI Coding Assistant";
+          comment = "Antigravity terminal-based AI coding assistant";
+          exec = "kitty --directory /home/rakki/Projects/NixConfig -e agy";
+          icon = "utilities-terminal";
+          terminal = false;
+          categories = [
+            "Development"
+            "ConsoleOnly"
+          ];
+          type = "Application";
+        };
         home.file = {
           ".gemini/config/AGENTS.md".source = resources.context;
           ".gemini/config/plugins.json".text = builtins.toJSON {
