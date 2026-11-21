@@ -19,6 +19,8 @@
     passthru = {};
   };
 
+  agyStatusline = pkgs.callPackage ./statusline.nix {};
+
   settings = pkgs.writeText "antigravity-settings.json" (builtins.toJSON {
     editor = "hx";
     model = "Gemini 4 Neon (High)";
@@ -26,6 +28,15 @@
     toolPermission = "always-proceed";
     enableTerminalSandbox = false;
     allowNonWorkspaceAccess = false;
+    colorScheme = "terminal";
+    statusLine = {
+      type = "command";
+      command = "${lib.getExe agyStatusline}";
+    };
+    title = {
+      type = "command";
+      command = "${lib.getExe agyStatusline} --title";
+    };
   });
 
   resources = import ../pi/resources.nix {inherit pkgs;};
@@ -36,9 +47,29 @@
 
   launcher = pkgs.writeShellScriptBin "agy" ''
     export AGY_CLI_DISABLE_AUTO_UPDATE=true
+    show_banner=true
+    if [ ! -t 0 ] || [ ! -t 1 ]; then
+      show_banner=false
+    fi
+    for arg in "$@"; do
+      case "$arg" in
+        -p|--print|--prompt|-h|--help|acp|agent|agents|changelog|help|install|mcp|mic-serve|models|plugin|plugins|remote-control|update)
+          show_banner=false
+          break
+          ;;
+      esac
+    done
+    if [ "$show_banner" = true ]; then
+      cols="''${COLUMNS:-$(${pkgs.ncurses}/bin/tput cols 2>/dev/null || echo 132)}"
+      COLUMNS="$cols" ${lib.getExe agyStatusline} --banner || true
+    fi
     exec ${lib.getExe antigravity} --settings ${settings} "$@"
   '';
 in {
+  imports = [
+    ./noctalia.nix
+  ];
+
   options.programs.agy = {
     enable = lib.mkEnableOption "the Antigravity CLI";
     remoteControl.enable = lib.mkEnableOption "the Antigravity remote-control daemon";

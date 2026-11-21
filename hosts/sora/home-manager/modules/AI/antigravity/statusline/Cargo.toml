@@ -1,0 +1,12 @@
+[package]
+name = "agy-statusline"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+publish = false
+
+[dependencies]
+serde_json = "1.0"
+
+[profile.release]
+strip = true
