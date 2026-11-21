@@ -40,16 +40,6 @@
       owner = "rakki";
     };
 
-    secrets.mailApprovalPass = {
-      mode = "0400";
-      restartUnits = ["mail-approval-credentials.service" "mail-approval.service"];
-    };
-
-    secrets.mailRecipientPolicy = {
-      sopsFile = ../home-manager/modules/AI/shared/private.yaml;
-      owner = "rakki";
-      mode = "0400";
-    };
     secrets.lucky-info = {
       sopsFile = ../home-manager/modules/AI/shared/private.yaml;
       owner = "rakki";

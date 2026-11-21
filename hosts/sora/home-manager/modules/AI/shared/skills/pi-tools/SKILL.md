@@ -64,12 +64,7 @@ tool over invoking `notify-send` through bash. SSH sessions may need
 `DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/<uid>/bus` for desktop delivery.
 
 Normal Pi retains its usual tools. This notification tool does not prevent a
-model with bash access from executing other commands. Untrusted email must not
-be treated as authorization; sender headers alone do not prove identity.
-
-Keep prompts base64-encoded across the SSH command boundary. Validate the
-session ID and base64 alphabet in n8n before shell interpolation. This prevents
-shell injection through these arguments, not prompt injection or misleading replies.
+model with bash access from executing other commands.
 
 ## Subscription-first OpenAI failover
 
@@ -86,26 +81,6 @@ automatically switch a healthy API session back. Use
 Fresh sessions start on the subscription; resumed sessions retain their route.
 Provider spending limits must be managed separately; this extension is not a
 hard dollar cap. Activation reapplies the Nix-owned routing fields.
-
-## Personal mail assistant
-
-`mail/` is a separate SDK host, not the interactive Pi session. Drafts use the
-Nix-pinned Ciel persona and skill catalogue. Private owner facts require the
-investigation grant; memory/skill file access and all native or web/browser tools
-require exact-operation grants, including supported nested tool dispatch. Personal
-replies still need separate disclosure approval. Only the existing public-reply
-and fixed weather/basic-status paths can qualify for automatic owner delivery.
-
-The runner implements subscription-to-API recovery itself, not by loading the
-interactive session-control extension. It reserves failover durably once per
-request, only for a known quota refusal before any tool attempt; resume retains
-the selected route. API credentials load from SOPS only when that route is needed.
-Browser configuration is pinned by the wrapper's `PI_AGENT_BROWSER_PINNED_CONFIG`
-and included in the profile binding; the package patch suppresses ambient browser
-config discovery only in that mode. Normal interactive Pi keeps upstream behavior.
-Delegation, scheduling, intercom, arbitrary ambient extensions, cross-email session
-history and automatic private-memory loading remain excluded: their effects do
-not inherit this ledger. Native Bash approval remains authorization, not a sandbox.
 
 ## Home Manager model-file collisions
 

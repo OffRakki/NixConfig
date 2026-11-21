@@ -39,12 +39,6 @@ in {
     packages = [
       inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.lean-ctx
       piw
-      (import ./mail {
-        inherit pkgs piPackage piPackages;
-        recipientPolicyFile = osConfig.sops.secrets.mailRecipientPolicy.path;
-        privateContextFile = osConfig.sops.secrets.lucky-info.path;
-        apiKeyFile = osConfig.sops.secrets.openaiApiKey.path;
-      })
     ];
     persistence."/persist".directories = [
       ".pi"
@@ -53,10 +47,6 @@ in {
       ".config/lean-ctx"
       ".local/share/lean-ctx"
       ".codex"
-      {
-        directory = ".local/state/mail-assistant";
-        mode = "0700";
-      }
     ];
   };
   # Nix owns updates; retain pi-subagents rather than registering a second delegate.
