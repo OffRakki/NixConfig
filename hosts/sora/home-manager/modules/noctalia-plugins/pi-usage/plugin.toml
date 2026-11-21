@@ -1,11 +1,11 @@
 id           = "local/pi-usage"
-name         = "OpenAI Usage"
-version      = "0.2.0"
+name         = "AI Usage"
+version      = "0.3.0"
 plugin_api   = 8
 author       = "local"
 license      = "MIT"
 icon         = "chart-donut-3"
-description  = "Shows OpenAI 5-hour and weekly subscription usage, refreshed independently by a systemd timer."
+description  = "Shows OpenAI and Google Antigravity subscription usage, refreshed independently by systemd timers."
 tags         = ["bar", "ai", "indicator"]
 dependencies = ["jq", "sh", "systemctl"]
 

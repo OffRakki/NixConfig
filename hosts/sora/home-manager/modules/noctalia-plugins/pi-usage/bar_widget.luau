@@ -1,13 +1,22 @@
 --!nonstrict
--- The standalone openai-usage timer owns network/auth and refreshes every five
--- minutes, even with Pi closed. This widget only reads sanitized data.
+-- Standalone systemd timers (openai-usage, antigravity-usage) own network/auth
+-- and refresh every five minutes. This widget only reads sanitized cache files.
 
 local REFRESH_MS = 30000
 local STALE_SEC = 900
-local CMD = 'jq -c "." "${XDG_CACHE_HOME:-$HOME/.cache}/noctalia/openai-usage.json" 2>/dev/null'
+local CMD = 'dir="${XDG_CACHE_HOME:-$HOME/.cache}/noctalia"; '
+    .. 'o=$(jq -c . "$dir/openai-usage.json" 2>/dev/null); [ -n "$o" ] || o=null; '
+    .. 'a=$(jq -c . "$dir/antigravity-usage.json" 2>/dev/null); [ -n "$a" ] || a=null; '
+    .. 'jq -cn --argjson openai "$o" --argjson antigravity "$a" "{openai:\\$openai,antigravity:\\$antigravity}"'
+local REFRESH_CMD = "sh -c 'systemctl --user start openai-usage.service & p1=$!; "
+    .. "systemctl --user start antigravity-usage.service & p2=$!; wait $p1 $p2'"
 
-local entries = {}
-local lastError = nil
+local PROVIDERS = {
+    { key = "openai", title = "OpenAI", glyph = "brand-openai" },
+    { key = "antigravity", title = "Antigravity", glyph = "brand-google" },
+}
+
+local state = {}
 
 local function parseIso(value)
     if type(value) ~= "string" then return nil end
@@ -46,46 +55,86 @@ local function windowState(window, now)
         resetAt and ("↻ " .. duration(resetAt - now)) or ""
 end
 
+local function glyphFor(provider, fallback)
+    if provider == "anthropic" then return "message-chatbot" end
+    if provider == "antigravity" then return "brand-google" end
+    if provider == "openai" then return "brand-openai" end
+    return fallback
+end
+
+local function appendWindows(parts, tooltip, windows, tooltipPrefix, stale, now)
+    for _, window in ipairs(windows or {}) do
+        local pct, note = windowState(window, now)
+        local label = shortLabel(window.label)
+        local tipKey = tooltipPrefix .. " · " .. tostring(window.label or "?")
+        if pct ~= nil then
+            local rounded = math.floor(pct + 0.5)
+            parts[#parts + 1] = ui.progress({ progress = pct / 100, fill = colorFor(pct),
+                track = "on_surface/0.16", radius = 0, width = 22, height = 5 })
+            parts[#parts + 1] = ui.label({ text = string.format("%s %d%%", label, rounded),
+                fontSize = 11, fontWeight = "semibold", color = stale and "on_surface_variant" or "on_surface", maxLines = 1 })
+            tooltip[#tooltip + 1] = {
+                key = tipKey,
+                value = note ~= "" and string.format("%d%% · %s", rounded, note) or string.format("%d%%", rounded),
+            }
+        else
+            parts[#parts + 1] = ui.label({ text = label .. " —", fontSize = 11, color = "on_surface_variant", maxLines = 1 })
+            tooltip[#tooltip + 1] = { key = tipKey, value = "reset" }
+        end
+    end
+end
+
 local function render()
     local now = os.time()
     local segments, tooltip = {}, {}
 
-    for i, entry in ipairs(entries) do
-        local usage = entry.usage
-        local fetched = (tonumber(entry.fetchedAt) or 0) / 1000
-        local stale = now - fetched > STALE_SEC
-        local parts = {}
-        for _, window in ipairs(usage.windows or {}) do
-            local pct, note = windowState(window, now)
-            local label = shortLabel(window.label)
-            if pct ~= nil then
-                parts[#parts + 1] = ui.progress({ progress = pct / 100, fill = colorFor(pct),
-                    track = "on_surface/0.16", radius = 0, width = 22, height = 5 })
-                parts[#parts + 1] = ui.label({ text = string.format("%s %d%%", label, math.floor(pct + 0.5)),
-                    fontSize = 11, fontWeight = "semibold", color = stale and "on_surface_variant" or "on_surface", maxLines = 1 })
-                tooltip[#tooltip + 1] = { key = window.label, value = string.format("%d%% · %s", math.floor(pct + 0.5), note) }
+    for _, spec in ipairs(PROVIDERS) do
+        local payload = state[spec.key]
+        local entry = type(payload) == "table" and type(payload.lastGood) == "table" and payload.lastGood or nil
+        local usage = entry and type(entry.usage) == "table" and entry.usage or nil
+        local err = type(payload) == "table" and payload.error or nil
+
+        if usage ~= nil then
+            local fetched = (tonumber(entry.fetchedAt) or 0) / 1000
+            local stale = now - fetched > STALE_SEC
+            local parts = {}
+
+            if type(usage.groups) == "table" and #usage.groups > 0 then
+                for _, group in ipairs(usage.groups) do
+                    if group.id == "gemini" then
+                        appendWindows(parts, tooltip, group.windows, tostring(group.name or spec.title), stale, now)
+                        break
+                    end
+                end
             else
-                parts[#parts + 1] = ui.label({ text = label .. " —", fontSize = 11, color = "on_surface_variant", maxLines = 1 })
-                tooltip[#tooltip + 1] = { key = window.label, value = "reset" }
+                appendWindows(parts, tooltip, usage.windows, spec.title, stale, now)
+            end
+
+            if #parts > 0 then
+                if stale then
+                    tooltip[#tooltip + 1] = { key = spec.title .. " Cache", value = duration(now - fetched) .. " old" }
+                end
+
+                if #segments > 0 then
+                    segments[#segments + 1] = ui.box({ width = 1, height = 15, fill = "outline/0.35" })
+                end
+                segments[#segments + 1] = ui.row({ key = spec.key, align = "center", gap = 5 }, {
+                    ui.glyph({ name = glyphFor(usage.provider, spec.glyph), size = 13, color = "primary" }),
+                    ui.row({ align = "center", gap = 6 }, parts),
+                })
             end
         end
-        if stale then tooltip[#tooltip + 1] = { key = "Cache", value = duration(now - fetched) .. " old" } end
 
-        if i > 1 then segments[#segments + 1] = ui.box({ width = 1, height = 15, fill = "outline/0.35" }) end
-        segments[#segments + 1] = ui.row({ key = "p" .. i, align = "center", gap = 5 }, {
-            ui.glyph({ name = usage.provider == "anthropic" and "message-chatbot" or "brand-openai", size = 13, color = "primary" }),
-            ui.row({ align = "center", gap = 6 }, parts),
-        })
+        if err ~= nil then
+            tooltip[#tooltip + 1] = { key = spec.title .. " Refresh", value = tostring(err) }
+        end
     end
 
     if #segments == 0 then
-        segments[1] = ui.label({ text = "OpenAI —", fontSize = 11, color = "on_surface_variant" })
-        tooltip[1] = { key = "OpenAI Usage", value = "Waiting for usage refresh" }
+        segments[1] = ui.label({ text = "AI —", fontSize = 11, color = "on_surface_variant" })
+        tooltip[1] = { key = "AI Usage", value = "Waiting for usage refresh" }
     end
 
-    if lastError ~= nil then
-        tooltip[#tooltip + 1] = { key = "Refresh", value = lastError }
-    end
     barWidget.render(ui.row({ gap = 7, align = "center" }, segments))
     barWidget.setTooltip(tooltip)
 end
@@ -93,14 +142,7 @@ end
 local function refresh()
     noctalia.runAsync(CMD, function(result)
         local decoded = noctalia.json.decode((result and result.stdout) or "{}")
-        entries = {}
-        lastError = nil
-        if type(decoded) == "table" then
-            lastError = decoded.error
-            if type(decoded.lastGood) == "table" and type(decoded.lastGood.usage) == "table" then
-                entries[1] = decoded.lastGood
-            end
-        end
+        state = type(decoded) == "table" and decoded or {}
         render()
     end, 5000)
 end
@@ -111,7 +153,7 @@ function update()
 end
 
 function onRightClick()
-    noctalia.runAsync("systemctl --user start openai-usage.service", function() refresh() end, 125000)
+    noctalia.runAsync(REFRESH_CMD, function() refresh() end, 125000)
 end
 function onIpc(event, _payload) if event == "refresh" then onRightClick() end end
 

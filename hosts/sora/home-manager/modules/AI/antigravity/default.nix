@@ -2,9 +2,11 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }: let
   cfg = config.programs.agy;
+  nodejs = inputs.nixpkgs-node.legacyPackages.${pkgs.stdenv.hostPlatform.system}.nodejs_24;
 
   antigravity = pkgs.antigravity-cli.overrideAttrs {
     version = "1.5.13";
@@ -45,15 +47,21 @@ in {
         remoteControl.enable = true;
       };
     }
-    (lib.mkIf cfg.enable {
-      home.packages = [launcher];
-      home.file = {
-        ".gemini/config/AGENTS.md".source = resources.context;
-        ".gemini/config/plugins.json".text = builtins.toJSON {
-          entries = [{path = toString workflows;}];
+    (lib.mkIf cfg.enable (lib.mkMerge [
+      {
+        home.packages = [launcher];
+        home.file = {
+          ".gemini/config/AGENTS.md".source = resources.context;
+          ".gemini/config/plugins.json".text = builtins.toJSON {
+            entries = [{path = toString workflows;}];
+          };
         };
-      };
-    })
+      }
+      (import ./usage {
+        inherit pkgs nodejs;
+        agyPackage = launcher;
+      })
+    ]))
     (lib.mkIf (cfg.enable && cfg.remoteControl.enable) {
       home.persistence."/persist".directories = [
         {
