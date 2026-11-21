@@ -6,6 +6,7 @@
     ./obs.nix
     ./steam/steam.nix
     ./steam/millennium.nix
+    ./shadps4.nix
     ./fish
     ./hypr
     ./rbw.nix

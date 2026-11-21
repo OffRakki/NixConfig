@@ -62,6 +62,10 @@
 
     # Games
     millennium.url = "github:SteamClientHomebrew/Millennium?dir=packages/nix";
+    steam-config-nix = {
+      url = "github:different-name/steam-config-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     nix-minecraft = {
       url = "github:Infinidoge/nix-minecraft";
       inputs.nixpkgs.follows = "nixpkgs";
