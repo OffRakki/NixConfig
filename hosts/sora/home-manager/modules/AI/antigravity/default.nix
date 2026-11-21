@@ -43,7 +43,13 @@
     };
   });
 
-  resources = import ../pi/resources.nix {inherit pkgs;};
+  context = pkgs.writeText "antigravity-context.md" (
+    builtins.readFile ../shared/context.md
+    + "\n"
+    + builtins.readFile ./context.md
+    + "\n"
+    + builtins.readFile ../shared/operator.md
+  );
   workflows = import ./workflows.nix {
     inherit lib pkgs;
     inherit (sharedTools) reaSkill piIntercomInboxHook;
@@ -145,7 +151,7 @@ in {
           };
         };
         home.file = {
-          ".gemini/config/AGENTS.md".source = resources.context;
+          ".gemini/config/AGENTS.md".source = context;
           ".gemini/config/plugins.json".text = builtins.toJSON {
             entries = [{path = toString workflows;}];
           };

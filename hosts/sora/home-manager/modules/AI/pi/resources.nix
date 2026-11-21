@@ -104,7 +104,7 @@
     ]
   );
 in {
-  context = pkgs.writeText "context.md" (text "context.md" + readFile ./context.md + text "operator.md");
+  context = pkgs.writeText "context.md" (text "context.md" + "\n" + readFile ./context.md + "\n" + text "operator.md");
   inherit skills;
   agents = pkgs.linkFarm "pi-custom-agents" [
     {

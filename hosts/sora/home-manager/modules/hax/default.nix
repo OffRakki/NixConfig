@@ -43,6 +43,13 @@
   ];
   settings = import ./settings.nix;
   configFile = pkgs.writeText "hax-config.json" (builtins.toJSON settings);
+  contextFile = pkgs.writeText "hax-context.md" (
+    builtins.readFile ../AI/shared/context.md
+    + "\n"
+    + builtins.readFile ./context.md
+    + "\n"
+    + builtins.readFile ../AI/shared/operator.md
+  );
   skills = {
     hax-tools = ./skills/hax-tools;
     nix = ./skills/nix;
@@ -94,7 +101,7 @@
   hax = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.hax;
   smokeCheck = pkgs.runCommand "hax-smoke-check" {} ''
     ${pkgs.python3}/bin/python3 ${./tests/smoke.py} \
-      "${hax}/bin/hax" ${configFile} ${./context.md} \
+      "${hax}/bin/hax" ${configFile} ${contextFile} \
       ${pkgs.linkFarm "hax-skills" (pkgs.lib.mapAttrsToList (name: path: {inherit name path;}) skills)}
     touch "$out"
   '';
@@ -107,7 +114,7 @@ in {
     file =
       {
         ".config/hax/config.json".source = configFile;
-        ".config/hax/AGENTS.md".source = ./context.md;
+        ".config/hax/AGENTS.md".source = contextFile;
         ".config/hax/docs".source = "${hax.src}/docs";
       }
       // pkgs.lib.mapAttrs' (name: source:
